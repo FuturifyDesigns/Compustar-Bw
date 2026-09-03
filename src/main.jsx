@@ -341,8 +341,8 @@ function AboutPage() {
   const commitments = [
     [SealCheck, 'Professional Service', 'We treat every customer and organisation with professionalism and respect.'],
     [Target, 'Practical Solutions', 'We focus on understanding the requirement and identifying technology that fits the intended use.'],
-    [Sparkle, 'Competitive Value', 'We strive to provide competitive quotations based on requirements and current market conditions.'],
-    [Phone, 'Responsiveness', 'We understand that customers often need quick answers and aim to respond promptly.'],
+    [Sparkle, 'Competitive Value', "We strive to provide competitive quotations based on the customer's requirements and current market conditions."],
+    [Phone, 'Responsiveness', 'We understand that customers often need quick answers. We aim to respond promptly to enquiries, quotations and product requests.'],
     [Handshake, 'Long-Term Relationships', 'We want customers to return to Compustar whenever they have another technology requirement.']
   ];
   const values = [
@@ -354,21 +354,39 @@ function AboutPage() {
     [Handshake, 'Partnership', 'We seek to build long-term relationships rather than one-time transactions.']
   ];
   const focusAreas = [
-    [Buildings, 'Technology for Business', 'Businesses depend on technology every day. Compustar helps businesses access technology products required for daily operations — making procurement simpler, more convenient and more responsive.'],
-    [GraduationCap, 'Education & Student Technology', 'Compustar supports students, educators and educational institutions with products ranging from personal laptops and accessories to computers, printers, networking equipment and other ICT requirements.'],
-    [Camera, 'CCTV & Security Solutions', 'From smaller installations to larger multi-camera requirements, our team can assist customers in identifying suitable surveillance equipment and solutions for their premises.'],
-    [ShoppingCart, 'POS & Business Technology', 'Compustar supplies POS equipment and related accessories for retailers and businesses handling daily transactions — whether establishing a new business, opening a branch or upgrading equipment.']
+    [Buildings, 'Technology for Business', [
+      'Businesses depend on technology every day.',
+      'A computer that fails, a printer that stops working, inadequate networking or outdated equipment can affect productivity and customer service.',
+      'Compustar helps businesses access technology products required for their daily operations, whether they are starting a business, expanding an office, replacing equipment, upgrading infrastructure or equipping a new site.',
+      'Our objective is to make technology procurement simpler, more convenient and more responsive.'
+    ]],
+    [GraduationCap, 'Education & Student Technology', [
+      'Technology plays an increasingly important role in education.',
+      'Compustar supports students, educators and educational institutions with technology products ranging from personal laptops and accessories to computers, printers, networking equipment and other ICT requirements.',
+      'For institutions, we can engage on bulk requirements and equipment procurement, while students and individual customers can access practical technology options for learning, research, assignments, online education and everyday computing.'
+    ]],
+    [Camera, 'CCTV & Security Solutions', [
+      'Security is an important consideration for businesses, institutions, homes and commercial premises.',
+      'Compustar provides access to CCTV and security technology solutions, helping customers explore surveillance options appropriate to their premises and requirements.',
+      'From smaller installations to larger multi-camera requirements, our team can assist customers in identifying suitable equipment and solutions, subject to site requirements and product availability.'
+    ]],
+    [ShoppingCart, 'POS & Business Technology', [
+      'For retailers and businesses handling daily transactions, reliable technology is essential.',
+      'Compustar supplies POS equipment and related accessories designed to support businesses with their point-of-sale requirements.',
+      'Whether you are establishing a new business, opening a new branch or upgrading existing equipment, we can assist with identifying appropriate technology requirements.'
+    ]]
   ];
 
   return (
     <>
-      <PageHero eyebrow="About Us" title="Your Digital Partner." text="Compustar is a Botswana-based technology and electronics company dedicated to providing reliable, practical and accessible technology solutions." />
+      <PageHero eyebrow="About Us" title="About Compustar — Your Digital Partner." text="Compustar is a Botswana-based technology and electronics company dedicated to providing reliable, practical and accessible technology solutions to individuals, businesses, institutions and organisations." />
 
       <section className="section about-intro">
         <div className="about-intro-grid">
           <div className="about-copy" data-reveal>
             <p className="kicker">About Compustar</p>
-            <h2>Technology that supports how organisations operate and grow.</h2>
+            <h2>Your Digital Partner.</h2>
+            <p>Compustar is a Botswana-based technology and electronics company dedicated to providing reliable, practical and accessible technology solutions to individuals, businesses, institutions and organisations.</p>
             <p>We understand that technology is no longer simply an accessory to business — it is an essential part of how organisations operate, communicate, serve customers, manage information and grow.</p>
             <p>Our role is to help our customers access the right technology products and solutions to support these needs.</p>
             <p>From an individual purchasing a laptop or accessory to a business equipping an entire office, a school establishing a computer laboratory, a hospital strengthening its ICT infrastructure, or an organisation requiring technology equipment in bulk, Compustar is positioned to provide solutions tailored to different requirements and budgets.</p>
@@ -388,7 +406,7 @@ function AboutPage() {
       </section>
 
       <section className="section about-approach">
-        <SectionIntro eyebrow="Our Approach" title="More than supplying products." text="Selling technology is about understanding the customer's requirement, recommending the appropriate solution, delivering professionally and building a relationship that continues beyond the initial purchase." />
+        <SectionIntro eyebrow="Our Approach" title="More than supplying products." text="At Compustar, we believe that selling technology is about more than simply supplying products. It is about understanding the customer's requirement, recommending the appropriate solution, delivering professionally and building a relationship that continues beyond the initial purchase. Our approach is built around:" />
         <div className="approach-flow">
           {approach.map((step, index) => (
             <article className="approach-step" data-approach-step key={step}>
@@ -402,7 +420,7 @@ function AboutPage() {
       </section>
 
       <section className="section about-products">
-        <SectionIntro eyebrow="Our Products & Solutions" title="A broad range of technology products." text="Product availability, specifications and brands may vary according to current stock and customer requirements." />
+        <SectionIntro eyebrow="Our Products & Solutions" title="A broad range of technology products." text="Compustar provides access to a broad range of technology products and solutions, including the categories below. Product availability, specifications and brands may vary according to current stock and customer requirements." />
         <div className="about-product-grid" data-stagger>
           {productsList.map((item) => (
             <article className="about-product-item" data-stagger-item key={item}>
@@ -419,7 +437,8 @@ function AboutPage() {
             <p className="kicker">Corporate & Institutional Solutions</p>
             <h2>Technology procurement for organisations.</h2>
             <p>Compustar is developing a strong Corporate and Institutional Supply Division designed to serve organisations with their technology procurement requirements.</p>
-            <p>Organisations often need more than a single product — multiple computers, printers, networking equipment, CCTV systems, POS equipment, accessories and other technology products as part of a project, office setup, expansion or replacement programme.</p>
+            <p>We understand that organisations often require more than a single product. They may need multiple computers, printers, networking equipment, CCTV systems, POS equipment, accessories and other technology products as part of a project, office setup, expansion or replacement programme.</p>
+            <p>Our corporate and institutional offering is therefore designed to support the organisations listed here.</p>
             <p>We welcome opportunities involving supplier registration, RFQs, quotations, bulk purchases, institutional requirements, tenders and recurring supply arrangements, subject to applicable procurement procedures.</p>
           </div>
           <div className="institution-list" data-stagger>
@@ -434,11 +453,11 @@ function AboutPage() {
       <section className="section about-focus">
         <SectionIntro eyebrow="Specialist Areas" title="Practical support across key sectors." text="From business operations to education, security and point-of-sale technology — Compustar helps customers find the right fit." />
         <div className="about-focus-grid" data-stagger>
-          {focusAreas.map(([Icon, title, text]) => (
+          {focusAreas.map(([Icon, title, paragraphs]) => (
             <article className="about-focus-card" data-stagger-item key={title}>
               <Icon {...iconProps} size={28} />
               <h3>{title}</h3>
-              <p>{text}</p>
+              {paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
             </article>
           ))}
         </div>
@@ -450,7 +469,7 @@ function AboutPage() {
       </section>
 
       <section className="section about-commitment">
-        <SectionIntro eyebrow="Our Commitment" title="Provide the right technology. Deliver professional service. Build lasting relationships." text="We aim to achieve this through clear standards that guide every enquiry and every project." />
+        <SectionIntro eyebrow="Our Commitment to Customers" title="Our commitment is simple." text="Provide the right technology. Deliver professional service. Build lasting relationships. We aim to achieve this through:" />
         <div className="commitment-grid" data-stagger>
           {commitments.map(([Icon, title, text]) => (
             <article data-stagger-item key={title}><Icon {...iconProps} size={26} /><h3>{title}</h3><p>{text}</p></article>
@@ -491,6 +510,7 @@ function AboutPage() {
           <p>They deserve a partner who listens, understands your requirements and helps you find practical solutions.</p>
           <p>Whether you need one laptop, accessories for your business, a complete office setup, CCTV equipment, POS solutions, networking equipment or technology products in bulk, Compustar is ready to assist.</p>
           <p className="why-tagline">From individual customers to large organisations, we are ready to be your Digital Partner.</p>
+          <p className="why-close">Compustar. Your Digital Partner.</p>
           <div className="hero-actions">
             <a className="button primary" href={route('Contact')} onClick={(event) => goToPage(event, 'Contact')}>Get in touch <ArrowRight size={16} weight="bold" /></a>
             <a className="button secondary" href={route('Products')} onClick={(event) => goToPage(event, 'Products')}>Browse products</a>
@@ -751,29 +771,62 @@ function LocationsMap() {
 }
 
 function ContactPage() {
+  const methods = [
+    [EnvelopeSimple, 'Email', email, `mailto:${email}?subject=Compustar%20Website%20Enquiry`],
+    [Phone, 'Telephone', displayTelPhone, `tel:${telPhone}`],
+    [Phone, 'Game City Mobile', displayPhone, `tel:${phone}`],
+    [Phone, 'G-West Mobile', displayMobilePhone, `tel:${mobilePhone}`]
+  ];
+
   return (
     <>
-      <PageHero eyebrow="Contact" title="Ask about products, repairs, or support." text="Use the contact details below for availability, quotes, device issues, and general store enquiries." />
-      <section className="contact-page section">
+      <PageHero eyebrow="Contact" title="We are ready to assist." text="Ask about product availability, quotations, repairs, bulk supply, or a visit to either Compustar location in Gaborone." />
+      <section className="section contact-methods">
+        <div className="contact-method-grid" data-stagger>
+          {methods.map(([Icon, label, value, href]) => (
+            <a className="contact-method" data-stagger-item href={href} key={label}>
+              <Icon {...iconProps} size={24} />
+              <em>{label}</em>
+              <strong>{value}</strong>
+            </a>
+          ))}
+        </div>
+      </section>
+      <section className="section contact-page">
         <div className="contact-panel" data-reveal>
+          <p className="kicker">How to enquire</p>
           <h2>Send a clear enquiry.</h2>
-          <p>Include the product name, budget, device model, or support issue. That gives the team enough context to respond properly.</p>
+          <p>Include enough detail for the team to respond quickly with availability, a quotation, or repair guidance.</p>
           <ul>
-            <li><CheckCircle {...iconProps} /> Product name or category</li>
+            <li><CheckCircle {...iconProps} /> Product name, category or quantity</li>
             <li><CheckCircle {...iconProps} /> Device model if it is a repair</li>
+            <li><CheckCircle {...iconProps} /> Budget or intended use, if known</li>
             <li><CheckCircle {...iconProps} /> Phone number or preferred contact method</li>
           </ul>
+          <div className="contact-panel-actions">
+            <a className="button primary" href={`mailto:${email}?subject=Compustar%20Website%20Enquiry`}>Email Compustar</a>
+            <a className="button secondary" href={instagramUrl} target="_blank" rel="noreferrer"><InstagramIcon size={18} /> Instagram</a>
+            <a className="button secondary" href={facebookUrl} target="_blank" rel="noreferrer"><FacebookIcon size={18} /> Facebook</a>
+          </div>
         </div>
-        <div className="contact-card" data-reveal>
-          <a href={`mailto:${email}?subject=Compustar%20Website%20Enquiry`}><EnvelopeSimple weight="fill" /> {email}</a>
-          <a href={`tel:${telPhone}`}><Phone weight="fill" /> Tel: {displayTelPhone}</a>
-          <a href={`tel:${phone}`}><Phone weight="fill" /> Game City: {displayPhone}</a>
-          <a href={`tel:${mobilePhone}`}><Phone weight="fill" /> G-West: {displayMobilePhone}</a>
+        <div className="contact-locations" data-stagger>
           {locations.map((item) => (
-            <p key={item.title}><MapPin weight="fill" /> {item.title}: {item.address}</p>
+            <article className="contact-location-card" data-stagger-item key={item.title}>
+              <Storefront {...iconProps} size={26} />
+              <h3>{item.title}</h3>
+              <p><MapPin weight="fill" size={18} /> {item.address}</p>
+              <a href={`tel:${telPhone}`}><Phone weight="fill" size={18} /> Tel: {item.tel}</a>
+              <a href={`tel:${item.mobileTel}`}><Phone weight="fill" size={18} /> Mobile: {item.mobile}</a>
+              <a className="map-link" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.mapQuery)}`} target="_blank" rel="noreferrer">
+                Open map <ArrowRight size={15} weight="bold" />
+              </a>
+            </article>
           ))}
-          <a className="button primary" href={`mailto:${email}?subject=Compustar%20Website%20Enquiry`}>Email Compustar</a>
         </div>
+      </section>
+      <section className="section contact-map">
+        <SectionIntro eyebrow="Visit us" title="Both Gaborone locations on one map." text="Game City Mall upstairs and G-West Industrial at Aga House." />
+        <LocationsMap />
       </section>
     </>
   );

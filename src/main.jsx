@@ -2,258 +2,127 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ArrowUpRight, Cable, Cpu, Mail, MapPin, Monitor, MousePointer2, Printer, Search, ShieldCheck, Sparkles, Wrench } from 'lucide-react';
+import { ArrowRight, Cable, Camera, CheckCircle2, Cpu, Mail, MapPin, Menu, Monitor, PackageSearch, Phone, Printer, Search, ShieldCheck, Wrench, X } from 'lucide-react';
 import products from './products.json';
 import './styles.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const email = 'compustarbw@gmail.com';
-const categories = ['All', 'Computers', 'Printers', 'Networking', 'Accessories', 'Screenshots'];
-
-function getCategory(name) {
-  const value = name.toLowerCase();
-  if (value.includes('printer') || value.includes('toner') || value.includes('ink')) return 'Printers';
-  if (value.includes('cat') || value.includes('cable') || value.includes('router') || value.includes('network')) return 'Networking';
-  if (value.includes('laptop') || value.includes('desktop') || value.includes('monitor') || value.includes('computer')) return 'Computers';
-  if (value.includes('screenshot')) return 'Screenshots';
-  return 'Accessories';
-}
-
-function cleanTitle(file) {
-  const base = file.replace(/\.[^.]+$/, '').replace(/^Screenshot \((\d+)\)$/i, 'Product enquiry $1');
-  return base.replace(/^ZA-/i, '').replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
-}
-
-const productList = products.map((item) => ({
-  ...item,
-  title: cleanTitle(item.original || item.file),
-  category: getCategory(item.original || item.file)
-}));
+const phone = '76004665';
+const pages = ['Home', 'Products', 'Services', 'Repairs', 'Contact'];
+const categories = ['All', ...Array.from(new Set(products.map((product) => product.category)))];
+const featuredProducts = products.slice(0, 6);
 
 function App() {
-  const [query, setQuery] = useState('');
-  const [category, setCategory] = useState('All');
-  const [visibleCount, setVisibleCount] = useState(18);
-
-  const filteredProducts = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-    return productList.filter((product) => {
-      const matchesCategory = category === 'All' || product.category === category;
-      const matchesQuery = !needle || product.title.toLowerCase().includes(needle) || product.category.toLowerCase().includes(needle);
-      return matchesCategory && matchesQuery;
-    });
-  }, [category, query]);
-
-  const visibleProducts = filteredProducts.slice(0, visibleCount);
+  const [page, setPage] = useState(getInitialPage);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from('[data-hero]', { autoAlpha: 0, y: 34, duration: 0.9, stagger: 0.09, ease: 'power3.out' });
-      gsap.utils.toArray('[data-reveal]').forEach((element) => {
-        gsap.from(element, {
-          autoAlpha: 0,
-          y: 28,
-          duration: 0.65,
-          ease: 'power2.out',
-          scrollTrigger: { trigger: element, start: 'top 86%' }
-        });
-      });
-    });
-    return () => ctx.revert();
+    const onHashChange = () => setPage(getInitialPage());
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
   useEffect(() => {
-    setVisibleCount(18);
-  }, [category, query]);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setMenuOpen(false);
+  }, [page]);
+
+  useRevealAnimations(page);
 
   return (
     <>
-      <Header />
+      <Header menuOpen={menuOpen} page={page} setMenuOpen={setMenuOpen} />
       <main>
-        <Hero />
-        <TrustStrip />
-        <ProductSection
-          category={category}
-          filteredProducts={filteredProducts}
-          query={query}
-          setCategory={setCategory}
-          setQuery={setQuery}
-          setVisibleCount={setVisibleCount}
-          visibleCount={visibleCount}
-          visibleProducts={visibleProducts}
-        />
-        <Services />
-        <Contact />
+        {page === 'Home' && <HomePage />}
+        {page === 'Products' && <ProductsPage />}
+        {page === 'Services' && <ServicesPage />}
+        {page === 'Repairs' && <RepairsPage />}
+        {page === 'Contact' && <ContactPage />}
       </main>
       <Footer />
     </>
   );
 }
 
-function Header() {
+function getInitialPage() {
+  const value = window.location.hash.replace('#/', '').replace('#', '');
+  return pages.includes(value) ? value : 'Home';
+}
+
+function route(page) {
+  return page === 'Home' ? '#/' : `#/${page}`;
+}
+
+function useRevealAnimations(page) {
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.from('[data-hero]', { autoAlpha: 0, y: 34, duration: 0.85, stagger: 0.08, ease: 'power3.out' });
+      gsap.utils.toArray('[data-reveal]').forEach((element) => {
+        gsap.from(element, { autoAlpha: 0, y: 26, duration: 0.65, ease: 'power2.out', scrollTrigger: { trigger: element, start: 'top 86%' } });
+      });
+    });
+    return () => ctx.revert();
+  }, [page]);
+}
+
+function Header({ menuOpen, page, setMenuOpen }) {
   return (
     <header className="site-header">
-      <a className="brand" href="#top" aria-label="Compustar home">
-        <img src="/logo.jpg" alt="Compustar logo" />
-        <span>COMPUSTAR<small>Your Digital Partner</small></span>
-      </a>
-      <nav>
-        <a href="#products">Products</a>
-        <a href="#services">Services</a>
-        <a href="#contact">Contact</a>
-      </nav>
+      <a className="brand" href={route('Home')} aria-label="Compustar home"><img src="/logo.png" alt="Compustar logo" /></a>
+      <button className="menu-button" onClick={() => setMenuOpen((open) => !open)} aria-label="Toggle menu">{menuOpen ? <X /> : <Menu />}</button>
+      <nav className={menuOpen ? 'open' : ''}>{pages.map((item) => <a className={page === item ? 'active' : ''} href={route(item)} key={item}>{item}</a>)}</nav>
     </header>
   );
 }
 
-function Hero() {
+function HomePage() {
   return (
-    <section className="hero" id="top">
-      <div className="hero-copy">
-        <p className="kicker" data-hero>Gaborone computer supply & support</p>
-        <h1 data-hero>Computer products, repairs, and practical IT help.</h1>
-        <p data-hero>Browse available products, ask about stock, or contact Compustar for repairs, setup, and office technology support.</p>
-        <div className="hero-actions" data-hero>
-          <a className="button primary" href="#products">View Products</a>
-          <a className="button secondary" href={`mailto:${email}?subject=Compustar%20Enquiry`}>Email Enquiry</a>
+    <>
+      <section className="hero">
+        <div className="hero-copy">
+          <p className="kicker" data-hero>Compustar Botswana</p>
+          <h1 data-hero>Technology products and support customers can actually ask about.</h1>
+          <p data-hero>Browse featured products, request availability, and get help with computers, printers, surveillance systems, networking, and repairs.</p>
+          <div className="hero-actions" data-hero><a className="button primary" href={route('Products')}>Browse Products <ArrowRight size={18} /></a><a className="button secondary" href={route('Contact')}>Send Enquiry</a></div>
         </div>
-      </div>
-      <div className="hero-card" data-hero>
-        <img src="/logo.jpg" alt="Compustar logo" />
-        <div className="hero-card-grid">
-          <span><Monitor size={18} /> Sales</span>
-          <span><Wrench size={18} /> Repairs</span>
-          <span><Cable size={18} /> Networking</span>
-        </div>
-      </div>
-    </section>
+        <div className="hero-showcase" data-hero><img src="/logo.png" alt="Compustar logo" /><div><span><Camera /> Surveillance</span><span><Monitor /> Computers</span><span><Cable /> Networking</span></div></div>
+      </section>
+      <section className="quick-paths">
+        {[[PackageSearch, 'Product Enquiries', 'Browse standalone product photos and ask about current availability.'], [Wrench, 'Repairs & Upgrades', 'Support for slow computers, setup issues, upgrades, and diagnostics.'], [ShieldCheck, 'Security & Networking', 'Camera systems, GPS trackers, network cables, and office connectivity.']].map(([Icon, title, text]) => <article key={title} data-reveal><Icon /><h3>{title}</h3><p>{text}</p></article>)}
+      </section>
+      <section className="section"><SectionIntro eyebrow="Featured products" title="Clean product cards, no screenshot clutter." text="Visitors see real product photos as standalone cards, then contact Compustar to confirm availability or visit the store." /><ProductGrid products={featuredProducts} compact /><div className="center-row" data-reveal><a className="button dark" href={route('Products')}>View full catalogue <ArrowRight size={18} /></a></div></section>
+    </>
   );
 }
 
-function TrustStrip() {
-  const items = [
-    ['Product enquiries', 'Ask about availability before visiting the store.'],
-    ['Repair support', 'Send the model and issue so the team can advise.'],
-    ['Office setup', 'Get help with devices, printers, and connectivity.']
-  ];
-
-  return (
-    <section className="trust-strip" data-reveal>
-      {items.map(([title, text]) => (
-        <article key={title}>
-          <Sparkles size={18} />
-          <strong>{title}</strong>
-          <p>{text}</p>
-        </article>
-      ))}
-    </section>
-  );
+function ProductsPage() {
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState('All');
+  const [visible, setVisible] = useState(24);
+  const filtered = useMemo(() => products.filter((product) => (category === 'All' || product.category === category) && (!query.trim() || `${product.title} ${product.category}`.toLowerCase().includes(query.trim().toLowerCase()))), [category, query]);
+  useEffect(() => setVisible(24), [category, query]);
+  return <><PageHero eyebrow="Products" title="Standalone catalogue for store enquiries." text="Browse product photos, filter by category, and send an enquiry for availability, pricing, or advice." /><section className="section catalogue-section"><div className="catalogue-tools" data-reveal><label className="search-box"><Search size={18} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search products..." /></label><div className="category-tabs">{categories.map((item) => <button className={category === item ? 'active' : ''} key={item} onClick={() => setCategory(item)}>{item}</button>)}</div></div><ProductGrid products={filtered.slice(0, visible)} />{visible < filtered.length && <div className="center-row"><button className="button dark" onClick={() => setVisible((count) => count + 24)}>Show more products</button></div>}</section></>;
 }
 
-function ProductSection({ category, filteredProducts, query, setCategory, setQuery, setVisibleCount, visibleCount, visibleProducts }) {
-  return (
-    <section className="section products-section" id="products">
-      <div className="section-heading" data-reveal>
-        <p className="kicker">Product catalogue</p>
-        <h2>Browse products and send an enquiry.</h2>
-        <p>This is an advertisement catalogue. Customers can check what Compustar carries, then visit the store or contact the team for availability.</p>
-      </div>
-      <div className="catalog-toolbar" data-reveal>
-        <label className="search-box">
-          <Search size={18} />
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search products..." />
-        </label>
-        <div className="category-tabs">
-          {categories.map((item) => (
-            <button className={category === item ? 'active' : ''} key={item} onClick={() => setCategory(item)}>{item}</button>
-          ))}
-        </div>
-      </div>
-      <div className="product-grid">
-        {visibleProducts.map((product) => (
-          <ProductCard key={product.file} product={product} />
-        ))}
-      </div>
-      {visibleCount < filteredProducts.length && (
-        <button className="load-more" onClick={() => setVisibleCount((count) => count + 18)}>
-          Show more products
-        </button>
-      )}
-    </section>
-  );
+function ServicesPage() {
+  const services = [[Cpu, 'Computer Sales', 'Laptops, desktops, screens, accessories, and practical buying guidance.'], [Printer, 'Printer Support', 'Printers, consumables, cable help, and office printing support.'], [Cable, 'Networking', 'Routers, CAT cables, Wi-Fi, printer sharing, and connectivity planning.'], [Camera, 'Surveillance Systems', 'Camera kits, recorders, GPS trackers, and security product enquiries.']];
+  return <><PageHero eyebrow="Services" title="Practical technology support for homes and businesses." text="Compustar helps customers choose equipment, set it up correctly, and keep everyday systems working." /><section className="section service-page-grid">{services.map(([Icon, title, text]) => <article className="service-card" key={title} data-reveal><Icon /><h3>{title}</h3><p>{text}</p></article>)}</section></>;
 }
 
-function ProductCard({ product }) {
-  const subject = encodeURIComponent(`Product enquiry: ${product.title}`);
-  const body = encodeURIComponent(`Hi Compustar,\n\nI would like to enquire about ${product.title}.\n\nPlease confirm availability and details.\n`);
-
-  return (
-    <article className="product-card" data-reveal>
-      <div className="product-image">
-        <img src={`/products/${product.file}`} alt={product.title} loading="lazy" />
-      </div>
-      <div className="product-body">
-        <span>{product.category}</span>
-        <h3>{product.title}</h3>
-        <a href={`mailto:${email}?subject=${subject}&body=${body}`}>Enquire <ArrowUpRight size={16} /></a>
-      </div>
-    </article>
-  );
+function RepairsPage() {
+  return <><PageHero eyebrow="Repairs" title="Clear repair enquiries before customers bring devices in." text="Customers can send the model, issue, and symptoms first so the team can advise on the next best step." /><section className="section repair-flow">{[['01', 'Describe the problem', 'Send the device type, model, issue, and when it started.'], ['02', 'Get guidance', 'The team can advise whether it needs inspection, setup, or replacement parts.'], ['03', 'Visit the store', 'Bring the device or product details for final confirmation and support.']].map(([step, title, text]) => <article key={step} data-reveal><span>{step}</span><h3>{title}</h3><p>{text}</p></article>)}</section></>;
 }
 
-function Services() {
-  const services = [
-    { icon: Cpu, title: 'Computer Sales', text: 'Laptops, desktops, components, monitors, peripherals, and everyday tech essentials.' },
-    { icon: Wrench, title: 'Repairs & Upgrades', text: 'Diagnostics, software support, memory and storage upgrades, cleanup, and setup help.' },
-    { icon: Printer, title: 'Printers & Supplies', text: 'Printers, consumables, cables, and support for home and office printing needs.' },
-    { icon: ShieldCheck, title: 'Office IT Support', text: 'Small-office device setup, Wi-Fi, cabling, email setup, and practical buying advice.' }
-  ];
-
-  return (
-    <section className="section services" id="services">
-      <div className="section-heading" data-reveal>
-        <p className="kicker">Services</p>
-        <h2>Support for the technology people rely on daily.</h2>
-      </div>
-      <div className="service-grid">
-        {services.map(({ icon: Icon, title, text }) => (
-          <article className="service-card" key={title} data-reveal>
-            <Icon />
-            <h3>{title}</h3>
-            <p>{text}</p>
-            <MousePointer2 className="corner-icon" />
-          </article>
-        ))}
-      </div>
-    </section>
-  );
+function ContactPage() {
+  return <><PageHero eyebrow="Contact" title="Ask about products, repairs, or support." text="Use the contact details below for availability, quotes, device issues, and general store enquiries." /><section className="contact-page section"><div className="contact-panel" data-reveal><h2>Send a clear enquiry.</h2><p>Include the product name, budget, device model, or support issue. That gives the team enough context to respond properly.</p><ul><li><CheckCircle2 /> Product name or category</li><li><CheckCircle2 /> Device model if it is a repair</li><li><CheckCircle2 /> Phone number or preferred contact method</li></ul></div><div className="contact-card" data-reveal><a href={`mailto:${email}?subject=Compustar%20Website%20Enquiry`}><Mail /> {email}</a><a href={`tel:${phone}`}><Phone /> {phone}</a><p><MapPin /> Gaborone, Botswana</p><a className="button primary" href={`mailto:${email}?subject=Compustar%20Website%20Enquiry`}>Email Compustar</a></div></section></>;
 }
 
-function Contact() {
-  return (
-    <section className="contact" id="contact">
-      <div data-reveal>
-        <p className="kicker">Contact Compustar</p>
-        <h2>Ask about stock, repairs, or office support.</h2>
-        <p>Send the product name, device model, issue, or budget. The team can confirm availability and guide you before you visit the store.</p>
-      </div>
-      <div className="contact-card" data-reveal>
-        <a href={`mailto:${email}?subject=Compustar%20Website%20Enquiry`}><Mail /> {email}</a>
-        <p><MapPin /> Botswana</p>
-        <a className="button primary" href={`mailto:${email}?subject=Compustar%20Website%20Enquiry`}>Send Enquiry</a>
-      </div>
-    </section>
-  );
-}
-
-function Footer() {
-  return (
-    <footer>
-      <span>COMPUSTAR</span>
-      <p>Computer products, repairs, and IT support.</p>
-    </footer>
-  );
-}
+function PageHero({ eyebrow, title, text }) { return <section className="page-hero"><p className="kicker" data-hero>{eyebrow}</p><h1 data-hero>{title}</h1><p data-hero>{text}</p></section>; }
+function SectionIntro({ eyebrow, title, text }) { return <div className="section-intro" data-reveal><div><p className="kicker">{eyebrow}</p><h2>{title}</h2></div><p>{text}</p></div>; }
+function ProductGrid({ compact = false, products: list }) { return <div className={compact ? 'product-grid compact' : 'product-grid'}>{list.map((product) => <ProductCard key={product.file} product={product} />)}</div>; }
+function ProductCard({ product }) { const subject = encodeURIComponent(`Product enquiry: ${product.title}`); const body = encodeURIComponent(`Hi Compustar,\n\nI would like to enquire about ${product.title}.\n\nPlease confirm availability and details.\n`); return <article className="product-card" data-reveal><div className="product-image"><img src={`/products/${product.file}`} alt={product.title} loading="lazy" /></div><div className="product-body"><span>{product.category}</span><h3>{product.title}</h3><a href={`mailto:${email}?subject=${subject}&body=${body}`}>Enquire <ArrowRight size={16} /></a></div></article>; }
+function Footer() { return <footer><strong>COMPUSTAR</strong><span>Computer products, repairs, security, networking, and IT support.</span></footer>; }
 
 createRoot(document.getElementById('root')).render(<App />);

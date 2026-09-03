@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ArrowRight, Camera, CheckCircle2, Cpu, Mail, MapPin, Menu, Monitor, Network, PackageSearch, Phone, Printer, ShieldCheck, Store, Wrench, X } from 'lucide-react';
+import { ArrowRight, Camera, CheckCircle2, Cpu, Mail, MapPin, Menu, MessageCircle, Monitor, Network, PackageSearch, Phone, Printer, ShieldCheck, Store, Wrench, X } from 'lucide-react';
 import products from './products.json';
 import './styles.css';
 
@@ -11,7 +11,25 @@ gsap.registerPlugin(ScrollTrigger);
 const email = 'compustarbw@gmail.com';
 const phone = '76004665';
 const displayPhone = '+267 76004665';
-const location = 'Shop 6U (Upstairs), Game City Mall, Gaborone, Botswana';
+const telPhone = '3111542';
+const displayTelPhone = '+267 3111542';
+const mobilePhone = '752941155';
+const displayMobilePhone = '+267 752941155';
+const whatsappPhone = '26776004665';
+const whatsappUrl = `https://wa.me/${whatsappPhone}`;
+const locations = [
+  {
+    title: 'Game City Mall',
+    address: 'Shop 6U (Upstairs), Game City Mall, Gaborone, Botswana',
+    mapQuery: 'Compustar Shop 6U Game City Mall Gaborone Botswana'
+  },
+  {
+    title: 'G-West Industrial',
+    address: 'G-West Industrial, Plot 27576/4, Aga House, Gaborone, Botswana',
+    mapQuery: 'G-West Industrial Plot 27576/4 Aga House Gaborone Botswana'
+  }
+];
+const location = locations.map((item) => item.address).join(' | ');
 const pages = ['Home', 'Products', 'Services', 'Repairs', 'Location', 'Contact'];
 const featuredProducts = products.slice(0, 14);
 const seo = {
@@ -163,8 +181,8 @@ function RepairsPage() {
 }
 
 function LocationPage() {
-  const mapQuery = encodeURIComponent('Compustar Shop 6U Game City Mall Gaborone Botswana');
-  return <><PageHero eyebrow="Location" title="Visit Compustar at Game City Mall." text="Find the store upstairs at Game City Mall in Gaborone for product enquiries, repairs, accessories, and practical technology support." /><section className="location-page section"><div className="location-card" data-reveal><p className="kicker">Store Location</p><h2>Shop 6U, upstairs.</h2><p><MapPin /> {location}</p><p><Phone /> {displayPhone}</p><p><Mail /> {email}</p><a className="button dark" href={`https://www.google.com/maps/search/?api=1&query=${mapQuery}`} target="_blank" rel="noreferrer">Open in Google Maps <ArrowRight size={16} /></a></div><MapFrame mapQuery={mapQuery} /></section></>;
+  const mapQuery = encodeURIComponent(locations[0].mapQuery);
+  return <><PageHero eyebrow="Location" title="Visit Compustar in Gaborone." text="Find Compustar for product enquiries, repairs, accessories, and practical technology support." /><section className="location-page section"><div className="location-card" data-reveal><p className="kicker">Store Locations</p><h2>Gaborone support points.</h2><div className="location-list">{locations.map((item) => <article key={item.title}><strong>{item.title}</strong><p><MapPin /> {item.address}</p><a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.mapQuery)}`} target="_blank" rel="noreferrer">Open this location <ArrowRight size={15} /></a></article>)}</div><p><Phone /> {displayPhone}</p><p><Phone /> Tel: {displayTelPhone}</p><p><Phone /> Mobile: {displayMobilePhone}</p><p><Mail /> {email}</p><a className="button whatsapp" href={whatsappUrl} target="_blank" rel="noreferrer"><MessageCircle size={17} /> WhatsApp Compustar</a></div><MapFrame mapQuery={mapQuery} /></section></>;
 }
 
 function MapFrame({ mapQuery }) {
@@ -172,7 +190,7 @@ function MapFrame({ mapQuery }) {
 }
 
 function ContactPage() {
-  return <><PageHero eyebrow="Contact" title="Ask about products, repairs, or support." text="Use the contact details below for availability, quotes, device issues, and general store enquiries." /><section className="contact-page section"><div className="contact-panel" data-reveal><h2>Send a clear enquiry.</h2><p>Include the product name, budget, device model, or support issue. That gives the team enough context to respond properly.</p><ul><li><CheckCircle2 /> Product name or category</li><li><CheckCircle2 /> Device model if it is a repair</li><li><CheckCircle2 /> Phone number or preferred contact method</li></ul></div><div className="contact-card" data-reveal><a href={`mailto:${email}?subject=Compustar%20Website%20Enquiry`}><Mail /> {email}</a><a href={`tel:${phone}`}><Phone /> {displayPhone}</a><p><MapPin /> {location}</p><a className="button primary" href={`mailto:${email}?subject=Compustar%20Website%20Enquiry`}>Email Compustar</a></div></section></>;
+  return <><PageHero eyebrow="Contact" title="Ask about products, repairs, or support." text="Use the contact details below for availability, quotes, device issues, and general store enquiries." /><section className="contact-page section"><div className="contact-panel" data-reveal><h2>Send a clear enquiry.</h2><p>Include the product name, budget, device model, or support issue. That gives the team enough context to respond properly.</p><ul><li><CheckCircle2 /> Product name or category</li><li><CheckCircle2 /> Device model if it is a repair</li><li><CheckCircle2 /> Phone number or preferred contact method</li></ul></div><div className="contact-card" data-reveal><a href={`mailto:${email}?subject=Compustar%20Website%20Enquiry`}><Mail /> {email}</a><a href={`tel:${phone}`}><Phone /> {displayPhone}</a><a href={`tel:${telPhone}`}><Phone /> Tel: {displayTelPhone}</a><a href={`tel:${mobilePhone}`}><Phone /> Mobile: {displayMobilePhone}</a>{locations.map((item) => <p key={item.title}><MapPin /> {item.address}</p>)}<a className="button whatsapp" href={whatsappUrl} target="_blank" rel="noreferrer"><MessageCircle size={17} /> WhatsApp Compustar</a><a className="button primary" href={`mailto:${email}?subject=Compustar%20Website%20Enquiry`}>Email Compustar</a></div></section></>;
 }
 
 function PageHero({ eyebrow, title, text }) { return <section className="page-hero"><p className="kicker" data-hero>{eyebrow}</p><h1 data-hero>{title}</h1><p data-hero>{text}</p></section>; }
@@ -181,7 +199,7 @@ function ProductGrid({ products: list }) { return <div className="product-grid g
 function ProductCarousel({ products: list }) { const slides = [...list, ...list]; return <div className="product-slider" data-reveal><div className="product-track">{slides.map((product, index) => <ProductCard key={`${product.file}-${index}`} product={product} />)}</div></div>; }
 function ProductCard({ product }) { return <article className="product-card gallery-card" data-reveal><div className="product-image"><img src={`/products/${product.file}`} alt="Compustar product" loading="lazy" /></div><div className="product-overlay"><a href={route('Contact')} onClick={(event) => goToPage(event, 'Contact')}>Enquire <ArrowRight size={16} /></a></div></article>; }
 function Footer() {
-  return <footer className="site-footer"><div className="footer-brand"><img src="/logo.png" alt="Compustar logo" /><p>Computer products, repairs, security, networking, and IT support from Game City Mall, Gaborone.</p></div><nav className="footer-links" aria-label="Footer navigation"><strong>Explore</strong>{pages.map((item) => <a href={route(item)} onClick={(event) => goToPage(event, item)} key={item}>{item}</a>)}</nav><section className="footer-contact"><strong>Contact</strong><a href={`mailto:${email}?subject=Compustar%20Website%20Enquiry`}><Mail /> {email}</a><a href={`tel:${phone}`}><Phone /> {displayPhone}</a><span><Store /> {location}</span></section><div className="footer-bottom"><span>@ Compustar {new Date().getFullYear()}. All rights reserved.</span><a href="https://futurifydesigns.com" target="_blank" rel="noreferrer">Built by Futurify Designs</a></div></footer>;
+  return <footer className="site-footer"><div className="footer-brand"><img src="/logo.png" alt="Compustar logo" /><p>Computer products, repairs, security, networking, and IT support across Gaborone.</p></div><nav className="footer-links" aria-label="Footer navigation"><strong>Explore</strong>{pages.map((item) => <a href={route(item)} onClick={(event) => goToPage(event, item)} key={item}>{item}</a>)}</nav><section className="footer-contact"><strong>Contact</strong><a href={`mailto:${email}?subject=Compustar%20Website%20Enquiry`}><Mail /> {email}</a><a href={`tel:${phone}`}><Phone /> {displayPhone}</a><a href={`tel:${telPhone}`}><Phone /> Tel: {displayTelPhone}</a><a href={`tel:${mobilePhone}`}><Phone /> Mobile: {displayMobilePhone}</a><a className="footer-whatsapp" href={whatsappUrl} target="_blank" rel="noreferrer"><MessageCircle /> WhatsApp Compustar</a>{locations.map((item) => <span key={item.title}><Store /> {item.address}</span>)}</section><div className="footer-bottom"><span>@ Compustar {new Date().getFullYear()}. All rights reserved.</span><a href="https://futurifydesigns.com" target="_blank" rel="noreferrer">Built by Futurify Designs</a></div></footer>;
 }
 
 createRoot(document.getElementById('root')).render(<App />);

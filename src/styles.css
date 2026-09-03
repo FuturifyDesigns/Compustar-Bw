@@ -36,7 +36,7 @@ button, a { touch-action: manipulation; }
 .menu-button { background: var(--ink); border: 0; border-radius: 999px; color: #fff; cursor: pointer; display: none; padding: .65rem; }
 
 .hero, .page-hero {
-  background: linear-gradient(115deg, rgba(12,13,16,.97), rgba(72,10,14,.9) 48%, rgba(239,23,23,.78)), url('/hero-bg.png');
+  background: linear-gradient(115deg, rgba(12,13,16,.97), rgba(72,10,14,.9) 48%, rgba(239,23,23,.78)), url('/hero-bg.webp');
   background-position: center; background-size: cover; color: #fff; overflow: hidden; position: relative;
 }
 .hero::before, .page-hero::before { background-image: linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px); background-size: 48px 48px; content: ""; inset: 0; opacity: .36; position: absolute; }
@@ -90,10 +90,11 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
 .product-slider:hover .product-track { animation-play-state: paused; }
 .product-slider .product-card { flex: 0 0 clamp(210px, 24vw, 310px); }
 .product-grid { display: grid; gap: 1.1rem; grid-template-columns: repeat(4,minmax(0,1fr)); margin: 0 auto; max-width: 1240px; }
-.product-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 14px 42px rgba(12,13,16,.06); overflow: hidden; position: relative; transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
+.product-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 14px 42px rgba(12,13,16,.06); contain-intrinsic-size: 280px; content-visibility: auto; overflow: hidden; position: relative; transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
 .product-card:hover { border-color: rgba(239,23,23,.38); box-shadow: var(--shadow); transform: translateY(-6px); }
 .product-card:hover img { transform: scale(1.045); }
 .product-image { background: linear-gradient(135deg, rgba(239,23,23,.05), transparent), #f8f9fb; display: grid; min-height: 260px; place-items: center; }
+.product-image picture { display: block; width: 100%; }
 .product-image img { aspect-ratio: 4 / 3; display: block; object-fit: contain; padding: 1rem; transition: transform .25s ease; width: 100%; }
 .product-overlay { align-items: end; background: linear-gradient(180deg, transparent, rgba(12,13,16,.72)); display: flex; inset: auto 0 0; justify-content: space-between; opacity: 0; padding: 1rem; position: absolute; transform: translateY(10px); transition: opacity .2s ease, transform .2s ease; }
 .product-card:hover .product-overlay { opacity: 1; transform: translateY(0); }
@@ -113,7 +114,8 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
 .repair-steps.auto-showcase > * { flex-basis: min(430px, 86vw); }
 .service-card { min-height: 260px; transition: background-color .18s ease, color .18s ease, transform .18s ease; }
 .visual-card { overflow: hidden; padding: 0; }
-.visual-card > img { aspect-ratio: 16 / 10; display: block; object-fit: cover; width: 100%; }
+.visual-card picture { display: block; width: 100%; }
+.visual-card img { aspect-ratio: 16 / 10; display: block; object-fit: cover; width: 100%; }
 .visual-card > div { padding: 1.2rem; }
 .service-card:hover { background: var(--ink); color: #fff; transform: translateY(-6px); }
 .service-card:hover p { color: rgba(255,255,255,.72); }
@@ -129,6 +131,7 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
 .repair-steps.horizontal-showcase { display: flex; }
 .repair-step { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 18px 54px rgba(12,13,16,.07); display: grid; gap: 0; grid-template-rows: auto 1fr; overflow: hidden; transition: transform .18s ease, box-shadow .18s ease; }
 .repair-step:hover { box-shadow: var(--shadow); transform: translateY(-5px); }
+.repair-step picture { display: block; width: 100%; }
 .repair-step img { aspect-ratio: 16 / 9; display: block; min-height: 0; object-fit: cover; width: 100%; }
 .repair-step div { align-content: start; display: grid; min-height: 260px; padding: clamp(1.2rem,3vw,1.8rem); }
 .repair-step .button { align-self: end; margin-top: 1.2rem; width: fit-content; }
@@ -334,7 +337,7 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
 .why-panel {
   background:
     linear-gradient(115deg, rgba(12,13,16,.96), rgba(72,10,14,.88) 55%, rgba(239,23,23,.72)),
-    url('/hero-bg.png');
+    url('/hero-bg.webp');
   background-position: center; background-size: cover; border-radius: calc(var(--radius) + 4px);
   box-shadow: var(--shadow); color: #fff; padding: clamp(2rem,5vw,3.4rem);
 }
@@ -359,12 +362,15 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
 .advert-stage {
   background: #dfe4ea; border-radius: 18px; isolation: isolate; overflow: hidden; position: relative;
 }
-.advert-blur {
-  filter: blur(28px) saturate(1.15); height: 120%; inset: -10%; object-fit: cover; opacity: .9;
-  pointer-events: none; position: absolute; transform: scale(1.12); width: 120%; z-index: 0;
+.advert-stage picture:has(.advert-blur) {
+  height: 120%; inset: -10%; pointer-events: none; position: absolute; width: 120%; z-index: 0;
 }
+.advert-blur {
+  filter: blur(28px) saturate(1.15); height: 100%; object-fit: cover; opacity: .9; transform: scale(1.12); width: 100%;
+}
+.advert-stage picture:has(.advert-slide) { display: block; position: relative; z-index: 1; }
 .advert-slide {
-  display: block; margin: 0 auto; max-height: min(78vh, 980px); object-fit: contain; position: relative; width: 100%; z-index: 1;
+  display: block; margin: 0 auto; max-height: min(78vh, 980px); object-fit: contain; width: 100%;
 }
 .advert-progress {
   background: rgba(255,255,255,.18); bottom: 0; height: 4px; left: 0; overflow: hidden; position: absolute; right: 0; z-index: 2;

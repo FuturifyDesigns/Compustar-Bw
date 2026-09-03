@@ -107,6 +107,19 @@ const seo = {
   Contact: ['Contact Compustar Botswana', 'Contact Compustar Botswana about product availability, prices, repairs, quotes, and technology support.']
 };
 
+function toWebp(src) {
+  return src.replace(/\.(jpe?g|png)$/i, '.webp');
+}
+
+function SmartImage({ src, alt, className, loading = 'lazy', fetchPriority = 'low', ...props }) {
+  return (
+    <picture>
+      <source srcSet={toWebp(src)} type="image/webp" />
+      <img src={src} alt={alt} className={className} loading={loading} decoding="async" fetchPriority={fetchPriority} {...props} />
+    </picture>
+  );
+}
+
 function WhatsAppIcon({ size = 26 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -253,7 +266,7 @@ function useRevealAnimations(page) {
 function Header({ menuOpen, page, setMenuOpen }) {
   return (
     <header className="site-header">
-      <a className="brand" href={route('Home')} onClick={(event) => goToPage(event, 'Home')} aria-label="Compustar home"><img src="/logo.png" alt="Compustar logo" /></a>
+      <a className="brand" href={route('Home')} onClick={(event) => goToPage(event, 'Home')} aria-label="Compustar home"><SmartImage src="/logo.png" alt="Compustar logo" loading="eager" fetchPriority="high" /></a>
       <button className="menu-button" onClick={() => setMenuOpen((open) => !open)} aria-label="Toggle menu">{menuOpen ? <X {...iconProps} /> : <List {...iconProps} />}</button>
       <nav className={menuOpen ? 'open' : ''}>{pages.map((item) => <a className={page === item ? 'active' : ''} href={route(item)} onClick={(event) => goToPage(event, item)} key={item}>{item}</a>)}</nav>
     </header>
@@ -274,7 +287,7 @@ function HomePage() {
           </div>
         </div>
         <div className="hero-showcase" data-hero>
-          <video src="/hero-logo.mp4" poster="/logo.png" muted loop autoPlay playsInline aria-label="Compustar logo animation"></video>
+          <video src="/hero-logo.mp4" poster="/logo.webp" muted loop autoPlay playsInline preload="metadata" aria-label="Compustar logo animation"></video>
           <div>
             <span><Camera {...iconProps} /> Surveillance</span>
             <span><Monitor {...iconProps} /> Computers</span>
@@ -587,6 +600,16 @@ function AdvertsPage() {
     return () => animation.kill();
   }, [index]);
 
+  useEffect(() => {
+    const next = adverts[(index + 1) % adverts.length];
+    const link = document.createElement('link');
+    link.rel = 'prefetch';
+    link.as = 'image';
+    link.href = `/adverts/${toWebp(next.file)}`;
+    document.head.appendChild(link);
+    return () => link.remove();
+  }, [index]);
+
   const goTo = (nextIndex) => {
     setIndex((nextIndex + adverts.length) % adverts.length);
     setProgress(0);
@@ -598,8 +621,8 @@ function AdvertsPage() {
       <section className="section adverts-section">
         <div className="advert-showcase" data-reveal ref={stageRef}>
           <div className="advert-stage">
-            <img className="advert-blur" src={`/adverts/${current.file}`} alt="" aria-hidden="true" />
-            <img className="advert-slide" src={`/adverts/${current.file}`} alt={current.title} />
+            <SmartImage className="advert-blur" src={`/adverts/${current.file}`} alt="" aria-hidden="true" loading="eager" fetchPriority="high" />
+            <SmartImage className="advert-slide" src={`/adverts/${current.file}`} alt={current.title} loading="eager" fetchPriority="high" />
             <div className="advert-progress" aria-hidden="true"><span style={{ transform: `scaleX(${progress})` }} /></div>
           </div>
           <div className="advert-meta">
@@ -626,7 +649,7 @@ function AdvertsPage() {
                 aria-label={`Show ${item.title}`}
                 aria-selected={itemIndex === index}
               >
-                <img src={`/adverts/${item.file}`} alt="" loading="lazy" />
+                <SmartImage src={`/adverts/thumbs/${toWebp(item.file)}`} alt="" loading="lazy" />
               </button>
             ))}
           </div>
@@ -651,7 +674,7 @@ function ServicesPage() {
         <div className="horizontal-showcase auto-showcase service-slider">
           {slides.map(([Icon, title, text, image], index) => (
             <article className="service-card visual-card" key={`${title}-${index}`} data-reveal>
-              <img src={image} alt="" loading="lazy" />
+              <SmartImage src={image} alt="" loading="lazy" />
               <div>
                 <Icon {...iconProps} size={26} />
                 <h3>{title}</h3>
@@ -679,7 +702,7 @@ function RepairsPage() {
         <div className="horizontal-showcase auto-showcase repair-steps">
           {slides.map(([step, title, text, image], index) => (
             <article className="repair-step" key={`${step}-${index}`} data-reveal>
-              <img src={image} alt="" loading="lazy" />
+              <SmartImage src={image} alt="" loading="lazy" />
               <div>
                 <span>{step}</span>
                 <h3>{title}</h3>
@@ -857,7 +880,7 @@ function SectionIntro({ eyebrow, title, text }) {
 function ProductGrid({ products: list }) {
   return (
     <div className="product-grid gallery-grid">
-      {list.map((product) => <ProductCard key={product.file} product={product} />)}
+        {list.map((product, index) => <ProductCard key={product.file} product={product} priority={index < 8} />)}
     </div>
   );
 }
@@ -867,17 +890,17 @@ function ProductCarousel({ products: list }) {
   return (
     <div className="product-slider" data-reveal>
       <div className="product-track">
-        {slides.map((product, index) => <ProductCard key={`${product.file}-${index}`} product={product} />)}
+        {slides.map((product, index) => <ProductCard key={`${product.file}-${index}`} product={product} priority={index < 6} />)}
       </div>
     </div>
   );
 }
 
-function ProductCard({ product }) {
+function ProductCard({ product, priority = false }) {
   return (
     <article className="product-card gallery-card" data-reveal>
       <div className="product-image">
-        <img src={`/products/${product.file}`} alt="Compustar product" loading="lazy" />
+        <SmartImage src={`/products/${product.file}`} alt="Compustar product" loading={priority ? 'eager' : 'lazy'} fetchPriority={priority ? 'high' : 'low'} />
       </div>
       <div className="product-overlay">
         <a href={route('Contact')} onClick={(event) => goToPage(event, 'Contact')}>
@@ -892,7 +915,7 @@ function Footer() {
   return (
     <footer className="site-footer">
       <div className="footer-brand">
-        <img src="/logo.png" alt="Compustar logo" />
+        <SmartImage src="/logo.webp" alt="Compustar logo" loading="lazy" />
         <p>Computer products, repairs, security, networking, and IT support across Gaborone.</p>
         <div className="footer-socials">
           <strong>Social media</strong>

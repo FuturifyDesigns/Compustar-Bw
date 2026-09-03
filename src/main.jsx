@@ -7,6 +7,8 @@ import {
   ArrowRight,
   Buildings,
   Camera,
+  CaretLeft,
+  CaretRight,
   CheckCircle,
   Cpu,
   EnvelopeSimple,
@@ -17,7 +19,9 @@ import {
   MagnifyingGlass,
   MapPin,
   Monitor,
+  Pause,
   Phone,
+  Play,
   Printer,
   SealCheck,
   ShoppingCart,
@@ -76,12 +80,26 @@ const locations = [
     coords: [-24.6747, 25.8964]
   }
 ];
-const pages = ['Home', 'About', 'Products', 'Services', 'Repairs', 'Location', 'Contact'];
+const pages = ['Home', 'About', 'Products', 'Adverts', 'Services', 'Repairs', 'Location', 'Contact'];
 const featuredProducts = products.slice(0, 14);
+const advertSlideMs = 8000;
+const adverts = [
+  { file: 'pos-solutions.jpg', title: 'POS Solutions', text: 'Smart business. Seamless sales. Point of sale systems that power your business.' },
+  { file: 'digital-partner.jpg', title: 'Your Digital Partner', text: 'Innovative technology, quality products and reliable solutions for every customer.' },
+  { file: 'new-location-aga.jpg', title: 'New Location — Aga House', text: 'Better service, closer to you at G-West Industrial, Plot 27576/4.' },
+  { file: 'new-location-announcement.jpg', title: 'New Location Announcement', text: 'Wider range, better service and the same Compustar commitment.' },
+  { file: 'laptops.jpg', title: 'Laptops for Work, Study & Play', text: 'Power your potential with everyday, business, gaming and creator laptops.' },
+  { file: 'gaming-computers.jpg', title: 'Gaming Computers', text: 'Game on. Perform big. Ready-made and custom builds for every level.' },
+  { file: 'new-location-commitment.jpg', title: 'Same Commitment, New Location', text: 'Visit Compustar at Aga House — easy to find, easy to reach.' },
+  { file: 'accessories.jpg', title: 'Accessories & Gear', text: 'Every accessory. Every possibility. Cables, storage, peripherals and more.' },
+  { file: 'hilook-surveillance.jpg', title: 'HiLook Surveillance', text: 'Smart security powered by Hikvision — clearer vision, stronger protection.' },
+  { file: 'new-location-tech-destination.jpg', title: 'Your Tech Destination', text: 'New location at G-West Industrial with the full Compustar product range.' }
+];
 const seo = {
   Home: ['Compustar Botswana | Computer Sales, Repairs & IT Support', 'Computers, printers, surveillance, networking, accessories, repairs, and IT support from Game City Mall in Gaborone.'],
   About: ['About Compustar Botswana | Your Digital Partner', 'Learn about Compustar Botswana — a technology and electronics partner providing practical products and solutions for individuals, businesses, and institutions.'],
   Products: ['Products | Compustar Botswana', 'Browse computer, networking, surveillance, power, and technology products available for enquiry from Compustar Botswana.'],
+  Adverts: ['Adverts | Compustar Botswana', 'Browse Compustar promotional adverts for POS, laptops, gaming PCs, accessories, surveillance, and new store locations in Gaborone.'],
   Services: ['Technology Services | Compustar Botswana', 'Computer sales, printer support, networking, surveillance systems, and practical technology guidance in Gaborone.'],
   Repairs: ['Computer Repairs | Compustar Botswana', 'Ask Compustar Botswana about computer diagnostics, upgrades, setup issues, replacement parts, and repair support.'],
   Location: ['Compustar Location | Game City Mall, Gaborone', 'Visit Compustar at Shop 6U upstairs in Game City Mall, Gaborone, Botswana.'],
@@ -137,6 +155,7 @@ function App() {
         {page === 'Home' && <HomePage />}
         {page === 'About' && <AboutPage />}
         {page === 'Products' && <ProductsPage />}
+        {page === 'Adverts' && <AdvertsPage />}
         {page === 'Services' && <ServicesPage />}
         {page === 'Repairs' && <RepairsPage />}
         {page === 'Location' && <LocationPage />}
@@ -501,6 +520,87 @@ function ProductsPage() {
             <button className="button dark" onClick={() => setVisible((count) => count + 24)}>Show more products</button>
           </div>
         )}
+      </section>
+    </>
+  );
+}
+
+function AdvertsPage() {
+  const [index, setIndex] = useState(0);
+  const [playing, setPlaying] = useState(true);
+  const [progress, setProgress] = useState(0);
+  const stageRef = useRef(null);
+  const current = adverts[index];
+
+  useEffect(() => {
+    if (!playing) return undefined;
+    setProgress(0);
+    const started = performance.now();
+    let frame = 0;
+    const loop = (now) => {
+      const nextProgress = Math.min(1, (now - started) / advertSlideMs);
+      setProgress(nextProgress);
+      if (nextProgress >= 1) {
+        setIndex((value) => (value + 1) % adverts.length);
+        return;
+      }
+      frame = requestAnimationFrame(loop);
+    };
+    frame = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(frame);
+  }, [index, playing]);
+
+  useEffect(() => {
+    if (!stageRef.current) return undefined;
+    const image = stageRef.current.querySelector('.advert-slide');
+    const copy = stageRef.current.querySelector('.advert-copy');
+    const animation = gsap.fromTo([image, copy], { autoAlpha: 0, y: 18 }, { autoAlpha: 1, y: 0, duration: 0.55, stagger: 0.06, ease: 'power3.out' });
+    return () => animation.kill();
+  }, [index]);
+
+  const goTo = (nextIndex) => {
+    setIndex((nextIndex + adverts.length) % adverts.length);
+    setProgress(0);
+  };
+
+  return (
+    <>
+      <PageHero eyebrow="Adverts" title="Campaign showcase." text="Browse Compustar promotional adverts in an auto-playing showcase — POS, laptops, gaming, accessories, surveillance, and new location announcements." />
+      <section className="section adverts-section">
+        <div className="advert-showcase" data-reveal ref={stageRef}>
+          <div className="advert-stage">
+            <img className="advert-slide" src={`/adverts/${current.file}`} alt={current.title} />
+            <div className="advert-progress" aria-hidden="true"><span style={{ transform: `scaleX(${progress})` }} /></div>
+          </div>
+          <div className="advert-meta">
+            <div className="advert-copy">
+              <p className="kicker">Advert {index + 1} of {adverts.length}</p>
+              <h2>{current.title}</h2>
+              <p>{current.text}</p>
+            </div>
+            <div className="advert-controls">
+              <button type="button" className="advert-nav" onClick={() => goTo(index - 1)} aria-label="Previous advert"><CaretLeft size={22} weight="bold" /></button>
+              <button type="button" className="advert-nav" onClick={() => setPlaying((value) => !value)} aria-label={playing ? 'Pause slideshow' : 'Play slideshow'}>
+                {playing ? <Pause size={20} weight="fill" /> : <Play size={20} weight="fill" />}
+              </button>
+              <button type="button" className="advert-nav" onClick={() => goTo(index + 1)} aria-label="Next advert"><CaretRight size={22} weight="bold" /></button>
+            </div>
+          </div>
+          <div className="advert-thumbs" role="tablist" aria-label="Advert thumbnails">
+            {adverts.map((item, itemIndex) => (
+              <button
+                type="button"
+                key={item.file}
+                className={itemIndex === index ? 'active' : ''}
+                onClick={() => goTo(itemIndex)}
+                aria-label={`Show ${item.title}`}
+                aria-selected={itemIndex === index}
+              >
+                <img src={`/adverts/${item.file}`} alt="" loading="lazy" />
+              </button>
+            ))}
+          </div>
+        </div>
       </section>
     </>
   );

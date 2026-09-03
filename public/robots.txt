@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://compustar.co.bw/sitemap.xml

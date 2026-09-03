@@ -14,6 +14,14 @@ const displayPhone = '+267 76004665';
 const location = 'Shop 6U (Upstairs), Game City Mall, Gaborone, Botswana';
 const pages = ['Home', 'Products', 'Services', 'Repairs', 'Location', 'Contact'];
 const featuredProducts = products.slice(0, 14);
+const seo = {
+  Home: ['Compustar Botswana | Computer Sales, Repairs & IT Support', 'Computers, printers, surveillance, networking, accessories, repairs, and IT support from Game City Mall in Gaborone.'],
+  Products: ['Products | Compustar Botswana', 'Browse computer, networking, surveillance, power, and technology products available for enquiry from Compustar Botswana.'],
+  Services: ['Technology Services | Compustar Botswana', 'Computer sales, printer support, networking, surveillance systems, and practical technology guidance in Gaborone.'],
+  Repairs: ['Computer Repairs | Compustar Botswana', 'Ask Compustar Botswana about computer diagnostics, upgrades, setup issues, replacement parts, and repair support.'],
+  Location: ['Compustar Location | Game City Mall, Gaborone', 'Visit Compustar at Shop 6U upstairs in Game City Mall, Gaborone, Botswana.'],
+  Contact: ['Contact Compustar Botswana', 'Contact Compustar Botswana about product availability, prices, repairs, quotes, and technology support.']
+};
 
 function App() {
   const [page, setPage] = useState(getInitialPage);
@@ -36,6 +44,7 @@ function App() {
   }, [page]);
 
   useRevealAnimations(page);
+  usePageSeo(page);
 
   return (
     <>
@@ -51,6 +60,21 @@ function App() {
       <Footer />
     </>
   );
+}
+
+function usePageSeo(page) {
+  useEffect(() => {
+    const [title, description] = seo[page];
+    const pageUrl = `https://compustar.co.bw${route(page)}`;
+    document.title = title;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', description);
+    document.querySelector('link[rel="canonical"]')?.setAttribute('href', pageUrl);
+    document.querySelector('meta[property="og:url"]')?.setAttribute('content', pageUrl);
+    document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
+    document.querySelector('meta[property="og:description"]')?.setAttribute('content', description);
+    document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', title);
+    document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', description);
+  }, [page]);
 }
 
 function getInitialPage() {
@@ -134,8 +158,7 @@ function LocationPage() {
 }
 
 function MapFrame({ mapQuery }) {
-  const [loaded, setLoaded] = useState(false);
-  return <div className="map-shell" data-reveal>{loaded ? <iframe title="Compustar location map" loading="lazy" referrerPolicy="no-referrer-when-downgrade" src={`https://www.google.com/maps?q=${mapQuery}&z=17&output=embed`}></iframe> : <button className="map-placeholder" onClick={() => setLoaded(true)}><MapPin /><strong>Game City Mall, Gaborone</strong><span>Tap to load the map pin</span></button>}</div>;
+  return <div className="map-shell" data-reveal><iframe title="Compustar location map" loading="lazy" referrerPolicy="no-referrer-when-downgrade" src={`https://www.google.com/maps?q=${mapQuery}&z=17&output=embed`}></iframe></div>;
 }
 
 function ContactPage() {

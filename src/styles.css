@@ -25,9 +25,9 @@ a { color: inherit; }
 }
 .brand { align-items: center; display: flex; text-decoration: none; }
 .brand img { height: 52px; object-fit: contain; width: 138px; }
-nav { align-items: center; display: flex; gap: .4rem; }
-nav a { border-radius: 999px; font-size: .96rem; font-weight: 900; padding: .66rem .9rem; text-decoration: none; transition: background-color .18s ease, color .18s ease; }
-nav a.active, nav a:hover { background: var(--ink); color: #fff; }
+.site-header nav { align-items: center; display: flex; gap: .4rem; }
+.site-header nav a { border-radius: 999px; font-size: .96rem; font-weight: 900; padding: .66rem .9rem; text-decoration: none; transition: background-color .18s ease, color .18s ease; }
+.site-header nav a.active, .site-header nav a:hover { background: var(--ink); color: #fff; }
 .menu-button { background: var(--ink); border: 0; border-radius: 999px; color: #fff; cursor: pointer; display: none; padding: .65rem; }
 
 .hero, .page-hero {
@@ -164,8 +164,8 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
 
 @media (max-width: 980px) {
   .menu-button { display: inline-flex; }
-  nav { background: #fff; border-top: 1px solid var(--line); display: none; flex-direction: column; left: 0; padding: 1rem; position: absolute; right: 0; top: 100%; }
-  nav.open { display: flex; }
+  .site-header nav { background: #fff; border-top: 1px solid var(--line); display: none; flex-direction: column; left: 0; padding: 1rem; position: absolute; right: 0; top: 100%; }
+  .site-header nav.open { display: flex; }
   .site-header { position: sticky; }
   .hero, .section-intro, .quick-paths, .product-grid, .service-page-grid, .repair-flow, .repair-story, .contact-page, .location-page, .site-footer { grid-template-columns: 1fr; }
   .hero-showcase div { grid-template-columns: 1fr; }
@@ -181,6 +181,7 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
   .repair-step div { min-height: 235px; }
   .map-shell, .map-shell iframe, .map-placeholder { min-height: 340px; }
   .site-footer { gap: 1.25rem; }
+  .site-footer nav { position: static; }
 }
 
 @media (max-width: 620px) {

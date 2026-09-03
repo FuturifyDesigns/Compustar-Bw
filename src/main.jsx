@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ArrowRight, Cable, Camera, CheckCircle2, Cpu, Mail, MapPin, Menu, Monitor, Network, PackageSearch, Phone, Printer, ShieldCheck, Sparkles, Store, Wrench, X } from 'lucide-react';
+import { ArrowRight, Camera, CheckCircle2, Cpu, Mail, MapPin, Menu, Monitor, Network, PackageSearch, Phone, Printer, ShieldCheck, Store, Wrench, X } from 'lucide-react';
 import products from './products.json';
 import './styles.css';
 
@@ -20,9 +20,14 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    const onHashChange = () => setPage(getInitialPage());
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
+    const redirectedPath = new URLSearchParams(window.location.search).get('path');
+    if (redirectedPath) {
+      window.history.replaceState({}, '', redirectedPath);
+      setPage(getInitialPage());
+    }
+    const onRouteChange = () => setPage(getInitialPage());
+    window.addEventListener('popstate', onRouteChange);
+    return () => window.removeEventListener('popstate', onRouteChange);
   }, []);
 
   useEffect(() => {
@@ -49,12 +54,18 @@ function App() {
 }
 
 function getInitialPage() {
-  const value = window.location.hash.replace('#/', '').replace('#', '');
+  const value = window.location.pathname.replace(/^\/+/, '').replace(/\/+$/, '');
   return pages.includes(value) ? value : 'Home';
 }
 
 function route(page) {
-  return page === 'Home' ? '#/' : `#/${page}`;
+  return page === 'Home' ? '/' : `/${page}`;
+}
+
+function goToPage(event, page) {
+  event.preventDefault();
+  window.history.pushState({}, '', route(page));
+  window.dispatchEvent(new PopStateEvent('popstate'));
 }
 
 function useRevealAnimations(page) {
@@ -73,9 +84,9 @@ function useRevealAnimations(page) {
 function Header({ menuOpen, page, setMenuOpen }) {
   return (
     <header className="site-header">
-      <a className="brand" href={route('Home')} aria-label="Compustar home"><img src="/logo.png" alt="Compustar logo" /></a>
+      <a className="brand" href={route('Home')} onClick={(event) => goToPage(event, 'Home')} aria-label="Compustar home"><img src="/logo.png" alt="Compustar logo" /></a>
       <button className="menu-button" onClick={() => setMenuOpen((open) => !open)} aria-label="Toggle menu">{menuOpen ? <X /> : <Menu />}</button>
-      <nav className={menuOpen ? 'open' : ''}>{pages.map((item) => <a className={page === item ? 'active' : ''} href={route(item)} key={item}>{item}</a>)}</nav>
+      <nav className={menuOpen ? 'open' : ''}>{pages.map((item) => <a className={page === item ? 'active' : ''} href={route(item)} onClick={(event) => goToPage(event, item)} key={item}>{item}</a>)}</nav>
     </header>
   );
 }
@@ -88,14 +99,14 @@ function HomePage() {
           <p className="kicker" data-hero>Compustar Botswana</p>
           <h1 data-hero>Technology products, repairs, and IT support.</h1>
           <p data-hero>Browse featured products, request availability, and get help with computers, printers, surveillance systems, networking, and repairs.</p>
-          <div className="hero-actions" data-hero><a className="button primary" href={route('Products')}>Browse Products <ArrowRight size={18} /></a><a className="button secondary" href={route('Location')}>Find the Store</a></div>
+          <div className="hero-actions" data-hero><a className="button primary" href={route('Products')} onClick={(event) => goToPage(event, 'Products')}>Browse Products <ArrowRight size={18} /></a><a className="button secondary" href={route('Location')} onClick={(event) => goToPage(event, 'Location')}>Find the Store</a></div>
         </div>
         <div className="hero-showcase" data-hero><video src="/hero-logo.mp4" poster="/logo.png" muted loop autoPlay playsInline aria-label="Compustar logo animation"></video><div><span><Camera /> Surveillance</span><span><Monitor /> Computers</span><span><Network /> Networking</span></div></div>
       </section>
       <section className="quick-paths">
         {[[PackageSearch, 'Product Enquiries', 'Browse standalone product photos and ask about current availability.'], [Wrench, 'Repairs & Upgrades', 'Support for slow computers, setup issues, upgrades, and diagnostics.'], [Network, 'Security & Networking', 'Camera systems, GPS trackers, network cables, and office connectivity.']].map(([Icon, title, text]) => <article key={title} data-reveal><Icon /><h3>{title}</h3><p>{text}</p></article>)}
       </section>
-      <section className="section product-showcase-section"><SectionIntro eyebrow="Product gallery" title="A quick look at what customers can ask about." text="A visual showcase of products available for enquiries at the store." /><ProductCarousel products={featuredProducts} /><div className="center-row" data-reveal><a className="button dark" href={route('Products')}>View full gallery <ArrowRight size={18} /></a></div></section>
+      <section className="section product-showcase-section"><SectionIntro eyebrow="Product gallery" title="A quick look at what customers can ask about." text="A visual showcase of products available for enquiries at the store." /><ProductCarousel products={featuredProducts} /><div className="center-row" data-reveal><a className="button dark" href={route('Products')} onClick={(event) => goToPage(event, 'Products')}>View full gallery <ArrowRight size={18} /></a></div></section>
     </>
   );
 }
@@ -112,7 +123,7 @@ function ServicesPage() {
 
 function RepairsPage() {
   const steps = [['01', 'Describe the problem', 'Send the device type, model, issue, and when it started.', '/context/repair-diagnose.png'], ['02', 'Get clear guidance', 'The team can advise whether it needs inspection, setup, or replacement parts.', '/context/repair-advise.png'], ['03', 'Visit the store', 'Bring the device or product details for final confirmation and support.', '/context/repair-visit.png']];
-  return <><PageHero eyebrow="Repairs" title="A simple repair path from enquiry to support." text="Customers can send the issue first, then visit the store with the right details instead of guessing what to bring." /><section className="section repair-story"><div className="repair-intro" data-reveal><Sparkles /><h2>Scroll through the repair flow.</h2><p>Each step is designed to make enquiries clearer for the customer and easier for the Compustar team to respond to.</p></div><div className="repair-steps">{steps.map(([step, title, text, image]) => <article className="repair-step" key={step} data-reveal><img src={image} alt="" loading="lazy" /><div><span>{step}</span><h3>{title}</h3><p>{text}</p></div></article>)}</div></section></>;
+  return <><PageHero eyebrow="Repairs" title="A simple repair path from enquiry to support." text="Customers can send the issue first, then visit the store with the right details instead of guessing what to bring." /><section className="section repair-story repair-story-full"><div className="repair-steps">{steps.map(([step, title, text, image]) => <article className="repair-step" key={step} data-reveal><img src={image} alt="" loading="lazy" /><div><span>{step}</span><h3>{title}</h3><p>{text}</p></div></article>)}</div></section></>;
 }
 
 function LocationPage() {
@@ -128,9 +139,9 @@ function PageHero({ eyebrow, title, text }) { return <section className="page-he
 function SectionIntro({ eyebrow, title, text }) { return <div className="section-intro" data-reveal><div><p className="kicker">{eyebrow}</p><h2>{title}</h2></div><p>{text}</p></div>; }
 function ProductGrid({ products: list }) { return <div className="product-grid gallery-grid">{list.map((product) => <ProductCard key={product.file} product={product} />)}</div>; }
 function ProductCarousel({ products: list }) { const slides = [...list, ...list]; return <div className="product-slider" data-reveal><div className="product-track">{slides.map((product, index) => <ProductCard key={`${product.file}-${index}`} product={product} />)}</div></div>; }
-function ProductCard({ product }) { return <article className="product-card gallery-card" data-reveal><div className="product-image"><img src={`/products/${product.file}`} alt="Compustar product" loading="lazy" /></div><div className="product-overlay"><a href={route('Contact')}>Enquire <ArrowRight size={16} /></a></div></article>; }
+function ProductCard({ product }) { return <article className="product-card gallery-card" data-reveal><div className="product-image"><img src={`/products/${product.file}`} alt="Compustar product" loading="lazy" /></div><div className="product-overlay"><a href={route('Contact')} onClick={(event) => goToPage(event, 'Contact')}>Enquire <ArrowRight size={16} /></a></div></article>; }
 function Footer() {
-  return <footer className="site-footer"><div className="footer-brand"><img src="/logo.png" alt="Compustar logo" /><p>Computer products, repairs, security, networking, and IT support from Game City Mall, Gaborone.</p></div><nav className="footer-links" aria-label="Footer navigation"><strong>Explore</strong>{pages.map((item) => <a href={route(item)} key={item}>{item}</a>)}</nav><section className="footer-contact"><strong>Contact</strong><a href={`mailto:${email}?subject=Compustar%20Website%20Enquiry`}><Mail /> {email}</a><a href={`tel:${phone}`}><Phone /> {displayPhone}</a><span><Store /> {location}</span></section><div className="footer-bottom"><span>@ Compustar {new Date().getFullYear()}. All rights reserved.</span><a href="https://futurifydesigns.com" target="_blank" rel="noreferrer">Built by Futurify Designs</a></div></footer>;
+  return <footer className="site-footer"><div className="footer-brand"><img src="/logo.png" alt="Compustar logo" /><p>Computer products, repairs, security, networking, and IT support from Game City Mall, Gaborone.</p></div><nav className="footer-links" aria-label="Footer navigation"><strong>Explore</strong>{pages.map((item) => <a href={route(item)} onClick={(event) => goToPage(event, item)} key={item}>{item}</a>)}</nav><section className="footer-contact"><strong>Contact</strong><a href={`mailto:${email}?subject=Compustar%20Website%20Enquiry`}><Mail /> {email}</a><a href={`tel:${phone}`}><Phone /> {displayPhone}</a><span><Store /> {location}</span></section><div className="footer-bottom"><span>@ Compustar {new Date().getFullYear()}. All rights reserved.</span><a href="https://futurifydesigns.com" target="_blank" rel="noreferrer">Built by Futurify Designs</a></div></footer>;
 }
 
 createRoot(document.getElementById('root')).render(<App />);

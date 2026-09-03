@@ -92,7 +92,7 @@ function HomePage() {
           <p data-hero>Browse featured products, request availability, and get help with computers, printers, surveillance systems, networking, and repairs.</p>
           <div className="hero-actions" data-hero><a className="button primary" href={route('Products')}>Browse Products <ArrowRight size={18} /></a><a className="button secondary" href={route('Location')}>Find the Store</a></div>
         </div>
-        <div className="hero-showcase" data-hero><img src="/logo.png" alt="Compustar logo" /><div><span><Camera /> Surveillance</span><span><Monitor /> Computers</span><span><Network /> Networking</span></div></div>
+        <div className="hero-showcase" data-hero><video src="/hero-logo.mp4" poster="/logo.png" muted loop autoPlay playsInline aria-label="Compustar logo animation"></video><div><span><Camera /> Surveillance</span><span><Monitor /> Computers</span><span><Network /> Networking</span></div></div>
       </section>
       <section className="quick-paths">
         {[[PackageSearch, 'Product Enquiries', 'Browse standalone product photos and ask about current availability.'], [Wrench, 'Repairs & Upgrades', 'Support for slow computers, setup issues, upgrades, and diagnostics.'], [Network, 'Security & Networking', 'Camera systems, GPS trackers, network cables, and office connectivity.']].map(([Icon, title, text]) => <article key={title} data-reveal><Icon /><h3>{title}</h3><p>{text}</p></article>)}

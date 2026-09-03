@@ -833,40 +833,57 @@ function ContactPage() {
   const methods = [
     [EnvelopeSimple, 'Email', email, `mailto:${email}?subject=Compustar%20Website%20Enquiry`],
     [Phone, 'Telephone', displayTelPhone, `tel:${telPhone}`],
-    [Phone, 'Game City Mobile', displayPhone, `tel:${phone}`],
-    [Phone, 'G-West Mobile', displayMobilePhone, `tel:${mobilePhone}`]
+    [Phone, 'Game City mobile', displayPhone, `tel:${phone}`],
+    [Phone, 'G-West mobile', displayMobilePhone, `tel:${mobilePhone}`]
+  ];
+  const tips = [
+    'Product name, category or quantity',
+    'Device model if it is a repair',
+    'Budget or intended use, if known',
+    'Your phone number or preferred contact method'
   ];
 
   return (
     <>
-      <PageHero eyebrow="Contact" title="We are ready to assist." text="Ask about product availability, quotations, repairs, bulk supply, or general store enquiries." />
-      <section className="section contact-methods">
-        <div className="contact-method-grid" data-stagger>
-          {methods.map(([Icon, label, value, href]) => (
-            <a className="contact-method" data-stagger-item href={href} key={label}>
-              <Icon {...iconProps} size={24} />
-              <em>{label}</em>
-              <strong>{value}</strong>
+      <PageHero eyebrow="Contact" title="Let’s find the right technology for you." text="Reach Compustar for availability, quotations, repairs, and bulk supply. A clear enquiry helps the team respond quickly." />
+      <section className="contact-wrap">
+        <div className="contact-layout">
+          <article className="contact-intro" data-reveal>
+            <p className="kicker">How to enquire</p>
+            <h2>Send details we can act on.</h2>
+            <p>Tell us what you need and how to reach you. We will come back with availability, a quotation, or repair guidance.</p>
+            <ol className="contact-tips">
+              {tips.map((tip, index) => (
+                <li key={tip}><span>{String(index + 1).padStart(2, '0')}</span>{tip}</li>
+              ))}
+            </ol>
+            <div className="contact-socials">
+              <a href={instagramUrl} target="_blank" rel="noreferrer" aria-label="Instagram"><InstagramIcon size={18} /></a>
+              <a href={facebookUrl} target="_blank" rel="noreferrer" aria-label="Facebook"><FacebookIcon size={18} /></a>
+            </div>
+          </article>
+          <article className="contact-sheet" data-reveal>
+            <p className="kicker">Direct lines</p>
+            <h2>Get in touch.</h2>
+            <div className="contact-rows">
+              {methods.map(([Icon, label, value, href]) => (
+                <a className="contact-row" href={href} key={label}>
+                  <span className="contact-row-icon"><Icon size={20} weight="fill" /></span>
+                  <span>
+                    <em>{label}</em>
+                    <strong>{value}</strong>
+                  </span>
+                  <ArrowRight size={16} weight="bold" />
+                </a>
+              ))}
+            </div>
+            <a className="button whatsapp contact-whatsapp" href={whatsappUrl} target="_blank" rel="noreferrer">
+              <WhatsAppIcon size={18} /> Chat on WhatsApp
             </a>
-          ))}
-        </div>
-      </section>
-      <section className="section contact-page">
-        <div className="contact-panel" data-reveal>
-          <p className="kicker">How to enquire</p>
-          <h2>Send a clear enquiry.</h2>
-          <p>Include enough detail for the team to respond quickly with availability, a quotation, or repair guidance.</p>
-          <ul>
-            <li><CheckCircle {...iconProps} /> Product name, category or quantity</li>
-            <li><CheckCircle {...iconProps} /> Device model if it is a repair</li>
-            <li><CheckCircle {...iconProps} /> Budget or intended use, if known</li>
-            <li><CheckCircle {...iconProps} /> Phone number or preferred contact method</li>
-          </ul>
-          <div className="contact-panel-actions">
-            <a className="button primary" href={`mailto:${email}?subject=Compustar%20Website%20Enquiry`}>Email Compustar</a>
-            <a className="button secondary" href={instagramUrl} target="_blank" rel="noreferrer"><InstagramIcon size={18} /> Instagram</a>
-            <a className="button secondary" href={facebookUrl} target="_blank" rel="noreferrer"><FacebookIcon size={18} /> Facebook</a>
-          </div>
+            <a className="contact-store-link" href={route('Location')} onClick={(event) => goToPage(event, 'Location')}>
+              Store addresses and map <ArrowRight size={15} weight="bold" />
+            </a>
+          </article>
         </div>
       </section>
     </>

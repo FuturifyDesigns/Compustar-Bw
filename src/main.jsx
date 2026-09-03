@@ -60,13 +60,11 @@ function route(page) {
 function useRevealAnimations(page) {
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.from('[data-hero]', { autoAlpha: 0, y: 34, duration: 0.85, stagger: 0.08, ease: 'power3.out' });
+      gsap.fromTo('[data-hero]', { autoAlpha: 0, y: 26 }, { autoAlpha: 1, y: 0, duration: 0.72, stagger: 0.06, ease: 'power3.out', clearProps: 'visibility,opacity,transform' });
       gsap.utils.toArray('[data-reveal]').forEach((element) => {
-        gsap.from(element, { autoAlpha: 0, y: 26, duration: 0.65, ease: 'power2.out', scrollTrigger: { trigger: element, start: 'top 86%' } });
+        gsap.fromTo(element, { autoAlpha: 0, y: 30, scale: 0.985 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.68, ease: 'power3.out', clearProps: 'visibility,opacity,transform', scrollTrigger: { trigger: element, start: 'top 88%', once: true } });
       });
-      gsap.utils.toArray('.service-card, .repair-step').forEach((element) => {
-        gsap.from(element, { autoAlpha: 0, y: 44, scale: 0.98, duration: 0.72, ease: 'power3.out', scrollTrigger: { trigger: element, start: 'top 82%' } });
-      });
+      requestAnimationFrame(() => ScrollTrigger.refresh());
     });
     return () => ctx.revert();
   }, [page]);
@@ -88,7 +86,7 @@ function HomePage() {
       <section className="hero">
         <div className="hero-copy">
           <p className="kicker" data-hero>Compustar Botswana</p>
-          <h1 data-hero>Technology products and support customers can actually ask about.</h1>
+          <h1 data-hero>Technology products, repairs, and IT support.</h1>
           <p data-hero>Browse featured products, request availability, and get help with computers, printers, surveillance systems, networking, and repairs.</p>
           <div className="hero-actions" data-hero><a className="button primary" href={route('Products')}>Browse Products <ArrowRight size={18} /></a><a className="button secondary" href={route('Location')}>Find the Store</a></div>
         </div>

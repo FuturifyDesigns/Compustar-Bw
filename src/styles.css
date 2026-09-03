@@ -12,11 +12,12 @@
   --shadow: 0 30px 90px rgba(12, 13, 16, 0.16);
 }
 
-* { box-sizing: border-box; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html { scroll-behavior: smooth; }
 body { background: var(--soft); color: var(--ink); font-family: "Trebuchet MS", "Segoe UI", sans-serif; margin: 0; overflow-x: hidden; }
 img { max-width: 100%; }
 a { color: inherit; }
+button, a { touch-action: manipulation; }
 
 .site-header {
   align-items: center; background: rgba(255,255,255,.9); border-bottom: 1px solid rgba(12,13,16,.08);

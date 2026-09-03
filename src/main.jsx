@@ -31,15 +31,18 @@ function App() {
     const redirectedPath = new URLSearchParams(window.location.search).get('path');
     if (redirectedPath) {
       window.history.replaceState({}, '', redirectedPath);
+      resetPageScroll('auto');
       setPage(getInitialPage());
     }
-    const onRouteChange = () => setPage(getInitialPage());
+    const onRouteChange = () => {
+      resetPageScroll('auto');
+      setPage(getInitialPage());
+    };
     window.addEventListener('popstate', onRouteChange);
     return () => window.removeEventListener('popstate', onRouteChange);
   }, []);
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
     setMenuOpen(false);
   }, [page]);
 
@@ -86,8 +89,15 @@ function route(page) {
   return page === 'Home' ? '/' : `/${page}`;
 }
 
+function resetPageScroll(behavior = 'smooth') {
+  window.scrollTo({ top: 0, left: 0, behavior });
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+}
+
 function goToPage(event, page) {
   event.preventDefault();
+  resetPageScroll('auto');
   window.history.pushState({}, '', route(page));
   window.dispatchEvent(new PopStateEvent('popstate'));
 }

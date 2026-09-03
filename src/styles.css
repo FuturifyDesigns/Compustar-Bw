@@ -95,6 +95,10 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
 @keyframes gallery-slide { from { transform: translateX(0); } to { transform: translateX(calc(-50% - .5rem)); } }
 
 .service-page-grid, .repair-flow, .contact-page { display: grid; gap: 1rem; grid-template-columns: repeat(4,minmax(0,1fr)); margin: 0 auto; max-width: 1240px; }
+.horizontal-showcase { display: flex; gap: 1rem; margin: 0 auto; max-width: 1240px; overflow-x: auto; padding: .35rem .2rem 1.2rem; scroll-padding: 1rem; scroll-snap-type: x mandatory; }
+.horizontal-showcase::-webkit-scrollbar { height: 10px; }
+.horizontal-showcase::-webkit-scrollbar-thumb { background: rgba(12,13,16,.22); border-radius: 999px; }
+.horizontal-showcase > * { flex: 0 0 min(360px, 82vw); scroll-snap-align: start; }
 .service-card { min-height: 260px; transition: background-color .18s ease, color .18s ease, transform .18s ease; }
 .visual-card { overflow: hidden; padding: 0; }
 .visual-card > img { aspect-ratio: 16 / 10; display: block; object-fit: cover; width: 100%; }
@@ -105,16 +109,18 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
 .repair-flow span { display: block; font-family: Georgia, serif; font-size: 3rem; font-weight: 900; margin-bottom: 1rem; }
 .repair-story { align-items: start; display: grid; gap: 1.2rem; grid-template-columns: 320px 1fr; margin: 0 auto; max-width: 1240px; }
 .repair-story-full { display: block; }
-.repair-story-full .repair-steps { max-width: 1040px; margin: 0 auto; }
+.repair-story-full .repair-steps { max-width: 1240px; margin: 0 auto; }
 .repair-intro { background: var(--ink); border-radius: var(--radius); box-shadow: var(--shadow); color: #fff; padding: 1.4rem; position: sticky; top: 110px; }
 .repair-intro svg { color: var(--gold); }
 .repair-intro p { color: rgba(255,255,255,.72); line-height: 1.55; }
 .repair-steps { display: grid; gap: 1rem; }
-.repair-step { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 18px 54px rgba(12,13,16,.07); display: grid; gap: 0; grid-template-columns: .95fr 1fr; overflow: hidden; transition: transform .18s ease, box-shadow .18s ease; }
+.repair-steps.horizontal-showcase { display: flex; }
+.repair-step { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 18px 54px rgba(12,13,16,.07); display: grid; gap: 0; grid-template-rows: auto 1fr; overflow: hidden; transition: transform .18s ease, box-shadow .18s ease; }
 .repair-step:hover { box-shadow: var(--shadow); transform: translateY(-5px); }
-.repair-step img { height: 100%; min-height: 280px; object-fit: cover; width: 100%; }
-.repair-step div { align-content: center; display: grid; padding: clamp(1.2rem,3vw,2rem); }
-.repair-step span { color: var(--red); display: block; font-family: Georgia, serif; font-size: clamp(2.4rem,5vw,4rem); font-weight: 900; line-height: 1; margin-bottom: .8rem; }
+.repair-step img { aspect-ratio: 16 / 9; display: block; min-height: 0; object-fit: cover; width: 100%; }
+.repair-step div { align-content: start; display: grid; min-height: 260px; padding: clamp(1.2rem,3vw,1.8rem); }
+.repair-step .button { align-self: end; margin-top: 1.2rem; width: fit-content; }
+.repair-step span { color: var(--red); display: block; font-family: Georgia, serif; font-size: clamp(2.4rem,5vw,3.6rem); font-weight: 900; line-height: 1; margin-bottom: .8rem; }
 .repair-step p { color: var(--muted); line-height: 1.55; }
 .contact-page { align-items: stretch; grid-template-columns: 1fr 420px; }
 .location-page { align-items: stretch; display: grid; gap: 1rem; grid-template-columns: 430px 1fr; margin: 0 auto; max-width: 1240px; }
@@ -123,6 +129,9 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
 .location-card .kicker { color: var(--red); }
 .map-shell { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); min-height: 460px; overflow: hidden; }
 .map-shell iframe { border: 0; height: 100%; min-height: 460px; width: 100%; }
+.map-placeholder { align-items: center; background: radial-gradient(circle at 28% 20%, rgba(239,23,23,.18), transparent 17rem), #0c0d10; border: 0; color: #fff; cursor: pointer; display: grid; font: inherit; gap: .5rem; height: 100%; justify-items: center; min-height: 460px; padding: 2rem; text-align: center; width: 100%; }
+.map-placeholder svg { color: var(--gold); height: 38px; width: 38px; }
+.map-placeholder span { color: rgba(255,255,255,.72); }
 .contact-panel { background: var(--ink); color: #fff; }
 .contact-panel p { color: rgba(255,255,255,.78); }
 .contact-panel ul { display: grid; gap: .8rem; margin: 1.4rem 0 0; padding: 0; }
@@ -148,7 +157,7 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
   nav { background: #fff; border-top: 1px solid var(--line); display: none; flex-direction: column; left: 0; padding: 1rem; position: absolute; right: 0; top: 100%; }
   nav.open { display: flex; }
   .site-header { position: sticky; }
-  .hero, .section-intro, .quick-paths, .product-grid, .service-page-grid, .repair-flow, .repair-story, .repair-step, .contact-page, .location-page, .site-footer { grid-template-columns: 1fr; }
+  .hero, .section-intro, .quick-paths, .product-grid, .service-page-grid, .repair-flow, .repair-story, .contact-page, .location-page, .site-footer { grid-template-columns: 1fr; }
   .hero-showcase div { grid-template-columns: 1fr; }
   h1 { font-size: clamp(2.35rem,11vw,3.6rem); }
   h2 { font-size: clamp(2rem,9vw,3.1rem); }
@@ -159,8 +168,8 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
   .product-image { min-height: 210px; }
   .product-overlay { opacity: 1; transform: none; }
   .repair-intro { position: static; }
-  .repair-step img { min-height: 220px; }
-  .map-shell, .map-shell iframe { min-height: 360px; }
+  .repair-step div { min-height: 235px; }
+  .map-shell, .map-shell iframe, .map-placeholder { min-height: 340px; }
   .site-footer { gap: 1.25rem; }
 }
 
@@ -181,8 +190,11 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
   .product-track { animation-duration: 26s; }
   .product-slider .product-card { flex-basis: 72vw; }
   .service-page-grid { gap: .85rem; }
+  .horizontal-showcase { margin-left: -1rem; margin-right: -1rem; padding-left: 1rem; padding-right: 1rem; }
+  .horizontal-showcase > * { flex-basis: 84vw; }
   .visual-card > div { padding: 1rem; }
   .repair-story { gap: .85rem; }
-  .repair-intro h2 { font-size: 2.2rem; }
+  .repair-step div { min-height: 210px; padding: 1rem; }
+  .repair-step .button { width: 100%; }
   .site-footer img { height: 68px; width: 160px; }
 }

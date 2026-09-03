@@ -1,20 +1,58 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ArrowRight, Building2, Camera, CheckCircle2, Cpu, GraduationCap, Handshake, HeartHandshake, Instagram, Lightbulb, Mail, MapPin, Menu, MessageCircle, Monitor, Network, PackageSearch, Phone, Printer, ShieldCheck, ShoppingCart, Sparkles, Store, Target, Users, Wrench, X } from 'lucide-react';
+import L from 'leaflet';
+import {
+  ArrowRight,
+  Buildings,
+  Camera,
+  CheckCircle,
+  Cpu,
+  EnvelopeSimple,
+  GraduationCap,
+  Handshake,
+  Lightbulb,
+  List,
+  MagnifyingGlass,
+  MapPin,
+  Monitor,
+  Phone,
+  Printer,
+  SealCheck,
+  ShoppingCart,
+  Sparkle,
+  Storefront,
+  Target,
+  Users,
+  WifiHigh,
+  Wrench,
+  X
+} from '@phosphor-icons/react';
+import 'leaflet/dist/leaflet.css';
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import products from './products.json';
 import './styles.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow
+});
+
+const iconProps = { size: 22, weight: 'fill' };
 const email = 'compustarbw@gmail.com';
 const phone = '76004665';
-const displayPhone = '+267 76004665';
+const displayPhone = '+267 760 04665';
 const telPhone = '3111542';
-const displayTelPhone = '+267 3111542';
+const displayTelPhone = '+267 311 1542';
 const mobilePhone = '75294155';
-const displayMobilePhone = '+267 75294155';
+const displayMobilePhone = '+267 752 94155';
 const whatsappPhone = '26776004665';
 const whatsappUrl = `https://wa.me/${whatsappPhone}`;
 const instagramUrl = 'https://www.instagram.com/compustarbw';
@@ -22,14 +60,20 @@ const locations = [
   {
     title: 'Game City Mall',
     address: 'Shop No. 6U, Upstairs, Game City Mall, Gaborone, Botswana',
-    phones: `Tel: ${displayTelPhone} | Mobile: ${displayPhone}`,
-    mapQuery: 'Compustar Shop 6U Game City Mall Gaborone Botswana'
+    tel: displayTelPhone,
+    mobile: displayPhone,
+    mobileTel: phone,
+    mapQuery: 'Compustar Shop 6U Game City Mall Gaborone Botswana',
+    coords: [-24.6864, 25.8772]
   },
   {
     title: 'G-West Industrial',
     address: 'Plot 27576/4, Aga House, G-West Industrial, Gaborone, Botswana',
-    phones: `Tel: ${displayTelPhone} | Mobile: ${displayMobilePhone}`,
-    mapQuery: 'G-West Industrial Plot 27576/4 Aga House Gaborone Botswana'
+    tel: displayTelPhone,
+    mobile: displayMobilePhone,
+    mobileTel: mobilePhone,
+    mapQuery: 'G-West Industrial Plot 27576/4 Aga House Gaborone Botswana',
+    coords: [-24.6747, 25.8964]
   }
 ];
 const pages = ['Home', 'About', 'Products', 'Services', 'Repairs', 'Location', 'Contact'];
@@ -43,6 +87,22 @@ const seo = {
   Location: ['Compustar Location | Game City Mall, Gaborone', 'Visit Compustar at Shop 6U upstairs in Game City Mall, Gaborone, Botswana.'],
   Contact: ['Contact Compustar Botswana', 'Contact Compustar Botswana about product availability, prices, repairs, quotes, and technology support.']
 };
+
+function WhatsAppIcon({ size = 26 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+    </svg>
+  );
+}
+
+function InstagramIcon({ size = 22 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+    </svg>
+  );
+}
 
 function App() {
   const [page, setPage] = useState(getInitialPage);
@@ -84,7 +144,7 @@ function App() {
       </main>
       <Footer />
       <a className="whatsapp-fab" href={whatsappUrl} target="_blank" rel="noreferrer" aria-label="Chat on WhatsApp">
-        <MessageCircle size={26} />
+        <WhatsAppIcon size={28} />
       </a>
     </>
   );
@@ -166,7 +226,7 @@ function Header({ menuOpen, page, setMenuOpen }) {
   return (
     <header className="site-header">
       <a className="brand" href={route('Home')} onClick={(event) => goToPage(event, 'Home')} aria-label="Compustar home"><img src="/logo.png" alt="Compustar logo" /></a>
-      <button className="menu-button" onClick={() => setMenuOpen((open) => !open)} aria-label="Toggle menu">{menuOpen ? <X /> : <Menu />}</button>
+      <button className="menu-button" onClick={() => setMenuOpen((open) => !open)} aria-label="Toggle menu">{menuOpen ? <X {...iconProps} /> : <List {...iconProps} />}</button>
       <nav className={menuOpen ? 'open' : ''}>{pages.map((item) => <a className={page === item ? 'active' : ''} href={route(item)} onClick={(event) => goToPage(event, item)} key={item}>{item}</a>)}</nav>
     </header>
   );
@@ -180,14 +240,40 @@ function HomePage() {
           <p className="kicker" data-hero>Compustar Botswana</p>
           <h1 data-hero>Technology products, repairs, and IT support.</h1>
           <p data-hero>Browse featured products, request availability, and get help with computers, printers, surveillance systems, networking, and repairs.</p>
-          <div className="hero-actions" data-hero><a className="button primary" href={route('Products')} onClick={(event) => goToPage(event, 'Products')}>Browse Products <ArrowRight size={18} /></a><a className="button secondary" href={route('Location')} onClick={(event) => goToPage(event, 'Location')}>Find the Store</a></div>
+          <div className="hero-actions" data-hero>
+            <a className="button primary" href={route('Products')} onClick={(event) => goToPage(event, 'Products')}>Browse Products <ArrowRight size={18} weight="bold" /></a>
+            <a className="button secondary" href={route('Location')} onClick={(event) => goToPage(event, 'Location')}>Find the Store</a>
+          </div>
         </div>
-        <div className="hero-showcase" data-hero><video src="/hero-logo.mp4" poster="/logo.png" muted loop autoPlay playsInline aria-label="Compustar logo animation"></video><div><span><Camera /> Surveillance</span><span><Monitor /> Computers</span><span><Network /> Networking</span></div></div>
+        <div className="hero-showcase" data-hero>
+          <video src="/hero-logo.mp4" poster="/logo.png" muted loop autoPlay playsInline aria-label="Compustar logo animation"></video>
+          <div>
+            <span><Camera {...iconProps} /> Surveillance</span>
+            <span><Monitor {...iconProps} /> Computers</span>
+            <span><WifiHigh {...iconProps} /> Networking</span>
+          </div>
+        </div>
       </section>
       <section className="quick-paths">
-        {[[PackageSearch, 'Product Enquiries', 'Browse standalone product photos and ask about current availability.'], [Wrench, 'Repairs & Upgrades', 'Support for slow computers, setup issues, upgrades, and diagnostics.'], [Network, 'Security & Networking', 'Camera systems, GPS trackers, network cables, and office connectivity.']].map(([Icon, title, text]) => <article key={title} data-reveal><Icon /><h3>{title}</h3><p>{text}</p></article>)}
+        {[
+          [MagnifyingGlass, 'Product Enquiries', 'Browse standalone product photos and ask about current availability.'],
+          [Wrench, 'Repairs & Upgrades', 'Support for slow computers, setup issues, upgrades, and diagnostics.'],
+          [WifiHigh, 'Security & Networking', 'Camera systems, GPS trackers, network cables, and office connectivity.']
+        ].map(([Icon, title, text]) => (
+          <article key={title} data-reveal>
+            <Icon {...iconProps} size={26} />
+            <h3>{title}</h3>
+            <p>{text}</p>
+          </article>
+        ))}
       </section>
-      <section className="section product-showcase-section"><SectionIntro eyebrow="Product gallery" title="A quick look at what customers can ask about." text="A visual showcase of products available for enquiries at the store." /><ProductCarousel products={featuredProducts} /><div className="center-row" data-reveal><a className="button dark" href={route('Products')} onClick={(event) => goToPage(event, 'Products')}>View full gallery <ArrowRight size={18} /></a></div></section>
+      <section className="section product-showcase-section">
+        <SectionIntro eyebrow="Product gallery" title="A quick look at what customers can ask about." text="A visual showcase of products available for enquiries at the store." />
+        <ProductCarousel products={featuredProducts} />
+        <div className="center-row" data-reveal>
+          <a className="button dark" href={route('Products')} onClick={(event) => goToPage(event, 'Products')}>View full gallery <ArrowRight size={18} weight="bold" /></a>
+        </div>
+      </section>
     </>
   );
 }
@@ -225,22 +311,22 @@ function AboutPage() {
   ];
   const businessJourney = ['Starting a business', 'Expanding an office', 'Replacing equipment', 'Upgrading infrastructure', 'Equipping a new site'];
   const commitments = [
-    [ShieldCheck, 'Professional Service', 'We treat every customer and organisation with professionalism and respect.'],
+    [SealCheck, 'Professional Service', 'We treat every customer and organisation with professionalism and respect.'],
     [Target, 'Practical Solutions', 'We focus on understanding the requirement and identifying technology that fits the intended use.'],
-    [Sparkles, 'Competitive Value', 'We strive to provide competitive quotations based on requirements and current market conditions.'],
-    [HeartHandshake, 'Responsiveness', 'We understand that customers often need quick answers and aim to respond promptly.'],
+    [Sparkle, 'Competitive Value', 'We strive to provide competitive quotations based on requirements and current market conditions.'],
+    [Phone, 'Responsiveness', 'We understand that customers often need quick answers and aim to respond promptly.'],
     [Handshake, 'Long-Term Relationships', 'We want customers to return to Compustar whenever they have another technology requirement.']
   ];
   const values = [
-    [ShieldCheck, 'Integrity', 'We conduct our business honestly and professionally.'],
+    [SealCheck, 'Integrity', 'We conduct our business honestly and professionally.'],
     [Users, 'Customer Focus', 'Our customers are at the centre of what we do.'],
-    [CheckCircle2, 'Reliability', 'We strive to deliver dependable products and service.'],
-    [Building2, 'Professionalism', 'We maintain high standards in how we communicate and conduct business.'],
+    [CheckCircle, 'Reliability', 'We strive to deliver dependable products and service.'],
+    [Buildings, 'Professionalism', 'We maintain high standards in how we communicate and conduct business.'],
     [Lightbulb, 'Innovation', 'We embrace technology and continuously look for better ways to serve our customers.'],
     [Handshake, 'Partnership', 'We seek to build long-term relationships rather than one-time transactions.']
   ];
   const focusAreas = [
-    [Building2, 'Technology for Business', 'Businesses depend on technology every day. Compustar helps businesses access technology products required for daily operations — making procurement simpler, more convenient and more responsive.'],
+    [Buildings, 'Technology for Business', 'Businesses depend on technology every day. Compustar helps businesses access technology products required for daily operations — making procurement simpler, more convenient and more responsive.'],
     [GraduationCap, 'Education & Student Technology', 'Compustar supports students, educators and educational institutions with products ranging from personal laptops and accessories to computers, printers, networking equipment and other ICT requirements.'],
     [Camera, 'CCTV & Security Solutions', 'From smaller installations to larger multi-camera requirements, our team can assist customers in identifying suitable surveillance equipment and solutions for their premises.'],
     [ShoppingCart, 'POS & Business Technology', 'Compustar supplies POS equipment and related accessories for retailers and businesses handling daily transactions — whether establishing a new business, opening a branch or upgrading equipment.']
@@ -262,13 +348,13 @@ function AboutPage() {
           <aside className="about-highlight" data-reveal>
             <p className="kicker">Who we serve</p>
             <ul>
-              <li><CheckCircle2 /> Individuals & households</li>
-              <li><CheckCircle2 /> Businesses & SMEs</li>
-              <li><CheckCircle2 /> Schools & institutions</li>
-              <li><CheckCircle2 /> Hospitals & NGOs</li>
-              <li><CheckCircle2 /> Corporate & bulk buyers</li>
+              <li><CheckCircle {...iconProps} /> Individuals & households</li>
+              <li><CheckCircle {...iconProps} /> Businesses & SMEs</li>
+              <li><CheckCircle {...iconProps} /> Schools & institutions</li>
+              <li><CheckCircle {...iconProps} /> Hospitals & NGOs</li>
+              <li><CheckCircle {...iconProps} /> Corporate & bulk buyers</li>
             </ul>
-            <a className="button primary" href={route('Contact')} onClick={(event) => goToPage(event, 'Contact')}>Talk to Compustar <ArrowRight size={16} /></a>
+            <a className="button primary" href={route('Contact')} onClick={(event) => goToPage(event, 'Contact')}>Talk to Compustar <ArrowRight size={16} weight="bold" /></a>
           </aside>
         </div>
       </section>
@@ -280,7 +366,7 @@ function AboutPage() {
             <article className="approach-step" data-approach-step key={step}>
               <span>{String(index + 1).padStart(2, '0')}</span>
               <h3>{step}</h3>
-              {index < approach.length - 1 && <ArrowRight className="approach-arrow" size={18} />}
+              {index < approach.length - 1 && <ArrowRight className="approach-arrow" size={18} weight="bold" />}
             </article>
           ))}
         </div>
@@ -292,7 +378,7 @@ function AboutPage() {
         <div className="about-product-grid" data-stagger>
           {productsList.map((item) => (
             <article className="about-product-item" data-stagger-item key={item}>
-              <PackageSearch size={18} />
+              <MagnifyingGlass size={18} weight="fill" />
               <span>{item}</span>
             </article>
           ))}
@@ -311,7 +397,7 @@ function AboutPage() {
           <div className="institution-list" data-stagger>
             <p className="kicker">Designed to support</p>
             {institutions.map((item) => (
-              <article data-stagger-item key={item}><Building2 size={16} /><span>{item}</span></article>
+              <article data-stagger-item key={item}><Buildings size={16} weight="fill" /><span>{item}</span></article>
             ))}
           </div>
         </div>
@@ -322,7 +408,7 @@ function AboutPage() {
         <div className="about-focus-grid" data-stagger>
           {focusAreas.map(([Icon, title, text]) => (
             <article className="about-focus-card" data-stagger-item key={title}>
-              <Icon />
+              <Icon {...iconProps} size={28} />
               <h3>{title}</h3>
               <p>{text}</p>
             </article>
@@ -339,7 +425,7 @@ function AboutPage() {
         <SectionIntro eyebrow="Our Commitment" title="Provide the right technology. Deliver professional service. Build lasting relationships." text="We aim to achieve this through clear standards that guide every enquiry and every project." />
         <div className="commitment-grid" data-stagger>
           {commitments.map(([Icon, title, text]) => (
-            <article data-stagger-item key={title}><Icon /><h3>{title}</h3><p>{text}</p></article>
+            <article data-stagger-item key={title}><Icon {...iconProps} size={26} /><h3>{title}</h3><p>{text}</p></article>
           ))}
         </div>
       </section>
@@ -347,13 +433,13 @@ function AboutPage() {
       <section className="section about-mission">
         <div className="mission-grid" data-stagger>
           <article className="mission-card vision" data-stagger-item>
-            <Target />
+            <Target {...iconProps} size={28} />
             <p className="kicker">Our Vision</p>
             <h3>Trusted technology partner for Botswana.</h3>
             <p>To become one of Botswana's trusted technology and electronics partners, recognised for reliable products, professional service, responsive customer support and practical technology solutions.</p>
           </article>
           <article className="mission-card mission" data-stagger-item>
-            <Sparkles />
+            <Sparkle {...iconProps} size={28} />
             <p className="kicker">Our Mission</p>
             <h3>Make technology accessible and practical.</h3>
             <p>To make technology accessible, reliable and practical by providing quality products, responsive service and technology solutions that help individuals, businesses and institutions achieve their objectives.</p>
@@ -365,7 +451,7 @@ function AboutPage() {
         <SectionIntro eyebrow="Our Values" title="How we work with every customer." text="These principles shape the way Compustar communicates, supplies and supports." />
         <div className="values-grid" data-stagger>
           {values.map(([Icon, title, text]) => (
-            <article data-stagger-item key={title}><Icon /><h3>{title}</h3><p>{text}</p></article>
+            <article data-stagger-item key={title}><Icon {...iconProps} size={26} /><h3>{title}</h3><p>{text}</p></article>
           ))}
         </div>
       </section>
@@ -378,7 +464,7 @@ function AboutPage() {
           <p>Whether you need one laptop, accessories for your business, a complete office setup, CCTV equipment, POS solutions, networking equipment or technology products in bulk, Compustar is ready to assist.</p>
           <p className="why-tagline">From individual customers to large organisations, we are ready to be your Digital Partner.</p>
           <div className="hero-actions">
-            <a className="button primary" href={route('Contact')} onClick={(event) => goToPage(event, 'Contact')}>Get in touch <ArrowRight size={16} /></a>
+            <a className="button primary" href={route('Contact')} onClick={(event) => goToPage(event, 'Contact')}>Get in touch <ArrowRight size={16} weight="bold" /></a>
             <a className="button secondary" href={route('Products')} onClick={(event) => goToPage(event, 'Products')}>Browse products</a>
           </div>
         </div>
@@ -389,11 +475,12 @@ function AboutPage() {
         <div className="about-location-grid" data-stagger>
           {locations.map((item) => (
             <article data-stagger-item key={item.title}>
-              <Store />
+              <Storefront {...iconProps} size={26} />
               <h3>{item.title}</h3>
-              <p><MapPin size={16} /> {item.address}</p>
-              <p><Phone size={16} /> {item.phones}</p>
-              <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.mapQuery)}`} target="_blank" rel="noreferrer">Open map <ArrowRight size={15} /></a>
+              <p><MapPin size={16} weight="fill" /> {item.address}</p>
+              <p><Phone size={16} weight="fill" /> Tel: {item.tel}</p>
+              <p><Phone size={16} weight="fill" /> Mobile: {item.mobile}</p>
+              <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.mapQuery)}`} target="_blank" rel="noreferrer">Open map <ArrowRight size={15} weight="bold" /></a>
             </article>
           ))}
         </div>
@@ -404,39 +491,240 @@ function AboutPage() {
 
 function ProductsPage() {
   const [visible, setVisible] = useState(24);
-  return <><PageHero eyebrow="Products" title="A clean product gallery for quick enquiries." text="Browse the product photos and contact Compustar to confirm availability, pricing, or suitable alternatives." /><section className="section catalogue-section"><ProductGrid products={products.slice(0, visible)} />{visible < products.length && <div className="center-row"><button className="button dark" onClick={() => setVisible((count) => count + 24)}>Show more products</button></div>}</section></>;
+  return (
+    <>
+      <PageHero eyebrow="Products" title="A clean product gallery for quick enquiries." text="Browse the product photos and contact Compustar to confirm availability, pricing, or suitable alternatives." />
+      <section className="section catalogue-section">
+        <ProductGrid products={products.slice(0, visible)} />
+        {visible < products.length && (
+          <div className="center-row">
+            <button className="button dark" onClick={() => setVisible((count) => count + 24)}>Show more products</button>
+          </div>
+        )}
+      </section>
+    </>
+  );
 }
 
 function ServicesPage() {
-  const services = [[Cpu, 'Computer Sales', 'Laptops, desktops, monitors, accessories, and straightforward buying guidance.', '/context/service-computers.png'], [Printer, 'Printer Support', 'Printers, consumables, setup cables, and everyday office printing support.', '/context/service-printers.png'], [Network, 'Networking', 'Routers, CAT cables, Wi-Fi, printer sharing, and tidy connectivity planning.', '/context/service-networking.png'], [Camera, 'Surveillance Systems', 'Camera kits, recorders, GPS trackers, and security product enquiries.', '/context/service-security.png']];
+  const services = [
+    [Cpu, 'Computer Sales', 'Laptops, desktops, monitors, accessories, and straightforward buying guidance.', '/context/service-computers.png'],
+    [Printer, 'Printer Support', 'Printers, consumables, setup cables, and everyday office printing support.', '/context/service-printers.png'],
+    [WifiHigh, 'Networking', 'Routers, CAT cables, Wi-Fi, printer sharing, and tidy connectivity planning.', '/context/service-networking.png'],
+    [Camera, 'Surveillance Systems', 'Camera kits, recorders, GPS trackers, and security product enquiries.', '/context/service-security.png']
+  ];
   const slides = [...services, ...services];
-  return <><PageHero eyebrow="Services" title="Practical technology support for homes and businesses." text="Compustar helps customers choose equipment, set it up correctly, and keep everyday systems working." /><section className="section"><div className="horizontal-showcase auto-showcase service-slider">{slides.map(([Icon, title, text, image], index) => <article className="service-card visual-card" key={`${title}-${index}`} data-reveal><img src={image} alt="" loading="lazy" /><div><Icon /><h3>{title}</h3><p>{text}</p></div></article>)}</div></section></>;
+  return (
+    <>
+      <PageHero eyebrow="Services" title="Practical technology support for homes and businesses." text="Compustar helps customers choose equipment, set it up correctly, and keep everyday systems working." />
+      <section className="section">
+        <div className="horizontal-showcase auto-showcase service-slider">
+          {slides.map(([Icon, title, text, image], index) => (
+            <article className="service-card visual-card" key={`${title}-${index}`} data-reveal>
+              <img src={image} alt="" loading="lazy" />
+              <div>
+                <Icon {...iconProps} size={26} />
+                <h3>{title}</h3>
+                <p>{text}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    </>
+  );
 }
 
 function RepairsPage() {
-  const steps = [['01', 'Describe the problem', 'Send the device type, model, issue, and when it started.', '/context/repair-diagnose.png'], ['02', 'Get clear guidance', 'The team can advise whether it needs inspection, setup, or replacement parts.', '/context/repair-advise.png'], ['03', 'Visit the store', 'Bring the device or product details for final confirmation and support.', '/context/repair-visit.png']];
+  const steps = [
+    ['01', 'Describe the problem', 'Send the device type, model, issue, and when it started.', '/context/repair-diagnose.png'],
+    ['02', 'Get clear guidance', 'The team can advise whether it needs inspection, setup, or replacement parts.', '/context/repair-advise.png'],
+    ['03', 'Visit the store', 'Bring the device or product details for final confirmation and support.', '/context/repair-visit.png']
+  ];
   const slides = [...steps, ...steps];
-  return <><PageHero eyebrow="Repairs" title="A simple repair path from enquiry to support." text="Customers can send the issue first, then visit the store with the right details instead of guessing what to bring." /><section className="section repair-story repair-story-full"><div className="horizontal-showcase auto-showcase repair-steps">{slides.map(([step, title, text, image], index) => <article className="repair-step" key={`${step}-${index}`} data-reveal><img src={image} alt="" loading="lazy" /><div><span>{step}</span><h3>{title}</h3><p>{text}</p><a className="button dark" href={route('Contact')} onClick={(event) => goToPage(event, 'Contact')}>Ask about repairs</a></div></article>)}</div></section></>;
+  return (
+    <>
+      <PageHero eyebrow="Repairs" title="A simple repair path from enquiry to support." text="Customers can send the issue first, then visit the store with the right details instead of guessing what to bring." />
+      <section className="section repair-story repair-story-full">
+        <div className="horizontal-showcase auto-showcase repair-steps">
+          {slides.map(([step, title, text, image], index) => (
+            <article className="repair-step" key={`${step}-${index}`} data-reveal>
+              <img src={image} alt="" loading="lazy" />
+              <div>
+                <span>{step}</span>
+                <h3>{title}</h3>
+                <p>{text}</p>
+                <a className="button dark" href={route('Contact')} onClick={(event) => goToPage(event, 'Contact')}>Ask about repairs</a>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    </>
+  );
 }
 
 function LocationPage() {
-  const mapQuery = encodeURIComponent(locations[0].mapQuery);
-  return <><PageHero eyebrow="Location" title="Visit Compustar in Gaborone." text="Find Compustar for product enquiries, repairs, accessories, and practical technology support." /><section className="location-page section"><div className="location-card" data-reveal><p className="kicker">Store Locations</p><h2>Gaborone support points.</h2><div className="location-list">{locations.map((item) => <article key={item.title}><strong>{item.title}</strong><p><MapPin /> {item.address}</p><a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.mapQuery)}`} target="_blank" rel="noreferrer">Open this location <ArrowRight size={15} /></a></article>)}</div><p><Phone /> {displayPhone}</p><p><Phone /> Tel: {displayTelPhone}</p><p><Phone /> Mobile: {displayMobilePhone}</p><p><Mail /> {email}</p><a className="button whatsapp" href={whatsappUrl} target="_blank" rel="noreferrer"><MessageCircle size={17} /> WhatsApp Compustar</a></div><MapFrame mapQuery={mapQuery} /></section></>;
+  return (
+    <>
+      <PageHero eyebrow="Location" title="Visit Compustar in Gaborone." text="Find Compustar for product enquiries, repairs, accessories, and practical technology support." />
+      <section className="location-page section">
+        <div className="location-card" data-reveal>
+          <p className="kicker">Store Locations</p>
+          <h2>Gaborone support points.</h2>
+          <div className="location-list">
+            {locations.map((item) => (
+              <article key={item.title}>
+                <strong>{item.title}</strong>
+                <p><MapPin weight="fill" /> {item.address}</p>
+                <p><Phone weight="fill" /> Tel: {item.tel}</p>
+                <p><Phone weight="fill" /> Mobile: {item.mobile}</p>
+                <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.mapQuery)}`} target="_blank" rel="noreferrer">
+                  Open this location <ArrowRight size={15} weight="bold" />
+                </a>
+              </article>
+            ))}
+          </div>
+          <div className="contact-lines">
+            <p><EnvelopeSimple weight="fill" /> {email}</p>
+            <p><Phone weight="fill" /> Tel: {displayTelPhone}</p>
+          </div>
+        </div>
+        <LocationsMap />
+      </section>
+    </>
+  );
 }
 
-function MapFrame({ mapQuery }) {
-  return <div className="map-shell" data-reveal><iframe title="Compustar location map" loading="lazy" referrerPolicy="no-referrer-when-downgrade" src={`https://www.google.com/maps?q=${mapQuery}&z=17&output=embed`}></iframe></div>;
+function LocationsMap() {
+  const containerRef = useRef(null);
+  const mapRef = useRef(null);
+
+  useEffect(() => {
+    if (!containerRef.current || mapRef.current) return;
+
+    const map = L.map(containerRef.current, {
+      scrollWheelZoom: false,
+      zoomControl: true
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+    const bounds = L.latLngBounds([]);
+    locations.forEach((item) => {
+      const marker = L.marker(item.coords).addTo(map);
+      marker.bindPopup(`<strong>${item.title}</strong><br>${item.address}<br>Tel: ${item.tel}<br>Mobile: ${item.mobile}`);
+      bounds.extend(item.coords);
+    });
+
+    map.fitBounds(bounds, { padding: [48, 48], maxZoom: 13 });
+    mapRef.current = map;
+
+    const resize = () => map.invalidateSize();
+    window.addEventListener('resize', resize);
+    requestAnimationFrame(resize);
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      map.remove();
+      mapRef.current = null;
+    };
+  }, []);
+
+  return (
+    <div className="map-shell" data-reveal>
+      <div ref={containerRef} className="leaflet-map" role="img" aria-label="Map showing both Compustar locations in Gaborone" />
+    </div>
+  );
 }
 
 function ContactPage() {
-  return <><PageHero eyebrow="Contact" title="Ask about products, repairs, or support." text="Use the contact details below for availability, quotes, device issues, and general store enquiries." /><section className="contact-page section"><div className="contact-panel" data-reveal><h2>Send a clear enquiry.</h2><p>Include the product name, budget, device model, or support issue. That gives the team enough context to respond properly.</p><ul><li><CheckCircle2 /> Product name or category</li><li><CheckCircle2 /> Device model if it is a repair</li><li><CheckCircle2 /> Phone number or preferred contact method</li></ul></div><div className="contact-card" data-reveal><a href={`mailto:${email}?subject=Compustar%20Website%20Enquiry`}><Mail /> {email}</a><a href={`tel:${phone}`}><Phone /> {displayPhone}</a><a href={`tel:${telPhone}`}><Phone /> Tel: {displayTelPhone}</a><a href={`tel:${mobilePhone}`}><Phone /> Mobile: {displayMobilePhone}</a>{locations.map((item) => <p key={item.title}><MapPin /> {item.address}</p>)}<a className="button whatsapp" href={whatsappUrl} target="_blank" rel="noreferrer"><MessageCircle size={17} /> WhatsApp Compustar</a><a className="button primary" href={`mailto:${email}?subject=Compustar%20Website%20Enquiry`}>Email Compustar</a></div></section></>;
+  return (
+    <>
+      <PageHero eyebrow="Contact" title="Ask about products, repairs, or support." text="Use the contact details below for availability, quotes, device issues, and general store enquiries." />
+      <section className="contact-page section">
+        <div className="contact-panel" data-reveal>
+          <h2>Send a clear enquiry.</h2>
+          <p>Include the product name, budget, device model, or support issue. That gives the team enough context to respond properly.</p>
+          <ul>
+            <li><CheckCircle {...iconProps} /> Product name or category</li>
+            <li><CheckCircle {...iconProps} /> Device model if it is a repair</li>
+            <li><CheckCircle {...iconProps} /> Phone number or preferred contact method</li>
+          </ul>
+        </div>
+        <div className="contact-card" data-reveal>
+          <a href={`mailto:${email}?subject=Compustar%20Website%20Enquiry`}><EnvelopeSimple weight="fill" /> {email}</a>
+          <a href={`tel:${telPhone}`}><Phone weight="fill" /> Tel: {displayTelPhone}</a>
+          <a href={`tel:${phone}`}><Phone weight="fill" /> Game City: {displayPhone}</a>
+          <a href={`tel:${mobilePhone}`}><Phone weight="fill" /> G-West: {displayMobilePhone}</a>
+          {locations.map((item) => (
+            <p key={item.title}><MapPin weight="fill" /> {item.title}: {item.address}</p>
+          ))}
+          <a className="button primary" href={`mailto:${email}?subject=Compustar%20Website%20Enquiry`}>Email Compustar</a>
+        </div>
+      </section>
+    </>
+  );
 }
 
-function PageHero({ eyebrow, title, text }) { return <section className="page-hero"><p className="kicker" data-hero>{eyebrow}</p><h1 data-hero>{title}</h1><p data-hero>{text}</p></section>; }
-function SectionIntro({ eyebrow, title, text }) { return <div className="section-intro" data-reveal><div><p className="kicker">{eyebrow}</p><h2>{title}</h2></div><p>{text}</p></div>; }
-function ProductGrid({ products: list }) { return <div className="product-grid gallery-grid">{list.map((product) => <ProductCard key={product.file} product={product} />)}</div>; }
-function ProductCarousel({ products: list }) { const slides = [...list, ...list]; return <div className="product-slider" data-reveal><div className="product-track">{slides.map((product, index) => <ProductCard key={`${product.file}-${index}`} product={product} />)}</div></div>; }
-function ProductCard({ product }) { return <article className="product-card gallery-card" data-reveal><div className="product-image"><img src={`/products/${product.file}`} alt="Compustar product" loading="lazy" /></div><div className="product-overlay"><a href={route('Contact')} onClick={(event) => goToPage(event, 'Contact')}>Enquire <ArrowRight size={16} /></a></div></article>; }
+function PageHero({ eyebrow, title, text }) {
+  return (
+    <section className="page-hero">
+      <p className="kicker" data-hero>{eyebrow}</p>
+      <h1 data-hero>{title}</h1>
+      <p data-hero>{text}</p>
+    </section>
+  );
+}
+
+function SectionIntro({ eyebrow, title, text }) {
+  return (
+    <div className="section-intro" data-reveal>
+      <div>
+        <p className="kicker">{eyebrow}</p>
+        <h2>{title}</h2>
+      </div>
+      <p>{text}</p>
+    </div>
+  );
+}
+
+function ProductGrid({ products: list }) {
+  return (
+    <div className="product-grid gallery-grid">
+      {list.map((product) => <ProductCard key={product.file} product={product} />)}
+    </div>
+  );
+}
+
+function ProductCarousel({ products: list }) {
+  const slides = [...list, ...list];
+  return (
+    <div className="product-slider" data-reveal>
+      <div className="product-track">
+        {slides.map((product, index) => <ProductCard key={`${product.file}-${index}`} product={product} />)}
+      </div>
+    </div>
+  );
+}
+
+function ProductCard({ product }) {
+  return (
+    <article className="product-card gallery-card" data-reveal>
+      <div className="product-image">
+        <img src={`/products/${product.file}`} alt="Compustar product" loading="lazy" />
+      </div>
+      <div className="product-overlay">
+        <a href={route('Contact')} onClick={(event) => goToPage(event, 'Contact')}>
+          Enquire <ArrowRight size={16} weight="bold" />
+        </a>
+      </div>
+    </article>
+  );
+}
+
 function Footer() {
   return (
     <footer className="site-footer">
@@ -444,23 +732,57 @@ function Footer() {
         <img src="/logo.png" alt="Compustar logo" />
         <p>Computer products, repairs, security, networking, and IT support across Gaborone.</p>
         <a className="footer-social" href={instagramUrl} target="_blank" rel="noreferrer" aria-label="Compustar on Instagram">
-          <Instagram size={18} /> @compustarbw
+          <InstagramIcon size={20} />
         </a>
       </div>
       <nav className="footer-links" aria-label="Footer navigation">
         <strong>Explore</strong>
-        {pages.map((item) => <a href={route(item)} onClick={(event) => goToPage(event, item)} key={item}>{item}</a>)}
+        {pages.map((item) => (
+          <a href={route(item)} onClick={(event) => goToPage(event, item)} key={item}>{item}</a>
+        ))}
       </nav>
       <section className="footer-contact">
         <strong>Contact</strong>
-        <a href={`mailto:${email}?subject=Compustar%20Website%20Enquiry`}><Mail /> {email}</a>
-        <a href={`tel:${phone}`}><Phone /> {displayPhone}</a>
-        <a href={`tel:${telPhone}`}><Phone /> Tel: {displayTelPhone}</a>
-        <a href={`tel:${mobilePhone}`}><Phone /> Mobile: {displayMobilePhone}</a>
-        {locations.map((item) => <span key={item.title}><Store /> {item.address}</span>)}
+        <a href={`mailto:${email}?subject=Compustar%20Website%20Enquiry`}>
+          <EnvelopeSimple weight="fill" size={18} />
+          <span>
+            <em>Email</em>
+            {email}
+          </span>
+        </a>
+        <a href={`tel:${telPhone}`}>
+          <Phone weight="fill" size={18} />
+          <span>
+            <em>Tel</em>
+            {displayTelPhone}
+          </span>
+        </a>
+        <a href={`tel:${phone}`}>
+          <Phone weight="fill" size={18} />
+          <span>
+            <em>Game City Mobile</em>
+            {displayPhone}
+          </span>
+        </a>
+        <a href={`tel:${mobilePhone}`}>
+          <Phone weight="fill" size={18} />
+          <span>
+            <em>G-West Mobile</em>
+            {displayMobilePhone}
+          </span>
+        </a>
+        {locations.map((item) => (
+          <span key={item.title}>
+            <MapPin weight="fill" size={18} />
+            <span>
+              <em>{item.title}</em>
+              {item.address}
+            </span>
+          </span>
+        ))}
       </section>
       <div className="footer-bottom">
-        <span>@ Compustar {new Date().getFullYear()}. All rights reserved.</span>
+        <span>© Compustar {new Date().getFullYear()}. All rights reserved.</span>
         <a href="https://futurifydesigns.com" target="_blank" rel="noreferrer">Built by Futurify Designs</a>
       </div>
     </footer>

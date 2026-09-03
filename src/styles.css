@@ -14,7 +14,7 @@
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { background: var(--soft); color: var(--ink); font-family: "Trebuchet MS", "Segoe UI", sans-serif; margin: 0; }
+body { background: var(--soft); color: var(--ink); font-family: "Trebuchet MS", "Segoe UI", sans-serif; margin: 0; overflow-x: hidden; }
 img { max-width: 100%; }
 a { color: inherit; }
 
@@ -36,7 +36,7 @@ nav a.active, nav a:hover { background: var(--ink); color: #fff; }
 }
 .hero::before, .page-hero::before { background-image: linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px); background-size: 48px 48px; content: ""; inset: 0; opacity: .36; position: absolute; }
 .hero > *, .page-hero > * { position: relative; }
-.hero { align-items: center; display: grid; gap: clamp(2rem,6vw,5rem); grid-template-columns: minmax(0,1.05fr) minmax(280px,.72fr); min-height: 82vh; padding: clamp(4.5rem,9vw,8rem) clamp(1rem,5vw,6rem); }
+.hero { align-items: center; display: grid; gap: clamp(2rem,6vw,5rem); grid-template-columns: minmax(0,1.05fr) minmax(280px,.72fr); min-height: 82vh; padding: clamp(4.5rem,9vw,8rem) clamp(1rem,5vw,6rem) clamp(6rem,10vw,9rem); }
 .page-hero { padding: clamp(5rem,9vw,8rem) clamp(1rem,5vw,6rem); }
 
 .kicker { color: var(--gold); font-size: .76rem; font-weight: 900; letter-spacing: .18em; margin: 0 0 1rem; text-transform: uppercase; }
@@ -58,11 +58,11 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
 .hero-showcase { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.22); border-radius: var(--radius); box-shadow: 0 30px 90px rgba(0,0,0,.25); padding: 1rem; transition: transform .2s ease; }
 .hero-showcase:hover { transform: translateY(-5px) rotate(-.5deg); }
 .hero-showcase img { aspect-ratio: 16 / 10; background: radial-gradient(circle at center, #25070a, #07080a); border-radius: 18px; object-fit: contain; padding: 1.3rem; width: 100%; }
-.hero-showcase div { display: grid; gap: .55rem; grid-template-columns: repeat(3,1fr); margin-top: .75rem; }
-.hero-showcase span { align-items: center; background: rgba(12,13,16,.5); border-radius: 14px; display: grid; font-weight: 900; gap: .4rem; padding: .9rem; }
+.hero-showcase div { display: grid; gap: .55rem; grid-template-columns: repeat(3,minmax(0,1fr)); margin-top: .75rem; }
+.hero-showcase span { align-items: center; background: rgba(12,13,16,.5); border-radius: 14px; display: grid; font-size: clamp(.78rem,1vw,.95rem); font-weight: 900; gap: .4rem; min-width: 0; overflow: hidden; padding: .9rem; text-overflow: ellipsis; }
 .hero-showcase svg { color: var(--gold); }
 
-.quick-paths { display: grid; gap: 1rem; grid-template-columns: repeat(3,1fr); margin: -3.4rem auto 0; max-width: 1180px; padding: 0 clamp(1rem,4vw,2rem); position: relative; z-index: 4; }
+.quick-paths { display: grid; gap: 1rem; grid-template-columns: repeat(3,minmax(0,1fr)); margin: -3.4rem auto 0; max-width: 1180px; padding: 0 clamp(1rem,4vw,2rem); position: relative; z-index: 4; }
 .quick-paths article, .service-card, .repair-flow article, .contact-card, .contact-panel { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 16px 48px rgba(12,13,16,.06); padding: 1.25rem; }
 .quick-paths svg, .service-card svg, .repair-flow span, .contact-panel svg, .contact-card svg { color: var(--red); }
 .quick-paths p, .service-card p, .repair-flow p, .product-body p, footer span, .section-intro p { color: var(--muted); line-height: 1.55; }
@@ -128,13 +128,17 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
 .contact-card a, .contact-card p { align-items: center; display: flex; gap: .65rem; margin: 0; text-decoration: none; }
 .contact-card .primary { background: var(--red); color: #fff; }
 
-.site-footer { align-items: start; background: radial-gradient(circle at 12% 20%, rgba(239,23,23,.28), transparent 24rem), linear-gradient(135deg, #07080b, #111721 52%, #27080d); color: #fff; display: grid; gap: 2rem; grid-template-columns: 1.15fr .85fr 1fr; padding: clamp(2.5rem,6vw,4.8rem) clamp(1rem,5vw,6rem); }
+.site-footer { align-items: start; background: radial-gradient(circle at 12% 20%, rgba(239,23,23,.28), transparent 24rem), linear-gradient(135deg, #07080b, #111721 52%, #27080d); color: #fff; display: grid; gap: 2rem; grid-template-columns: 1.15fr .75fr 1.1fr; padding: clamp(2.5rem,6vw,4.8rem) clamp(1rem,5vw,6rem) 1.2rem; }
 .site-footer img { height: 84px; object-fit: contain; width: 190px; }
 .site-footer p, .site-footer span, .site-footer a { color: rgba(255,255,255,.78); line-height: 1.55; }
-.site-footer nav, .site-footer section { display: grid; gap: .6rem; }
+.site-footer nav, .site-footer section { display: grid; gap: .65rem; }
 .site-footer a { text-decoration: none; transition: color .18s ease, transform .18s ease; }
 .site-footer a:hover { color: #fff; transform: translateX(4px); }
 .site-footer strong { color: #fff; font-weight: 900; }
+.footer-contact a, .footer-contact span { align-items: flex-start; display: flex; gap: .55rem; }
+.footer-contact svg { color: var(--gold); flex: 0 0 auto; margin-top: .2rem; width: 18px; }
+.footer-bottom { border-top: 1px solid rgba(255,255,255,.12); display: flex; flex-wrap: wrap; gap: .8rem; grid-column: 1 / -1; justify-content: space-between; padding-top: 1.1rem; }
+.footer-bottom a { color: #fff; font-weight: 900; }
 
 @media (max-width: 980px) {
   .menu-button { display: inline-flex; }
@@ -144,7 +148,7 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
   .hero, .section-intro, .quick-paths, .product-grid, .service-page-grid, .repair-flow, .repair-story, .repair-step, .contact-page, .location-page, .site-footer { grid-template-columns: 1fr; }
   .hero-showcase div { grid-template-columns: 1fr; }
   h1 { font-size: clamp(2.7rem,14vw,4.4rem); }
-  .hero { min-height: auto; padding-bottom: 3rem; padding-top: 3.5rem; }
+  .hero { min-height: auto; padding-bottom: 2rem; padding-top: 2.5rem; }
   .page-hero { padding-bottom: 3rem; padding-top: 3.5rem; }
   .section { padding-bottom: 3rem; padding-top: 3rem; }
   .quick-paths { margin-top: -1.2rem; }
@@ -154,4 +158,26 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
   .repair-step img { min-height: 220px; }
   .map-shell, .map-shell iframe { min-height: 360px; }
   .site-footer { gap: 1.25rem; }
+}
+
+@media (max-width: 620px) {
+  .site-header { padding: .55rem .9rem; }
+  .brand img { height: 48px; width: 128px; }
+  .hero { gap: 1.25rem; }
+  .hero-showcase { margin-bottom: 0; padding: .65rem; }
+  .hero-showcase img { aspect-ratio: 16 / 8.5; padding: .7rem; }
+  .hero-showcase div { grid-template-columns: 1fr; }
+  .hero-showcase span { align-items: center; display: flex; min-height: 54px; }
+  .hero-actions { margin-top: 1.2rem; }
+  .button { width: 100%; }
+  .quick-paths { gap: .8rem; margin-top: 0; padding-top: .8rem; }
+  .quick-paths article, .service-card, .contact-card, .contact-panel, .location-card { padding: 1rem; }
+  .section-intro { gap: .9rem; margin-bottom: 1.2rem; }
+  .product-track { animation-duration: 26s; }
+  .product-slider .product-card { flex-basis: 72vw; }
+  .service-page-grid { gap: .85rem; }
+  .visual-card > div { padding: 1rem; }
+  .repair-story { gap: .85rem; }
+  .repair-intro h2 { font-size: 2.2rem; }
+  .site-footer img { height: 68px; width: 160px; }
 }

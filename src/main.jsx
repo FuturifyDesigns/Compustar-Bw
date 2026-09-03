@@ -839,7 +839,7 @@ function ContactPage() {
 
   return (
     <>
-      <PageHero eyebrow="Contact" title="We are ready to assist." text="Ask about product availability, quotations, repairs, bulk supply, or a visit to either Compustar location in Gaborone." />
+      <PageHero eyebrow="Contact" title="We are ready to assist." text="Ask about product availability, quotations, repairs, bulk supply, or general store enquiries." />
       <section className="section contact-methods">
         <div className="contact-method-grid" data-stagger>
           {methods.map(([Icon, label, value, href]) => (
@@ -868,24 +868,6 @@ function ContactPage() {
             <a className="button secondary" href={facebookUrl} target="_blank" rel="noreferrer"><FacebookIcon size={18} /> Facebook</a>
           </div>
         </div>
-        <div className="contact-locations" data-stagger>
-          {locations.map((item) => (
-            <article className="contact-location-card" data-stagger-item key={item.title}>
-              <Storefront {...iconProps} size={26} />
-              <h3>{item.title}</h3>
-              <p><MapPin weight="fill" size={18} /> {item.address}</p>
-              <a href={`tel:${telPhone}`}><Phone weight="fill" size={18} /> Tel: {item.tel}</a>
-              <a href={`tel:${item.mobileTel}`}><Phone weight="fill" size={18} /> Mobile: {item.mobile}</a>
-              <a className="map-link" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.mapQuery)}`} target="_blank" rel="noreferrer">
-                Open map <ArrowRight size={15} weight="bold" />
-              </a>
-            </article>
-          ))}
-        </div>
-      </section>
-      <section className="section contact-map">
-        <SectionIntro eyebrow="Visit us" title="Both Gaborone locations on one map." text="Game City Mall upstairs and G-West Industrial at Aga House." />
-        <LocationsMap />
       </section>
     </>
   );

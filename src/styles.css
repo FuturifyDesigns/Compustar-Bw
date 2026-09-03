@@ -77,23 +77,42 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
 .category-tabs button { background: #fff; border: 1px solid var(--line); border-radius: 999px; cursor: pointer; font: inherit; font-weight: 900; padding: .72rem .95rem; }
 .category-tabs button.active { background: var(--red); border-color: var(--red); color: #fff; }
 
-.product-grid { display: grid; gap: 1.1rem; grid-template-columns: repeat(3,minmax(0,1fr)); margin: 0 auto; max-width: 1240px; }
-.product-grid.compact { grid-template-columns: repeat(3,minmax(0,1fr)); }
-.product-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 14px 42px rgba(12,13,16,.06); overflow: hidden; transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
+.product-showcase-section { overflow: hidden; }
+.product-slider { margin: 0 auto; max-width: 1240px; overflow: hidden; padding: .4rem 0 1rem; }
+.product-track { animation: gallery-slide 34s linear infinite; display: flex; gap: 1rem; width: max-content; }
+.product-slider:hover .product-track { animation-play-state: paused; }
+.product-slider .product-card { flex: 0 0 clamp(210px, 24vw, 310px); }
+.product-grid { display: grid; gap: 1.1rem; grid-template-columns: repeat(4,minmax(0,1fr)); margin: 0 auto; max-width: 1240px; }
+.product-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 14px 42px rgba(12,13,16,.06); overflow: hidden; position: relative; transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
 .product-card:hover { border-color: rgba(239,23,23,.38); box-shadow: var(--shadow); transform: translateY(-6px); }
 .product-card:hover img { transform: scale(1.045); }
-.product-image { background: linear-gradient(135deg, rgba(239,23,23,.05), transparent), #f8f9fb; display: grid; min-height: 300px; place-items: center; }
+.product-image { background: linear-gradient(135deg, rgba(239,23,23,.05), transparent), #f8f9fb; display: grid; min-height: 260px; place-items: center; }
 .product-image img { aspect-ratio: 4 / 3; display: block; object-fit: contain; padding: 1rem; transition: transform .25s ease; width: 100%; }
-.product-body { border-top: 1px solid var(--line); padding: 1.1rem; }
-.product-body span { color: var(--red); display: block; font-size: .75rem; font-weight: 900; letter-spacing: .1em; margin-bottom: .45rem; text-transform: uppercase; }
-.product-body a { background: var(--ink); color: #fff; margin-top: 1rem; padding: .72rem .95rem; }
+.product-overlay { align-items: end; background: linear-gradient(180deg, transparent, rgba(12,13,16,.72)); display: flex; inset: auto 0 0; justify-content: space-between; opacity: 0; padding: 1rem; position: absolute; transform: translateY(10px); transition: opacity .2s ease, transform .2s ease; }
+.product-card:hover .product-overlay { opacity: 1; transform: translateY(0); }
+.product-overlay a { background: #fff; color: var(--red-deep); padding: .72rem .95rem; }
+@keyframes gallery-slide { from { transform: translateX(0); } to { transform: translateX(calc(-50% - .5rem)); } }
 
 .service-page-grid, .repair-flow, .contact-page { display: grid; gap: 1rem; grid-template-columns: repeat(4,minmax(0,1fr)); margin: 0 auto; max-width: 1240px; }
 .service-card { min-height: 260px; transition: background-color .18s ease, color .18s ease, transform .18s ease; }
+.visual-card { overflow: hidden; padding: 0; }
+.visual-card > img { aspect-ratio: 16 / 10; display: block; object-fit: cover; width: 100%; }
+.visual-card > div { padding: 1.2rem; }
 .service-card:hover { background: var(--ink); color: #fff; transform: translateY(-6px); }
 .service-card:hover p { color: rgba(255,255,255,.72); }
 .repair-flow { grid-template-columns: repeat(3,minmax(0,1fr)); }
 .repair-flow span { display: block; font-family: Georgia, serif; font-size: 3rem; font-weight: 900; margin-bottom: 1rem; }
+.repair-story { align-items: start; display: grid; gap: 1.2rem; grid-template-columns: 360px 1fr; margin: 0 auto; max-width: 1240px; }
+.repair-intro { background: var(--ink); border-radius: var(--radius); box-shadow: var(--shadow); color: #fff; padding: 1.4rem; position: sticky; top: 110px; }
+.repair-intro svg { color: var(--gold); }
+.repair-intro p { color: rgba(255,255,255,.72); line-height: 1.55; }
+.repair-steps { display: grid; gap: 1rem; }
+.repair-step { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 18px 54px rgba(12,13,16,.07); display: grid; gap: 0; grid-template-columns: .95fr 1fr; overflow: hidden; transition: transform .18s ease, box-shadow .18s ease; }
+.repair-step:hover { box-shadow: var(--shadow); transform: translateY(-5px); }
+.repair-step img { height: 100%; min-height: 280px; object-fit: cover; width: 100%; }
+.repair-step div { align-content: center; display: grid; padding: clamp(1.2rem,3vw,2rem); }
+.repair-step span { color: var(--red); display: block; font-family: Georgia, serif; font-size: clamp(2.4rem,5vw,4rem); font-weight: 900; line-height: 1; margin-bottom: .8rem; }
+.repair-step p { color: var(--muted); line-height: 1.55; }
 .contact-page { align-items: stretch; grid-template-columns: 1fr 420px; }
 .location-page { align-items: stretch; display: grid; gap: 1rem; grid-template-columns: 430px 1fr; margin: 0 auto; max-width: 1240px; }
 .location-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.4rem; }
@@ -122,7 +141,17 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
   nav { background: #fff; border-top: 1px solid var(--line); display: none; flex-direction: column; left: 0; padding: 1rem; position: absolute; right: 0; top: 100%; }
   nav.open { display: flex; }
   .site-header { position: sticky; }
-  .hero, .section-intro, .quick-paths, .product-grid, .product-grid.compact, .service-page-grid, .repair-flow, .contact-page, .location-page, .site-footer { grid-template-columns: 1fr; }
+  .hero, .section-intro, .quick-paths, .product-grid, .service-page-grid, .repair-flow, .repair-story, .repair-step, .contact-page, .location-page, .site-footer { grid-template-columns: 1fr; }
   .hero-showcase div { grid-template-columns: 1fr; }
   h1 { font-size: clamp(2.7rem,14vw,4.4rem); }
+  .hero { min-height: auto; padding-bottom: 3rem; padding-top: 3.5rem; }
+  .page-hero { padding-bottom: 3rem; padding-top: 3.5rem; }
+  .section { padding-bottom: 3rem; padding-top: 3rem; }
+  .quick-paths { margin-top: -1.2rem; }
+  .product-image { min-height: 210px; }
+  .product-overlay { opacity: 1; transform: none; }
+  .repair-intro { position: static; }
+  .repair-step img { min-height: 220px; }
+  .map-shell, .map-shell iframe { min-height: 360px; }
+  .site-footer { gap: 1.25rem; }
 }

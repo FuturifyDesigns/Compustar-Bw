@@ -42,6 +42,23 @@ import './styles.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
+if (import.meta.env.PROD) {
+  import('virtual:pwa-register').then(({ registerSW }) => {
+    registerSW({
+      immediate: true,
+      onRegisteredSW(_url, registration) {
+        if (!registration) return;
+        const checkForUpdates = () => registration.update();
+        window.setInterval(checkForUpdates, 30 * 60 * 1000);
+        window.addEventListener('focus', checkForUpdates);
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') checkForUpdates();
+        });
+      }
+    });
+  });
+}
+
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: markerIcon2x,
@@ -184,11 +201,30 @@ function App() {
         {page === 'Contact' && <ContactPage />}
       </main>
       <Footer />
+      <OfflineNotice />
       <a className="whatsapp-fab" href={whatsappUrl} target="_blank" rel="noreferrer" aria-label="Chat on WhatsApp">
         <WhatsAppIcon size={28} />
       </a>
     </>
   );
+}
+
+function OfflineNotice() {
+  const [offline, setOffline] = useState(!navigator.onLine);
+
+  useEffect(() => {
+    const goOffline = () => setOffline(true);
+    const goOnline = () => setOffline(false);
+    window.addEventListener('offline', goOffline);
+    window.addEventListener('online', goOnline);
+    return () => {
+      window.removeEventListener('offline', goOffline);
+      window.removeEventListener('online', goOnline);
+    };
+  }, []);
+
+  if (!offline) return null;
+  return <div className="offline-banner" role="status">You are offline. Browsing saved Compustar pages and images.</div>;
 }
 
 function usePageSeo(page) {

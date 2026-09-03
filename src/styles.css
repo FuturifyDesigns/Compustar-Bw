@@ -234,6 +234,11 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
   transition: transform .18s ease, box-shadow .18s ease; width: 56px; z-index: 40;
 }
 .whatsapp-fab:hover { box-shadow: 0 18px 42px rgba(22,163,74,.5); transform: translateY(-3px) scale(1.04); }
+.offline-banner {
+  background: var(--ink); bottom: 5.4rem; color: #fff; font-size: .86rem; font-weight: 700;
+  left: 1rem; line-height: 1.4; max-width: min(22rem, calc(100vw - 5.5rem)); padding: .75rem 1rem;
+  position: fixed; right: auto; border-radius: 14px; box-shadow: var(--shadow); z-index: 35;
+}
 
 .about-intro, .about-approach, .about-products, .about-corporate, .about-focus, .about-commitment, .about-mission, .about-values, .about-why, .about-locations {
   margin: 0 auto; max-width: 1240px;

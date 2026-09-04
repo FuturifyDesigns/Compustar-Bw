@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
+    "@supabase/supabase-js": "^2.115.0",
     "@vitejs/plugin-react": "^5.0.0",
     "gsap": "^3.12.5",
     "leaflet": "^1.9.4",

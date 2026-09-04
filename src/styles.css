@@ -482,3 +482,51 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
   .advert-thumbs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .site-header nav a { font-size: .9rem; }
 }
+
+/* CMS admin */
+.admin-fab {
+  align-items: center; background: #111; border: 0; border-radius: 999px; bottom: 1rem; color: #fff;
+  cursor: pointer; display: grid; height: 44px; left: 1rem; place-items: center; position: fixed; width: 44px; z-index: 80;
+}
+.admin-bar {
+  align-items: center; background: #111; color: #fff; display: flex; gap: .75rem; justify-content: center;
+  padding: .55rem 1rem; position: sticky; top: 0; z-index: 90;
+}
+.admin-bar button {
+  background: rgba(255,255,255,.12); border: 0; border-radius: 999px; color: #fff; cursor: pointer;
+  font: inherit; font-size: .85rem; padding: .35rem .8rem;
+}
+.admin-bar button.active { background: var(--brand, #ef1717); }
+.editable-wrap { display: inline; position: relative; }
+.edit-chip {
+  align-items: center; background: #111; border: 0; border-radius: 999px; color: #fff; cursor: pointer;
+  display: inline-flex; font: inherit; font-size: .75rem; gap: .25rem; margin-left: .35rem; padding: .2rem .45rem; vertical-align: middle;
+}
+.edit-chip.danger { background: #8b1010; }
+.card-admin-actions { display: flex; gap: .35rem; position: absolute; right: .55rem; top: .55rem; z-index: 5; }
+.cms-toolbar { display: flex; justify-content: flex-end; margin-bottom: .85rem; min-height: 0; }
+.cms-modal {
+  align-items: center; background: rgba(8,10,14,.55); display: grid; inset: 0; justify-items: center; padding: 1rem; position: fixed; z-index: 100;
+}
+.cms-dialog {
+  background: #fff; border-radius: 18px; display: grid; gap: .75rem; max-height: 90vh; max-width: 460px; overflow: auto; padding: 1.1rem; width: min(100%, 460px);
+}
+.cms-dialog header { align-items: center; display: flex; justify-content: space-between; }
+.cms-dialog header button, .cms-dialog .button { cursor: pointer; }
+.cms-dialog label { display: grid; font-size: .86rem; font-weight: 600; gap: .35rem; }
+.cms-dialog input, .cms-dialog textarea {
+  border: 1px solid var(--line); border-radius: 12px; font: inherit; padding: .7rem .8rem; width: 100%;
+}
+.cms-error { color: #b00020; font-size: .9rem; margin: 0; }
+.cms-toast {
+  background: #111; border-radius: 999px; bottom: 1.2rem; color: #fff; left: 50%; padding: .65rem 1rem;
+  position: fixed; transform: translateX(-50%); z-index: 110;
+}
+.cms-empty { color: var(--muted, #667); text-align: center; }
+.product-meta {
+  display: grid; gap: .2rem; padding: .75rem .9rem 1rem;
+}
+.product-meta strong { font-size: .92rem; line-height: 1.25; }
+.product-price { color: var(--brand, #ef1717); font-size: .88rem; font-weight: 700; }
+.product-image { position: relative; }
+.advert-stage { position: relative; }

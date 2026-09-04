@@ -37,7 +37,9 @@ import 'leaflet/dist/leaflet.css';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-import products from './products.json';
+import productsJson from './products.json';
+import { AdminProvider, useAdmin } from './cms/AdminContext';
+import { AdminBar, AdvertEditorButton, EditableText, ProductEditorButton } from './cms/AdminUI';
 import './styles.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -99,19 +101,22 @@ const locations = [
   }
 ];
 const pages = ['Home', 'About', 'Products', 'Adverts', 'Services', 'Repairs', 'Location', 'Contact'];
-const featuredProducts = products.slice(0, 14);
+const fallbackProducts = productsJson.map((item) => ({
+  ...item,
+  image_url: `/products/${item.file.replace(/\.(jpe?g|png)$/i, '.webp')}`
+}));
 const advertSlideMs = 8000;
-const adverts = [
-  { file: 'pos-solutions.jpg', title: 'POS Solutions', text: 'Smart business. Seamless sales. Point of sale systems that power your business.' },
-  { file: 'digital-partner.jpg', title: 'Your Digital Partner', text: 'Innovative technology, quality products and reliable solutions for every customer.' },
-  { file: 'new-location-aga.jpg', title: 'New Location — Aga House', text: 'Better service, closer to you at G-West Industrial, Plot 27576/4.' },
-  { file: 'new-location-announcement.jpg', title: 'New Location Announcement', text: 'Wider range, better service and the same Compustar commitment.' },
-  { file: 'laptops.jpg', title: 'Laptops for Work, Study & Play', text: 'Power your potential with everyday, business, gaming and creator laptops.' },
-  { file: 'gaming-computers.jpg', title: 'Gaming Computers', text: 'Game on. Perform big. Ready-made and custom builds for every level.' },
-  { file: 'new-location-commitment.jpg', title: 'Same Commitment, New Location', text: 'Visit Compustar at Aga House — easy to find, easy to reach.' },
-  { file: 'accessories.jpg', title: 'Accessories & Gear', text: 'Every accessory. Every possibility. Cables, storage, peripherals and more.' },
-  { file: 'hilook-surveillance.jpg', title: 'HiLook Surveillance', text: 'Smart security powered by Hikvision — clearer vision, stronger protection.' },
-  { file: 'new-location-tech-destination.jpg', title: 'Your Tech Destination', text: 'New location at G-West Industrial with the full Compustar product range.' }
+const fallbackAdverts = [
+  { file: '/adverts/pos-solutions.webp', title: 'POS Solutions', text: 'Smart business. Seamless sales. Point of sale systems that power your business.' },
+  { file: '/adverts/digital-partner.webp', title: 'Your Digital Partner', text: 'Innovative technology, quality products and reliable solutions for every customer.' },
+  { file: '/adverts/new-location-aga.webp', title: 'New Location — Aga House', text: 'Better service, closer to you at G-West Industrial, Plot 27576/4.' },
+  { file: '/adverts/new-location-announcement.webp', title: 'New Location Announcement', text: 'Wider range, better service and the same Compustar commitment.' },
+  { file: '/adverts/laptops.webp', title: 'Laptops for Work, Study & Play', text: 'Power your potential with everyday, business, gaming and creator laptops.' },
+  { file: '/adverts/gaming-computers.webp', title: 'Gaming Computers', text: 'Game on. Perform big. Ready-made and custom builds for every level.' },
+  { file: '/adverts/new-location-commitment.webp', title: 'Same Commitment, New Location', text: 'Visit Compustar at Aga House — easy to find, easy to reach.' },
+  { file: '/adverts/accessories.webp', title: 'Accessories & Gear', text: 'Every accessory. Every possibility. Cables, storage, peripherals and more.' },
+  { file: '/adverts/hilook-surveillance.webp', title: 'HiLook Surveillance', text: 'Smart security powered by Hikvision — clearer vision, stronger protection.' },
+  { file: '/adverts/new-location-tech-destination.webp', title: 'Your Tech Destination', text: 'New location at G-West Industrial with the full Compustar product range.' }
 ];
 const seo = {
   Home: ['Compustar Botswana | Computer Sales, Repairs & IT Support', 'Computers, printers, surveillance, networking, accessories, repairs, and IT support from Game City Mall in Gaborone.'],
@@ -125,13 +130,26 @@ const seo = {
 };
 
 function toWebp(src) {
+  if (!src || src.startsWith('http') || src.endsWith('.webp')) return src;
   return src.replace(/\.(jpe?g|png)$/i, '.webp');
 }
 
+function mediaSrc(item) {
+  const src = item?.image_url || item?.file || '';
+  if (!src) return '';
+  if (src.startsWith('http') || src.startsWith('/')) return src;
+  return `/products/${src}`;
+}
+
 function SmartImage({ src, alt, className, loading = 'lazy', fetchPriority = 'low', ...props }) {
+  const webp = toWebp(src);
+  const usePicture = webp && webp !== src && !src.startsWith('http');
+  if (!usePicture) {
+    return <img src={src} alt={alt} className={className} loading={loading} decoding="async" fetchPriority={fetchPriority} {...props} />;
+  }
   return (
     <picture>
-      <source srcSet={toWebp(src)} type="image/webp" />
+      <source srcSet={webp} type="image/webp" />
       <img src={src} alt={alt} className={className} loading={loading} decoding="async" fetchPriority={fetchPriority} {...props} />
     </picture>
   );
@@ -162,6 +180,14 @@ function FacebookIcon({ size = 22 }) {
 }
 
 function App() {
+  return (
+    <AdminProvider fallbackProducts={fallbackProducts} fallbackAdverts={fallbackAdverts}>
+      <AppShell />
+    </AdminProvider>
+  );
+}
+
+function AppShell() {
   const [page, setPage] = useState(getInitialPage);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -189,6 +215,7 @@ function App() {
 
   return (
     <>
+      <AdminBar />
       <Header menuOpen={menuOpen} page={page} setMenuOpen={setMenuOpen} />
       <main>
         {page === 'Home' && <HomePage />}
@@ -310,13 +337,15 @@ function Header({ menuOpen, page, setMenuOpen }) {
 }
 
 function HomePage() {
+  const { products, getContent } = useAdmin();
+  const featuredProducts = products.slice(0, 14);
   return (
     <>
       <section className="hero">
         <div className="hero-copy">
-          <p className="kicker" data-hero>Compustar Botswana</p>
-          <h1 data-hero>Technology products, repairs, and IT support.</h1>
-          <p data-hero>Browse featured products, request availability, and get help with computers, printers, surveillance systems, networking, and repairs.</p>
+          <EditableText as="p" className="kicker" contentKey="home.hero.kicker" value={getContent('home.hero.kicker', 'Compustar Botswana')} />
+          <EditableText as="h1" contentKey="home.hero.title" value={getContent('home.hero.title', 'Technology products, repairs, and IT support.')} />
+          <EditableText as="p" multiline contentKey="home.hero.text" value={getContent('home.hero.text', 'Browse featured products, request availability, and get help with computers, printers, surveillance systems, networking, and repairs.')} />
           <div className="hero-actions" data-hero>
             <a className="button primary" href={route('Products')} onClick={(event) => goToPage(event, 'Products')}>Browse Products <ArrowRight size={18} weight="bold" /></a>
             <a className="button secondary" href={route('Location')} onClick={(event) => goToPage(event, 'Location')}>Find the Store</a>
@@ -336,16 +365,16 @@ function HomePage() {
           [MagnifyingGlass, 'Product Enquiries', 'Browse standalone product photos and ask about current availability.'],
           [Wrench, 'Repairs & Upgrades', 'Support for slow computers, setup issues, upgrades, and diagnostics.'],
           [WifiHigh, 'Security & Networking', 'Camera systems, GPS trackers, network cables, and office connectivity.']
-        ].map(([Icon, title, text]) => (
+        ].map(([Icon, title, text], index) => (
           <article key={title} data-reveal>
             <Icon {...iconProps} size={26} />
-            <h3>{title}</h3>
-            <p>{text}</p>
+            <h3><EditableText contentKey={`home.quick.${index}.title`} value={getContent(`home.quick.${index}.title`, title)} /></h3>
+            <p><EditableText multiline contentKey={`home.quick.${index}.text`} value={getContent(`home.quick.${index}.text`, text)} /></p>
           </article>
         ))}
       </section>
       <section className="section product-showcase-section">
-        <SectionIntro eyebrow="Product gallery" title="A quick look at what customers can ask about." text="A visual showcase of products available for enquiries at the store." />
+        <SectionIntro contentPrefix="home.gallery" eyebrow="Product gallery" title="A quick look at what customers can ask about." text="A visual showcase of products available for enquiries at the store." />
         <ProductCarousel products={featuredProducts} />
         <div className="center-row" data-reveal>
           <a className="button dark" href={route('Products')} onClick={(event) => goToPage(event, 'Products')}>View full gallery <ArrowRight size={18} weight="bold" /></a>
@@ -428,7 +457,7 @@ function AboutPage() {
 
   return (
     <>
-      <PageHero eyebrow="About Us" title="About Compustar — Your Digital Partner." text="Compustar is a Botswana-based technology and electronics company dedicated to providing reliable, practical and accessible technology solutions to individuals, businesses, institutions and organisations." />
+      <PageHero contentPrefix="about.hero" eyebrow="About Us" title="About Compustar — Your Digital Partner." text="Compustar is a Botswana-based technology and electronics company dedicated to providing reliable, practical and accessible technology solutions to individuals, businesses, institutions and organisations." />
 
       <section className="section about-intro">
         <div className="about-intro-grid">
@@ -455,7 +484,7 @@ function AboutPage() {
       </section>
 
       <section className="section about-approach">
-        <SectionIntro eyebrow="Our Approach" title="More than supplying products." text="At Compustar, we believe that selling technology is about more than simply supplying products. It is about understanding the customer's requirement, recommending the appropriate solution, delivering professionally and building a relationship that continues beyond the initial purchase. Our approach is built around:" />
+        <SectionIntro contentPrefix="about.approach" eyebrow="Our Approach" title="More than supplying products." text="At Compustar, we believe that selling technology is about more than simply supplying products. It is about understanding the customer's requirement, recommending the appropriate solution, delivering professionally and building a relationship that continues beyond the initial purchase. Our approach is built around:" />
         <div className="approach-flow">
           {approach.map((step, index) => (
             <article className="approach-step" data-approach-step key={step}>
@@ -469,7 +498,7 @@ function AboutPage() {
       </section>
 
       <section className="section about-products">
-        <SectionIntro eyebrow="Our Products & Solutions" title="A broad range of technology products." text="Compustar provides access to a broad range of technology products and solutions, including the categories below. Product availability, specifications and brands may vary according to current stock and customer requirements." />
+        <SectionIntro contentPrefix="about.products" eyebrow="Our Products & Solutions" title="A broad range of technology products." text="Compustar provides access to a broad range of technology products and solutions, including the categories below. Product availability, specifications and brands may vary according to current stock and customer requirements." />
         <div className="about-product-grid" data-stagger>
           {productsList.map((item) => (
             <article className="about-product-item" data-stagger-item key={item}>
@@ -587,11 +616,13 @@ function AboutPage() {
 }
 
 function ProductsPage() {
+  const { products } = useAdmin();
   const [visible, setVisible] = useState(24);
   return (
     <>
-      <PageHero eyebrow="Products" title="A clean product gallery for quick enquiries." text="Browse the product photos and contact Compustar to confirm availability, pricing, or suitable alternatives." />
+      <PageHero contentPrefix="products.hero" eyebrow="Products" title="A clean product gallery for quick enquiries." text="Browse the product photos and contact Compustar to confirm availability, pricing, or suitable alternatives." />
       <section className="section catalogue-section">
+        <div className="cms-toolbar"><ProductEditorButton onAdd /></div>
         <ProductGrid products={products.slice(0, visible)} />
         {visible < products.length && (
           <div className="center-row">
@@ -603,15 +634,25 @@ function ProductsPage() {
   );
 }
 
+function advertThumb(item) {
+  const src = mediaSrc(item);
+  if (!src || src.startsWith('http')) return src;
+  const name = src.split('/').pop();
+  if (src.includes('/adverts/') && !src.includes('/thumbs/')) return `/adverts/thumbs/${toWebp(name)}`;
+  return src;
+}
+
 function AdvertsPage() {
+  const { adverts } = useAdmin();
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
   const stageRef = useRef(null);
-  const current = adverts[index];
+  const safeIndex = adverts.length ? index % adverts.length : 0;
+  const current = adverts[safeIndex];
 
   useEffect(() => {
-    if (!playing) return undefined;
+    if (!playing || adverts.length < 2) return undefined;
     setProgress(0);
     const started = performance.now();
     let frame = 0;
@@ -626,70 +667,80 @@ function AdvertsPage() {
     };
     frame = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(frame);
-  }, [index, playing]);
+  }, [safeIndex, playing, adverts.length]);
 
   useEffect(() => {
-    if (!stageRef.current) return undefined;
+    if (!stageRef.current || !current) return undefined;
     const image = stageRef.current.querySelector('.advert-slide');
     const copy = stageRef.current.querySelector('.advert-copy');
     const animation = gsap.fromTo([image, copy], { autoAlpha: 0, y: 18 }, { autoAlpha: 1, y: 0, duration: 0.55, stagger: 0.06, ease: 'power3.out' });
     return () => animation.kill();
-  }, [index]);
+  }, [safeIndex, current]);
 
   useEffect(() => {
-    const next = adverts[(index + 1) % adverts.length];
+    if (adverts.length < 2) return undefined;
+    const next = adverts[(safeIndex + 1) % adverts.length];
+    const href = mediaSrc(next);
+    if (!href) return undefined;
     const link = document.createElement('link');
     link.rel = 'prefetch';
     link.as = 'image';
-    link.href = `/adverts/${toWebp(next.file)}`;
+    link.href = href;
     document.head.appendChild(link);
     return () => link.remove();
-  }, [index]);
+  }, [safeIndex, adverts]);
 
   const goTo = (nextIndex) => {
+    if (!adverts.length) return;
     setIndex((nextIndex + adverts.length) % adverts.length);
     setProgress(0);
   };
 
   return (
     <>
-      <PageHero eyebrow="Adverts" title="Campaign showcase." text="Browse Compustar promotional adverts in an auto-playing showcase — POS, laptops, gaming, accessories, surveillance, and new location announcements." />
+      <PageHero contentPrefix="adverts.hero" eyebrow="Adverts" title="Campaign showcase." text="Browse Compustar promotional adverts in an auto-playing showcase — POS, laptops, gaming, accessories, surveillance, and new location announcements." />
       <section className="section adverts-section">
-        <div className="advert-showcase" data-reveal ref={stageRef}>
-          <div className="advert-stage">
-            <SmartImage className="advert-blur" src={`/adverts/${current.file}`} alt="" aria-hidden="true" loading="eager" fetchPriority="high" />
-            <SmartImage className="advert-slide" src={`/adverts/${current.file}`} alt={current.title} loading="eager" fetchPriority="high" />
-            <div className="advert-progress" aria-hidden="true"><span style={{ transform: `scaleX(${progress})` }} /></div>
-          </div>
-          <div className="advert-meta">
-            <div className="advert-copy">
-              <p className="kicker">Advert {index + 1} of {adverts.length}</p>
-              <h2>{current.title}</h2>
-              <p>{current.text}</p>
+        <div className="cms-toolbar"><AdvertEditorButton onAdd /></div>
+        {!current ? (
+          <p className="cms-empty">No adverts yet. Sign in as admin to add one.</p>
+        ) : (
+          <div className="advert-showcase" data-reveal ref={stageRef}>
+            <div className="advert-stage">
+              <SmartImage className="advert-blur" src={mediaSrc(current)} alt="" aria-hidden="true" loading="eager" fetchPriority="high" />
+              <SmartImage className="advert-slide" src={mediaSrc(current)} alt={current.title} loading="eager" fetchPriority="high" />
+              <div className="advert-progress" aria-hidden="true"><span style={{ transform: `scaleX(${progress})` }} /></div>
+              <AdvertEditorButton advert={current} />
             </div>
-            <div className="advert-controls">
-              <button type="button" className="advert-nav" onClick={() => goTo(index - 1)} aria-label="Previous advert"><CaretLeft size={22} weight="bold" /></button>
-              <button type="button" className="advert-nav" onClick={() => setPlaying((value) => !value)} aria-label={playing ? 'Pause slideshow' : 'Play slideshow'}>
-                {playing ? <Pause size={20} weight="fill" /> : <Play size={20} weight="fill" />}
-              </button>
-              <button type="button" className="advert-nav" onClick={() => goTo(index + 1)} aria-label="Next advert"><CaretRight size={22} weight="bold" /></button>
+            <div className="advert-meta">
+              <div className="advert-copy">
+                <p className="kicker">Advert {safeIndex + 1} of {adverts.length}</p>
+                <h2>{current.title}</h2>
+                <p>{current.text}</p>
+              </div>
+              <div className="advert-controls">
+                <button type="button" className="advert-nav" onClick={() => goTo(safeIndex - 1)} aria-label="Previous advert"><CaretLeft size={22} weight="bold" /></button>
+                <button type="button" className="advert-nav" onClick={() => setPlaying((value) => !value)} aria-label={playing ? 'Pause slideshow' : 'Play slideshow'}>
+                  {playing ? <Pause size={20} weight="fill" /> : <Play size={20} weight="fill" />}
+                </button>
+                <button type="button" className="advert-nav" onClick={() => goTo(safeIndex + 1)} aria-label="Next advert"><CaretRight size={22} weight="bold" /></button>
+              </div>
+            </div>
+            <div className="advert-thumbs" role="tablist" aria-label="Advert thumbnails">
+              {adverts.map((item, itemIndex) => (
+                <button
+                  type="button"
+                  key={item.id || item.file || itemIndex}
+                  className={itemIndex === safeIndex ? 'active' : ''}
+                  onClick={() => goTo(itemIndex)}
+                  aria-label={`Show ${item.title}`}
+                  aria-selected={itemIndex === safeIndex}
+                >
+                  <SmartImage src={advertThumb(item)} alt="" loading="lazy" />
+                </button>
+              ))}
             </div>
           </div>
-          <div className="advert-thumbs" role="tablist" aria-label="Advert thumbnails">
-            {adverts.map((item, itemIndex) => (
-              <button
-                type="button"
-                key={item.file}
-                className={itemIndex === index ? 'active' : ''}
-                onClick={() => goTo(itemIndex)}
-                aria-label={`Show ${item.title}`}
-                aria-selected={itemIndex === index}
-              >
-                <SmartImage src={`/adverts/thumbs/${toWebp(item.file)}`} alt="" loading="lazy" />
-              </button>
-            ))}
-          </div>
-        </div>
+        )}
       </section>
     </>
   );
@@ -705,7 +756,7 @@ function ServicesPage() {
   const slides = [...services, ...services];
   return (
     <>
-      <PageHero eyebrow="Services" title="Practical technology support for homes and businesses." text="Compustar helps customers choose equipment, set it up correctly, and keep everyday systems working." />
+      <PageHero contentPrefix="services.hero" eyebrow="Services" title="Practical technology support for homes and businesses." text="Compustar helps customers choose equipment, set it up correctly, and keep everyday systems working." />
       <section className="section">
         <div className="horizontal-showcase auto-showcase service-slider">
           {slides.map(([Icon, title, text, image], index) => (
@@ -733,7 +784,7 @@ function RepairsPage() {
   const slides = [...steps, ...steps];
   return (
     <>
-      <PageHero eyebrow="Repairs" title="A simple repair path from enquiry to support." text="Customers can send the issue first, then visit the store with the right details instead of guessing what to bring." />
+      <PageHero contentPrefix="repairs.hero" eyebrow="Repairs" title="A simple repair path from enquiry to support." text="Customers can send the issue first, then visit the store with the right details instead of guessing what to bring." />
       <section className="section repair-story repair-story-full">
         <div className="horizontal-showcase auto-showcase repair-steps">
           {slides.map(([step, title, text, image], index) => (
@@ -756,7 +807,7 @@ function RepairsPage() {
 function LocationPage() {
   return (
     <>
-      <PageHero eyebrow="Location" title="Visit Compustar in Gaborone." text="Find Compustar for product enquiries, repairs, accessories, and practical technology support." />
+      <PageHero contentPrefix="location.hero" eyebrow="Location" title="Visit Compustar in Gaborone." text="Find Compustar for product enquiries, repairs, accessories, and practical technology support." />
       <section className="location-page section">
         <div className="location-card" data-reveal>
           <p className="kicker">Store Locations</p>
@@ -845,7 +896,7 @@ function ContactPage() {
 
   return (
     <>
-      <PageHero eyebrow="Contact" title="Let’s find the right technology for you." text="Reach Compustar for availability, quotations, repairs, and bulk supply. A clear enquiry helps the team respond quickly." />
+      <PageHero contentPrefix="contact.hero" eyebrow="Contact" title="Let’s find the right technology for you." text="Reach Compustar for availability, quotations, repairs, and bulk supply. A clear enquiry helps the team respond quickly." />
       <section className="contact-wrap">
         <div className="contact-layout">
           <article className="contact-intro" data-reveal>
@@ -890,24 +941,44 @@ function ContactPage() {
   );
 }
 
-function PageHero({ eyebrow, title, text }) {
+function PageHero({ eyebrow, title, text, contentPrefix }) {
+  const { getContent } = useAdmin();
+  const eyebrowValue = contentPrefix ? getContent(`${contentPrefix}.eyebrow`, eyebrow) : eyebrow;
+  const titleValue = contentPrefix ? getContent(`${contentPrefix}.title`, title) : title;
+  const textValue = contentPrefix ? getContent(`${contentPrefix}.text`, text) : text;
   return (
     <section className="page-hero">
-      <p className="kicker" data-hero>{eyebrow}</p>
-      <h1 data-hero>{title}</h1>
-      <p data-hero>{text}</p>
+      {contentPrefix
+        ? <EditableText as="p" className="kicker" contentKey={`${contentPrefix}.eyebrow`} value={eyebrowValue} />
+        : <p className="kicker" data-hero>{eyebrow}</p>}
+      {contentPrefix
+        ? <EditableText as="h1" contentKey={`${contentPrefix}.title`} value={titleValue} />
+        : <h1 data-hero>{title}</h1>}
+      {contentPrefix
+        ? <EditableText as="p" multiline contentKey={`${contentPrefix}.text`} value={textValue} />
+        : <p data-hero>{text}</p>}
     </section>
   );
 }
 
-function SectionIntro({ eyebrow, title, text }) {
+function SectionIntro({ eyebrow, title, text, contentPrefix }) {
+  const { getContent } = useAdmin();
+  const eyebrowValue = contentPrefix ? getContent(`${contentPrefix}.eyebrow`, eyebrow) : eyebrow;
+  const titleValue = contentPrefix ? getContent(`${contentPrefix}.title`, title) : title;
+  const textValue = contentPrefix ? getContent(`${contentPrefix}.text`, text) : text;
   return (
     <div className="section-intro" data-reveal>
       <div>
-        <p className="kicker">{eyebrow}</p>
-        <h2>{title}</h2>
+        {contentPrefix
+          ? <EditableText as="p" className="kicker" contentKey={`${contentPrefix}.eyebrow`} value={eyebrowValue} />
+          : <p className="kicker">{eyebrow}</p>}
+        {contentPrefix
+          ? <EditableText as="h2" contentKey={`${contentPrefix}.title`} value={titleValue} />
+          : <h2>{title}</h2>}
       </div>
-      <p>{text}</p>
+      {contentPrefix
+        ? <EditableText as="p" multiline contentKey={`${contentPrefix}.text`} value={textValue} />
+        : <p>{text}</p>}
     </div>
   );
 }
@@ -915,7 +986,7 @@ function SectionIntro({ eyebrow, title, text }) {
 function ProductGrid({ products: list }) {
   return (
     <div className="product-grid gallery-grid">
-        {list.map((product, index) => <ProductCard key={product.file} product={product} priority={index < 8} />)}
+        {list.map((product, index) => <ProductCard key={product.id || product.file || index} product={product} priority={index < 8} />)}
     </div>
   );
 }
@@ -925,18 +996,29 @@ function ProductCarousel({ products: list }) {
   return (
     <div className="product-slider" data-reveal>
       <div className="product-track">
-        {slides.map((product, index) => <ProductCard key={`${product.file}-${index}`} product={product} priority={index < 6} />)}
+        {slides.map((product, index) => <ProductCard key={`${product.id || product.file}-${index}`} product={product} priority={index < 6} />)}
       </div>
     </div>
   );
 }
 
 function ProductCard({ product, priority = false }) {
+  const src = mediaSrc(product);
+  const title = product.title || product.name || 'Compustar product';
   return (
     <article className="product-card gallery-card" data-reveal>
       <div className="product-image">
-        <SmartImage src={`/products/${product.file}`} alt="Compustar product" loading={priority ? 'eager' : 'lazy'} fetchPriority={priority ? 'high' : 'low'} />
+        <SmartImage src={src} alt={title} loading={priority ? 'eager' : 'lazy'} fetchPriority={priority ? 'high' : 'low'} />
+        <ProductEditorButton product={product} />
       </div>
+      {(product.title || product.name || product.price != null) && (
+        <div className="product-meta">
+          <strong>{title}</strong>
+          {product.price != null && product.price !== '' && (
+            <span className="product-price">{product.currency || 'BWP'} {Number(product.price).toLocaleString()}</span>
+          )}
+        </div>
+      )}
       <div className="product-overlay">
         <a href={route('Contact')} onClick={(event) => goToPage(event, 'Contact')}>
           Enquire <ArrowRight size={16} weight="bold" />

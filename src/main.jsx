@@ -1068,19 +1068,24 @@ function ProductCarousel({ products: list }) {
 function ProductCard({ product, priority = false }) {
   const src = mediaSrc(product);
   const title = (product.title || product.name || '').trim();
+  const category = (product.category || '').trim();
+  const description = (product.description || '').trim();
   const hasPrice = product.price != null && product.price !== '';
+  const hasMeta = title || category || description || hasPrice;
   return (
     <article className="product-card gallery-card" data-reveal>
       <div className="product-image">
         <SmartImage src={src} alt={title || 'Compustar product'} loading={priority ? 'eager' : 'lazy'} fetchPriority={priority ? 'high' : 'low'} />
         <ProductEditorButton product={product} />
       </div>
-      {(title || hasPrice) && (
+      {hasMeta && (
         <div className="product-meta">
+          {category ? <span className="product-category">{category}</span> : null}
           {title ? <strong>{title}</strong> : null}
           {hasPrice && (
             <span className="product-price">{product.currency || 'BWP'} {Number(product.price).toLocaleString()}</span>
           )}
+          {description ? <p className="product-description">{description}</p> : null}
         </div>
       )}
       <div className="product-overlay">

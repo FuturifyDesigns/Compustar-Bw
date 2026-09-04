@@ -944,11 +944,16 @@ function LocationsMap() {
 }
 
 function ContactPage() {
+  const { getContent } = useAdmin();
+  const contactEmail = getContent('site.email', email);
+  const contactTel = getContent('site.tel_display', displayTelPhone);
+  const contactPhone = getContent('site.phone_display', displayPhone);
+  const contactMobile = getContent('site.mobile_display', displayMobilePhone);
   const methods = [
-    [EnvelopeSimple, 'Email', email, `mailto:${email}?subject=Compustar%20Website%20Enquiry`],
-    [Phone, 'Telephone', displayTelPhone, `tel:${telPhone}`],
-    [Phone, 'Game City mobile', displayPhone, `tel:${phone}`],
-    [Phone, 'G-West mobile', displayMobilePhone, `tel:${mobilePhone}`]
+    [EnvelopeSimple, 'Email', 'contact.method.email', 'Email', 'site.email', contactEmail, `mailto:${contactEmail}?subject=Compustar%20Website%20Enquiry`],
+    [Phone, 'Telephone', 'contact.method.tel', 'Telephone', 'site.tel_display', contactTel, `tel:${contactTel.replace(/\D/g, '')}`],
+    [Phone, 'Game City mobile', 'contact.method.gamecity', 'Game City mobile', 'site.phone_display', contactPhone, `tel:${contactPhone.replace(/\D/g, '')}`],
+    [Phone, 'G-West mobile', 'contact.method.gwest', 'G-West mobile', 'site.mobile_display', contactMobile, `tel:${contactMobile.replace(/\D/g, '')}`]
   ];
   const tips = [
     'Product name, category or quantity',
@@ -963,12 +968,15 @@ function ContactPage() {
       <section className="contact-wrap">
         <div className="contact-layout">
           <article className="contact-intro" data-reveal>
-            <p className="kicker">How to enquire</p>
-            <h2>Send details we can act on.</h2>
-            <p>Tell us what you need and how to reach you. We will come back with availability, a quotation, or repair guidance.</p>
+            <CMSText as="p" className="kicker" contentKey="contact.intro.kicker" fallback="How to enquire" />
+            <CMSText as="h2" contentKey="contact.intro.title" fallback="Send details we can act on." />
+            <CMSText as="p" multiline contentKey="contact.intro.text" fallback="Tell us what you need and how to reach you. We will come back with availability, a quotation, or repair guidance." />
             <ol className="contact-tips">
               {tips.map((tip, index) => (
-                <li key={tip}><span>{String(index + 1).padStart(2, '0')}</span>{tip}</li>
+                <li key={tip}>
+                  <span>{String(index + 1).padStart(2, '0')}</span>
+                  <CMSText contentKey={`contact.tip.${index}`} fallback={tip} />
+                </li>
               ))}
             </ol>
             <div className="contact-socials">
@@ -977,25 +985,25 @@ function ContactPage() {
             </div>
           </article>
           <article className="contact-sheet" data-reveal>
-            <p className="kicker">Direct lines</p>
-            <h2>Get in touch.</h2>
+            <CMSText as="p" className="kicker" contentKey="contact.sheet.kicker" fallback="Direct lines" />
+            <CMSText as="h2" contentKey="contact.sheet.title" fallback="Get in touch." />
             <div className="contact-rows">
-              {methods.map(([Icon, label, value, href]) => (
-                <a className="contact-row" href={href} key={label}>
+              {methods.map(([Icon, key, labelKey, labelFallback, valueKey, value, href]) => (
+                <a className="contact-row" href={href} key={key}>
                   <span className="contact-row-icon"><Icon size={20} weight="fill" /></span>
                   <span>
-                    <em>{label}</em>
-                    <strong>{value}</strong>
+                    <em><CMSText contentKey={labelKey} fallback={labelFallback} /></em>
+                    <strong><CMSText contentKey={valueKey} fallback={value} /></strong>
                   </span>
                   <ArrowRight size={16} weight="bold" />
                 </a>
               ))}
             </div>
             <a className="button whatsapp contact-whatsapp" href={whatsappUrl} target="_blank" rel="noreferrer">
-              <WhatsAppIcon size={18} /> Chat on WhatsApp
+              <WhatsAppIcon size={18} /> <CMSText contentKey="contact.whatsapp" fallback="Chat on WhatsApp" />
             </a>
             <a className="contact-store-link" href={route('Location')} onClick={(event) => goToPage(event, 'Location')}>
-              Store addresses and map <ArrowRight size={15} weight="bold" />
+              <CMSText contentKey="contact.store_link" fallback="Store addresses and map" /> <ArrowRight size={15} weight="bold" />
             </a>
           </article>
         </div>

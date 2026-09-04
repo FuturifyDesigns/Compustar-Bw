@@ -651,6 +651,7 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
   color: #6b5c5e;
   justify-self: start;
 }
+.admin-login-link {
   background: none;
   border: 0;
   color: rgba(255, 245, 245, .7);
@@ -715,32 +716,129 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
   }
   .admin-ready-actions .admin-login-btn { width: 100%; }
 }
-.editable-wrap { display: inline; position: relative; }
-.edit-chip {
-  align-items: center; background: #111; border: 0; border-radius: 999px; color: #fff; cursor: pointer;
-  display: inline-flex; font: inherit; font-size: .75rem; gap: .25rem; margin-left: .35rem; padding: .2rem .45rem; vertical-align: middle;
+.editable-wrap {
+  align-items: flex-start;
+  display: inline-flex;
+  gap: .55rem;
+  max-width: 100%;
+  position: relative;
+  vertical-align: top;
+  z-index: 3;
 }
+.editable-wrap.editable-h1,
+.editable-wrap.editable-h2,
+.editable-wrap.editable-p {
+  display: flex;
+  width: 100%;
+}
+.editable-wrap .editable-text { flex: 1 1 auto; min-width: 0; }
+.edit-chip {
+  align-items: center;
+  background: #111;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 700;
+  gap: .35rem;
+  justify-content: center;
+  min-height: 42px;
+  min-width: 42px;
+  padding: .55rem .7rem;
+  pointer-events: auto;
+  position: relative;
+  touch-action: manipulation;
+  z-index: 8;
+}
+.edit-chip.solid { padding-inline: .9rem; }
 .edit-chip.danger { background: #8b1010; }
-.card-admin-actions { display: flex; gap: .35rem; position: absolute; right: .55rem; top: .55rem; z-index: 5; }
-.cms-toolbar { display: flex; justify-content: flex-end; margin-bottom: .85rem; min-height: 0; }
+.edit-chip:hover { filter: brightness(1.08); transform: scale(1.03); }
+.card-admin-actions {
+  display: flex;
+  gap: .45rem;
+  pointer-events: auto;
+  position: absolute;
+  right: .65rem;
+  top: .65rem;
+  z-index: 12;
+}
+.cms-toolbar { display: flex; justify-content: flex-end; margin-bottom: .85rem; min-height: 0; position: relative; z-index: 5; }
 .cms-modal {
-  align-items: center; background: rgba(8,10,14,.55); display: grid; inset: 0; justify-items: center; padding: 1rem; position: fixed; z-index: 100;
+  align-items: center;
+  background: rgba(8, 10, 14, .62);
+  display: grid;
+  inset: 0;
+  justify-items: center;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
+  position: fixed;
+  z-index: 2000;
 }
 .cms-dialog {
-  background: #fff; border-radius: 18px; display: grid; gap: .75rem; max-height: 90vh; max-width: 460px; overflow: auto; padding: 1.1rem; width: min(100%, 460px);
+  background: #fff;
+  border-radius: 22px;
+  display: grid;
+  gap: .85rem;
+  margin: auto;
+  max-height: min(92vh, 920px);
+  max-width: 520px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 1.2rem;
+  width: min(100%, 520px);
 }
-.cms-dialog header { align-items: center; display: flex; justify-content: space-between; }
+.cms-dialog-wide { max-width: 720px; width: min(100%, 720px); }
+.cms-dialog header { align-items: center; display: flex; justify-content: space-between; position: sticky; top: -1.2rem; background: #fff; padding-top: .2rem; z-index: 1; }
 .cms-dialog header button, .cms-dialog .button { cursor: pointer; }
-.cms-dialog label { display: grid; font-size: .86rem; font-weight: 600; gap: .35rem; }
+.cms-dialog label { display: grid; font-size: .86rem; font-weight: 700; gap: .4rem; }
 .cms-dialog input, .cms-dialog textarea {
-  border: 1px solid var(--line); border-radius: 12px; font: inherit; padding: .7rem .8rem; width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  font: inherit;
+  padding: .8rem .9rem;
+  width: 100%;
+}
+.cms-dialog-actions { display: flex; flex-wrap: wrap; gap: .65rem; justify-content: flex-end; margin-top: .25rem; }
+.cms-dialog .button.secondary {
+  background: #f3eeed;
+  border: 1px solid rgba(18, 9, 11, .12);
+  color: #12090b;
 }
 .cms-error { color: #b00020; font-size: .9rem; margin: 0; }
 .cms-toast {
   background: #111; border-radius: 999px; bottom: 1.2rem; color: #fff; left: 50%; padding: .65rem 1rem;
-  position: fixed; transform: translateX(-50%); z-index: 110;
+  position: fixed; transform: translateX(-50%); z-index: 2100;
 }
 .cms-empty { color: var(--muted, #667); text-align: center; }
+.cms-image-field { display: grid; gap: .55rem; }
+.cms-image-label { font-size: .86rem; font-weight: 700; }
+.cms-image-preview-row { align-items: center; display: grid; gap: .85rem; grid-template-columns: 132px 1fr; }
+.cms-image-preview {
+  align-items: center; background: #f3eeed; border: 1px solid var(--line); border-radius: 16px;
+  display: grid; justify-items: center; overflow: hidden; place-items: center;
+}
+.cms-image-preview img { display: block; height: 100%; object-fit: cover; width: 100%; }
+.cms-image-preview span { color: #6b5c5e; font-size: .8rem; padding: .5rem; text-align: center; }
+.cms-image-actions { display: flex; flex-wrap: wrap; gap: .45rem; }
+.cms-image-hint { color: #6b5c5e; font-size: .82rem; line-height: 1.4; margin: 0; }
+.cms-image-editor { display: grid; gap: .85rem; }
+.cms-image-stage {
+  background: #15181d; border-radius: 18px; cursor: grab; isolation: isolate; overflow: hidden; position: relative; touch-action: none; width: 100%;
+}
+.cms-image-stage:active { cursor: grabbing; }
+.cms-image-layer { left: 50%; position: absolute; top: 50%; transform-origin: center center; will-change: transform; }
+.cms-image-layer img { display: block; height: 100%; pointer-events: none; user-select: none; width: 100%; }
+.cms-crop-frame {
+  border: 2px solid rgba(255,255,255,.92); box-shadow: 0 0 0 999px rgba(0,0,0,.45); inset: 0; pointer-events: none; position: absolute;
+}
+.cms-image-tools { align-items: center; display: flex; flex-wrap: wrap; gap: .55rem; }
+.cms-zoom { align-items: center; display: inline-flex; flex: 1 1 180px; gap: .45rem; min-width: 180px; }
+.cms-zoom input { width: 100%; }
 .product-meta {
   display: grid; gap: .2rem; padding: .75rem .9rem 1rem;
 }
@@ -748,3 +846,7 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
 .product-price { color: var(--brand, #ef1717); font-size: .88rem; font-weight: 700; }
 .product-image { position: relative; }
 .advert-stage { position: relative; }
+.product-card .card-admin-actions,
+.advert-stage .card-admin-actions { z-index: 12; }
+body.cms-editing .product-showcase-section,
+body.cms-editing .product-slider { overflow: visible; }

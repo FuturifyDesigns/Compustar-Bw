@@ -1,46 +1,127 @@
 import React, { useEffect, useState } from 'react';
-import { PencilSimple, Plus, Trash, SignIn, SignOut, X } from '@phosphor-icons/react';
+import { PencilSimple, Plus, Trash, SignOut, X, LockKey, ArrowRight } from '@phosphor-icons/react';
 import { useAdmin } from './AdminContext';
 
 export function AdminBar() {
-  const { isAdmin, editMode, setEditMode, login, logout, busy, toast } = useAdmin();
-  const [open, setOpen] = useState(false);
-  const [email, setEmail] = useState('compustarbw@gmail.com');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const { isAdmin, editMode, setEditMode, logout, toast } = useAdmin();
+
+  if (!isAdmin) {
+    return toast ? <div className="cms-toast">{toast}</div> : null;
+  }
 
   return (
     <>
-      {!isAdmin ? (
-        <button className="admin-fab" type="button" onClick={() => setOpen(true)} aria-label="Admin login"><SignIn size={18} weight="bold" /></button>
-      ) : (
-        <div className="admin-bar">
-          <span>Admin mode</span>
-          <button type="button" className={editMode ? 'active' : ''} onClick={() => setEditMode((v) => !v)}>{editMode ? 'Editing on' : 'Editing off'}</button>
-          <button type="button" onClick={logout}><SignOut size={16} /> Sign out</button>
-        </div>
-      )}
-      {open && !isAdmin && (
-        <div className="cms-modal" role="dialog">
-          <div className="cms-dialog">
-            <header><strong>Admin login</strong><button type="button" onClick={() => setOpen(false)}><X size={18} /></button></header>
-            <label>Email<input value={email} onChange={(e) => setEmail(e.target.value)} type="email" /></label>
-            <label>Password<input value={password} onChange={(e) => setPassword(e.target.value)} type="password" /></label>
-            {error && <p className="cms-error">{error}</p>}
-            <button className="button dark" disabled={busy} type="button" onClick={async () => {
-              try {
-                setError('');
-                await login(email, password);
-                setOpen(false);
-              } catch (err) {
-                setError(err.message || 'Login failed');
-              }
-            }}>Sign in</button>
-          </div>
-        </div>
-      )}
+      <div className="admin-bar">
+        <span>Admin mode</span>
+        <button type="button" className={editMode ? 'active' : ''} onClick={() => setEditMode((v) => !v)}>{editMode ? 'Editing on' : 'Editing off'}</button>
+        <button type="button" onClick={logout}><SignOut size={16} /> Sign out</button>
+      </div>
       {toast && <div className="cms-toast">{toast}</div>}
     </>
+  );
+}
+
+export function AdminPage({ onEnterSite }) {
+  const { isAdmin, editMode, setEditMode, login, logout, busy, ready } = useAdmin();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    document.body.classList.add('admin-login-body');
+    return () => document.body.classList.remove('admin-login-body');
+  }, []);
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setError('');
+    try {
+      await login(email.trim(), password);
+    } catch (err) {
+      setError(err.message || 'Login failed');
+    }
+  }
+
+  if (!ready) {
+    return (
+      <div className="admin-login">
+        <div className="admin-login-panel">
+          <p className="admin-login-loading">Loading…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isAdmin) {
+    return (
+      <div className="admin-login">
+        <div className="admin-login-glow" aria-hidden="true" />
+        <div className="admin-login-panel admin-login-ready" data-hero>
+          <img src="/logo.webp" alt="Compustar" className="admin-login-logo" />
+          <p className="admin-login-eyebrow">Signed in</p>
+          <h1>You&apos;re ready to edit the live site.</h1>
+          <p className="admin-login-lead">Turn editing on, then open any page to change text, products, prices, and adverts in place.</p>
+          <div className="admin-login-actions">
+            <button
+              type="button"
+              className={`admin-login-btn ${editMode ? 'accent' : 'ghost'}`}
+              onClick={() => setEditMode((v) => !v)}
+            >
+              {editMode ? 'Editing is on' : 'Turn editing on'}
+            </button>
+            <button type="button" className="admin-login-btn primary" onClick={onEnterSite}>
+              Open the site <ArrowRight size={18} weight="bold" />
+            </button>
+          </div>
+          <button type="button" className="admin-login-link" onClick={logout}>Sign out</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="admin-login">
+      <div className="admin-login-glow" aria-hidden="true" />
+      <div className="admin-login-stage">
+        <div className="admin-login-brand" data-hero>
+          <img src="/logo.webp" alt="Compustar" className="admin-login-logo" />
+          <p className="admin-login-eyebrow">Compustar Botswana</p>
+          <h1>Site studio</h1>
+          <p className="admin-login-lead">Sign in to edit products, prices, adverts, and page copy on the live website.</p>
+        </div>
+        <form className="admin-login-panel" onSubmit={handleSubmit} data-hero>
+          <div className="admin-login-lock"><LockKey size={22} weight="fill" /></div>
+          <h2>Admin sign in</h2>
+          <p className="admin-login-hint">Only authorised Compustar staff should use this page.</p>
+          <label>
+            Email
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              type="email"
+              autoComplete="username"
+              required
+              placeholder="you@compustar.co.bw"
+            />
+          </label>
+          <label>
+            Password
+            <input
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              type="password"
+              autoComplete="current-password"
+              required
+              placeholder="••••••••"
+            />
+          </label>
+          {error && <p className="cms-error" role="alert">{error}</p>}
+          <button className="admin-login-btn primary" disabled={busy} type="submit">
+            {busy ? 'Signing in…' : 'Sign in'}
+          </button>
+        </form>
+      </div>
+    </div>
   );
 }
 

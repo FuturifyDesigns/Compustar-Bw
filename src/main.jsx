@@ -39,7 +39,7 @@ import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import productsJson from './products.json';
 import { AdminProvider, useAdmin } from './cms/AdminContext';
-import { AdminBar, AdvertEditorButton, EditableText, ProductEditorButton } from './cms/AdminUI';
+import { AdminBar, AdminPage, AdvertEditorButton, EditableText, ProductEditorButton } from './cms/AdminUI';
 import './styles.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -126,7 +126,8 @@ const seo = {
   Services: ['Technology Services | Compustar Botswana', 'Computer sales, printer support, networking, surveillance systems, and practical technology guidance in Gaborone.'],
   Repairs: ['Computer Repairs | Compustar Botswana', 'Ask Compustar Botswana about computer diagnostics, upgrades, setup issues, replacement parts, and repair support.'],
   Location: ['Compustar Location | Game City Mall, Gaborone', 'Visit Compustar at Shop 6U upstairs in Game City Mall, Gaborone, Botswana.'],
-  Contact: ['Contact Compustar Botswana', 'Contact Compustar Botswana about product availability, prices, repairs, quotes, and technology support.']
+  Contact: ['Contact Compustar Botswana', 'Contact Compustar Botswana about product availability, prices, repairs, quotes, and technology support.'],
+  Admin: ['Admin | Compustar Botswana', 'Compustar site studio sign in.']
 };
 
 function toWebp(src) {
@@ -213,6 +214,15 @@ function AppShell() {
   useRevealAnimations(page);
   usePageSeo(page);
 
+  if (page === 'Admin') {
+    return (
+      <>
+        <AdminBar />
+        <AdminPage onEnterSite={() => goToPage({ preventDefault() {} }, 'Home')} />
+      </>
+    );
+  }
+
   return (
     <>
       <AdminBar />
@@ -256,7 +266,7 @@ function OfflineNotice() {
 
 function usePageSeo(page) {
   useEffect(() => {
-    const [title, description] = seo[page];
+    const [title, description] = seo[page] || seo.Home;
     const pageUrl = `https://compustar.co.bw${route(page)}`;
     document.title = title;
     document.querySelector('meta[name="description"]')?.setAttribute('content', description);
@@ -266,16 +276,30 @@ function usePageSeo(page) {
     document.querySelector('meta[property="og:description"]')?.setAttribute('content', description);
     document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', title);
     document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', description);
+    let robots = document.querySelector('meta[name="robots"]');
+    if (page === 'Admin') {
+      if (!robots) {
+        robots = document.createElement('meta');
+        robots.name = 'robots';
+        document.head.appendChild(robots);
+      }
+      robots.setAttribute('content', 'noindex, nofollow');
+    } else if (robots) {
+      robots.setAttribute('content', 'index, follow');
+    }
   }, [page]);
 }
 
 function getInitialPage() {
   const value = window.location.pathname.replace(/^\/+/, '').replace(/\/+$/, '');
+  if (value.toLowerCase() === 'admin') return 'Admin';
   return pages.includes(value) ? value : 'Home';
 }
 
 function route(page) {
-  return page === 'Home' ? '/' : `/${page}`;
+  if (page === 'Home') return '/';
+  if (page === 'Admin') return '/admin';
+  return `/${page}`;
 }
 
 function resetPageScroll(behavior = 'smooth') {

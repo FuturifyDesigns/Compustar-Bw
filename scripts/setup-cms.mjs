@@ -34,7 +34,7 @@ const { count } = await admin.from('products').select('*', { count: 'exact', hea
 if (!count) {
   const rows = products.map((p, index) => ({
     title: '',
-    category: p.category || 'General',
+    category: '',
     price: null,
     currency: 'BWP',
     image_url: `/products/${p.file.replace(/\.(jpe?g|png)$/i, '.webp')}`,

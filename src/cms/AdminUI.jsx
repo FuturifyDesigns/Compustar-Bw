@@ -490,7 +490,7 @@ export function CMSText({ contentKey, fallback = '', as = 'span', className = ''
 export function ProductEditorButton({ product, onAdd }) {
   const { isAdmin, editMode, saveProduct, deleteProduct, busy } = useAdmin();
   const [open, setOpen] = useState(false);
-  const blank = { title: '', category: 'General', price: '', currency: 'BWP', description: '', image_url: '', active: true };
+  const blank = { title: '', category: '', price: '', currency: 'BWP', description: '', image_url: '', active: true };
   const [draft, setDraft] = useState(blank);
   const [imageFile, setImageFile] = useState(null);
 
@@ -499,7 +499,7 @@ export function ProductEditorButton({ product, onAdd }) {
   function openEditor() {
     setDraft(product ? {
       title: product.title || '',
-      category: product.category || 'General',
+      category: product.category || '',
       price: product.price ?? '',
       currency: product.currency || 'BWP',
       description: product.description || '',
@@ -523,7 +523,7 @@ export function ProductEditorButton({ product, onAdd }) {
       {open && (
         <CmsModal title={product ? 'Edit product' : 'Add product'} onClose={() => setOpen(false)} wide>
           <label>Title<input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} placeholder="Add product name" /></label>
-          <label>Category<input value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} /></label>
+          <label>Category<input value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} placeholder="Add category" /></label>
           <label>Price (BWP)<input type="number" step="0.01" value={draft.price} onChange={(e) => setDraft({ ...draft, price: e.target.value })} /></label>
           <label>Description<textarea rows={4} value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} /></label>
           <ImageField

@@ -104,6 +104,7 @@ const pages = ['Home', 'About', 'Products', 'Adverts', 'Services', 'Repairs', 'L
 const fallbackProducts = productsJson.map((item) => ({
   ...item,
   title: '',
+  category: '',
   image_url: `/products/${item.file.replace(/\.(jpe?g|png)$/i, '.webp')}`
 }));
 const advertSlideMs = 8000;

@@ -140,7 +140,7 @@ export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts
       if (payload.fileObj) image_url = await uploadMedia(payload.fileObj, 'products');
       const row = {
         title: payload.title || '',
-        category: payload.category || 'General',
+        category: payload.category || '',
         price: payload.price === '' || payload.price == null ? null : Number(payload.price),
         currency: payload.currency || 'BWP',
         description: payload.description || '',

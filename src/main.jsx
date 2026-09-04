@@ -514,7 +514,7 @@ function AboutPage() {
         <div className="approach-flow">
           {approach.map((step, index) => (
             <article className="approach-step" data-approach-step key={step}>
-              <span>{String(index + 1).padStart(2, '0')}</span>
+              <span className="approach-step-num">{String(index + 1).padStart(2, '0')}</span>
               <h3><CMSText contentKey={`about.approach.step.${index}`} fallback={step} /></h3>
               {index < approach.length - 1 && <ArrowRight className="approach-arrow" size={18} weight="bold" />}
             </article>
@@ -574,7 +574,7 @@ function AboutPage() {
         </div>
         <div className="business-journey" data-stagger>
           {businessJourney.map((item, index) => (
-            <span data-stagger-item key={item}>
+            <span className="business-journey-item" data-stagger-item key={item}>
               <CMSText contentKey={`about.journey.${index}`} fallback={item} />
             </span>
           ))}
@@ -850,7 +850,7 @@ function RepairsPage() {
               <article className="repair-step" key={`${step}-${index}`} data-reveal>
                 <SmartImage src={image} alt="" loading="lazy" />
                 <div>
-                  <span>{step}</span>
+                  <span className="repair-step-num">{step}</span>
                   <h3><CMSText contentKey={`repairs.step.${sourceIndex}.title`} fallback={title} /></h3>
                   <CMSText as="p" multiline contentKey={`repairs.step.${sourceIndex}.text`} fallback={text} />
                   <a className="button dark" href={route('Contact')} onClick={(event) => goToPage(event, 'Contact')}>Ask about repairs</a>
@@ -974,7 +974,7 @@ function ContactPage() {
             <ol className="contact-tips">
               {tips.map((tip, index) => (
                 <li key={tip}>
-                  <span>{String(index + 1).padStart(2, '0')}</span>
+                  <span className="contact-tips-num">{String(index + 1).padStart(2, '0')}</span>
                   <CMSText contentKey={`contact.tip.${index}`} fallback={tip} />
                 </li>
               ))}

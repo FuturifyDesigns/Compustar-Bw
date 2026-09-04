@@ -135,8 +135,9 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
 .repair-step img { aspect-ratio: 16 / 9; display: block; min-height: 0; object-fit: cover; width: 100%; }
 .repair-step div { align-content: start; display: grid; min-height: 260px; padding: clamp(1.2rem,3vw,1.8rem); }
 .repair-step .button { align-self: end; margin-top: 1.2rem; width: fit-content; }
-.repair-step span { color: var(--red); display: block; font-family: "Source Serif 4", Georgia, serif; font-size: clamp(2.4rem,5vw,3.6rem); font-weight: 700; line-height: 1; margin-bottom: .8rem; }
-.repair-step p { color: var(--muted); line-height: 1.55; }
+.repair-step-num { color: var(--red); display: block; font-family: "Source Serif 4", Georgia, serif; font-size: clamp(2.4rem,5vw,3.6rem); font-weight: 700; line-height: 1; margin-bottom: .8rem; }
+.repair-step h3 { font-size: clamp(1.35rem, 2.2vw, 1.7rem); line-height: 1.2; margin: 0 0 .55rem; }
+.repair-step p { color: var(--muted); font-size: .98rem; line-height: 1.55; margin: 0; }
 .contact-wrap {
   margin: 0 auto; max-width: 1180px; padding: clamp(2.4rem,5vw,3.6rem) clamp(1rem,5vw,5rem) clamp(3.4rem,6vw,5.6rem);
 }
@@ -153,7 +154,7 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
   align-items: center; background: #f6f7f9; border: 1px solid var(--line); border-radius: 16px;
   color: var(--ink); display: flex; font-weight: 700; gap: .85rem; list-style: none; padding: .9rem 1rem;
 }
-.contact-tips span {
+.contact-tips-num {
   color: var(--red); flex: 0 0 auto; font-family: "Source Serif 4", Georgia, serif; font-size: 1.15rem; font-weight: 700;
 }
 .contact-socials { display: flex; gap: .55rem; margin-top: 1.5rem; }
@@ -284,10 +285,10 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
   background: #fff; border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 14px 40px rgba(12,13,16,.05);
   min-height: 150px; padding: 1.1rem; position: relative;
 }
-.approach-step span {
+.approach-step-num {
   color: var(--red); display: block; font-family: "Source Serif 4", Georgia, serif; font-size: 2rem; font-weight: 700; line-height: 1; margin-bottom: .7rem;
 }
-.approach-step h3 { font-size: 1.05rem; line-height: 1.25; }
+.approach-step h3 { font-size: 1.05rem; line-height: 1.25; margin: 0; }
 .approach-arrow { color: var(--red); position: absolute; right: -.55rem; top: 50%; transform: translateY(-50%); z-index: 2; }
 .about-note {
   background: rgba(239,23,23,.06); border: 1px solid rgba(239,23,23,.14); border-radius: 18px; color: var(--muted);
@@ -329,7 +330,7 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
 .business-journey {
   display: flex; flex-wrap: wrap; gap: .65rem;
 }
-.business-journey span {
+.business-journey-item {
   background: var(--ink); border-radius: 999px; color: #fff; font-size: .92rem; font-weight: 900; padding: .72rem 1rem;
 }
 
@@ -478,7 +479,7 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
   .footer-links a { flex: 1 1 calc(50% - .65rem); text-align: center; }
   .approach-flow, .commitment-grid, .values-grid { grid-template-columns: 1fr; }
   .whatsapp-fab { bottom: 1rem; height: 52px; right: 1rem; width: 52px; }
-  .business-journey span { flex: 1 1 auto; text-align: center; }
+  .business-journey-item { flex: 1 1 auto; text-align: center; }
   .advert-thumbs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .site-header nav a { font-size: .9rem; }
 }
@@ -717,42 +718,61 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
   .admin-ready-actions .admin-login-btn { width: 100%; }
 }
 .editable-wrap {
-  align-items: flex-start;
-  display: inline-flex;
-  gap: .55rem;
+  display: inline;
   max-width: 100%;
   position: relative;
-  vertical-align: top;
+  vertical-align: baseline;
   z-index: 3;
 }
 .editable-wrap.editable-h1,
 .editable-wrap.editable-h2,
 .editable-wrap.editable-p {
-  display: flex;
+  display: block;
   width: 100%;
 }
-.editable-wrap .editable-text { flex: 1 1 auto; min-width: 0; }
+.editable-wrap .editable-text {
+  color: inherit;
+  display: inline;
+  font: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  margin: 0;
+  max-width: 100%;
+}
+.editable-wrap.editable-h1 .editable-text,
+.editable-wrap.editable-h2 .editable-text,
+.editable-wrap.editable-p .editable-text {
+  display: block;
+}
 .edit-chip {
   align-items: center;
   background: #111;
   border: 0;
   border-radius: 999px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.18);
   color: #fff;
   cursor: pointer;
   display: inline-flex;
   flex: 0 0 auto;
   font: inherit;
-  font-size: .8rem;
+  font-size: .78rem;
   font-weight: 700;
-  gap: .35rem;
+  gap: .3rem;
+  height: 34px;
   justify-content: center;
-  min-height: 42px;
-  min-width: 42px;
-  padding: .55rem .7rem;
+  margin-left: .4rem;
+  min-width: 34px;
+  padding: 0 .55rem;
   pointer-events: auto;
   position: relative;
   touch-action: manipulation;
+  vertical-align: middle;
   z-index: 8;
+}
+.editable-wrap.editable-h1 .edit-chip,
+.editable-wrap.editable-h2 .edit-chip,
+.editable-wrap.editable-p .edit-chip {
+  margin-top: .35rem;
 }
 .edit-chip.solid { padding-inline: .9rem; }
 .edit-chip.danger { background: #8b1010; }

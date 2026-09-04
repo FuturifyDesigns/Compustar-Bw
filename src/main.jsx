@@ -753,21 +753,20 @@ function AdvertsPage() {
 
   return (
     <>
+      <PageHero
+        contentPrefix="adverts.hero"
+        eyebrow="Adverts"
+        title="Campaign showcase."
+        text="Browse Compustar promotional adverts in an auto-playing showcase — POS, laptops, gaming, accessories, surveillance, and new location announcements."
+      />
       <section className="section adverts-section">
-        <div className="adverts-heading">
-          <div>
-            <CMSText as="p" className="kicker" contentKey="adverts.hero.eyebrow" fallback="Adverts" />
-            <CMSText as="h1" contentKey="adverts.hero.title" fallback="Campaign showcase." />
-            <CMSText as="p" multiline contentKey="adverts.hero.text" fallback="Browse Compustar promotional adverts — POS, laptops, gaming, accessories, surveillance, and new locations." />
-          </div>
-          <AdvertEditorButton onAdd />
-        </div>
+        <div className="cms-toolbar"><AdvertEditorButton onAdd /></div>
         {!current ? (
           <p className="cms-empty">No adverts yet. Sign in as admin to add one.</p>
         ) : (
           <div className={`advert-showcase${editing ? ' is-editing' : ''}`} data-reveal ref={stageRef}>
             <div className="advert-stage">
-              {!editing && <SmartImage className="advert-blur" src={mediaSrc(current)} alt="" aria-hidden="true" loading="eager" fetchPriority="high" />}
+              <SmartImage className="advert-blur" src={mediaSrc(current)} alt="" aria-hidden="true" loading="eager" fetchPriority="high" />
               <SmartImage className="advert-slide" src={mediaSrc(current)} alt={current.title || 'Advert'} loading="eager" fetchPriority="high" />
               <div className="advert-progress" aria-hidden="true"><span style={{ transform: `scaleX(${progress})` }} /></div>
               <AdvertEditorButton advert={current} />

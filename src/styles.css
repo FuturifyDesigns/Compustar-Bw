@@ -50,30 +50,17 @@ button, a { touch-action: manipulation; }
 .section.adverts-section {
   margin: 0 auto;
   max-width: 1180px;
-  padding-top: clamp(1.2rem, 2.5vw, 1.8rem);
+  padding-top: clamp(1.6rem, 3vw, 2.4rem);
 }
-.adverts-heading {
-  align-items: end;
+.cms-toolbar {
   display: flex;
-  gap: 1rem;
-  justify-content: space-between;
-  margin: 0 auto 1.15rem;
+  justify-content: flex-end;
+  margin: 0 auto .85rem;
   max-width: 1180px;
+  min-height: 0;
+  position: relative;
+  z-index: 5;
 }
-.adverts-heading .kicker { color: var(--red); margin-bottom: .45rem; }
-.adverts-heading h1 {
-  font-size: clamp(1.85rem, 3.2vw, 2.7rem);
-  line-height: 1.05;
-  max-width: 14ch;
-}
-.adverts-heading > div > p:not(.kicker) {
-  color: var(--muted);
-  font-size: 1rem;
-  line-height: 1.5;
-  margin: .55rem 0 0;
-  max-width: 46ch;
-}
-.adverts-heading .card-admin-actions { position: static; }
 
 .kicker { color: var(--gold); font-size: .76rem; font-weight: 900; letter-spacing: .18em; margin: 0 0 1rem; text-transform: uppercase; }
 h1, h2 { font-family: "Source Serif 4", Georgia, serif; font-optical-sizing: auto; letter-spacing: -.04em; line-height: .96; margin: 0; }
@@ -410,20 +397,24 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
 
 .advert-showcase {
   background: #fff; border: 1px solid var(--line); border-radius: calc(var(--radius) + 4px);
-  box-shadow: 0 24px 70px rgba(12,13,16,.1); overflow: hidden; padding: 1rem;
+  box-shadow: 0 24px 70px rgba(12,13,16,.1); overflow: hidden; padding: 1rem; width: 100%;
 }
 .advert-stage {
-  background: #dfe4ea; border-radius: 18px; isolation: isolate; overflow: hidden; position: relative;
+  align-items: center; background: #dfe4ea; border-radius: 18px; display: grid; isolation: isolate;
+  justify-items: center; min-height: min(68vh, 760px); overflow: hidden; position: relative; width: 100%;
 }
-.advert-stage picture:has(.advert-blur) {
-  height: 120%; inset: -10%; pointer-events: none; position: absolute; width: 120%; z-index: 0;
+.advert-stage picture:has(.advert-blur),
+.advert-stage > .advert-blur {
+  height: 120%; inset: -10%; object-fit: cover; pointer-events: none; position: absolute; width: 120%; z-index: 0;
 }
 .advert-blur {
   filter: blur(28px) saturate(1.15); height: 100%; object-fit: cover; opacity: .9; transform: scale(1.12); width: 100%;
 }
-.advert-stage picture:has(.advert-slide) { display: block; position: relative; z-index: 1; }
+.advert-stage picture:has(.advert-slide) {
+  display: grid; height: 100%; max-height: min(78vh, 980px); place-items: center; position: relative; width: 100%; z-index: 1;
+}
 .advert-slide {
-  display: block; margin: 0 auto; max-height: min(78vh, 980px); object-fit: contain; width: 100%;
+  display: block; height: auto; margin: 0 auto; max-height: min(78vh, 980px); max-width: 100%; object-fit: contain; position: relative; width: auto; z-index: 1;
 }
 .advert-progress {
   background: rgba(255,255,255,.18); bottom: 0; height: 4px; left: 0; overflow: hidden; position: absolute; right: 0; z-index: 2;

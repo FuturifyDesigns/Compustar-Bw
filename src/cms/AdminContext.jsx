@@ -30,7 +30,13 @@ function mapAdvert(row) {
 
 export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts = [] }) {
   const [session, setSession] = useState(null);
-  const [editMode, setEditMode] = useState(false);
+  const [editMode, setEditModeState] = useState(() => {
+    try {
+      return sessionStorage.getItem('compustar-cms-edit') === '1';
+    } catch {
+      return false;
+    }
+  });
   const [products, setProducts] = useState(fallbackProducts);
   const [adverts, setAdverts] = useState(fallbackAdverts);
   const [content, setContent] = useState({});
@@ -41,13 +47,31 @@ export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts
 
   const isAdmin = Boolean(session?.user);
 
+  function setEditMode(next) {
+    setEditModeState((prev) => {
+      const value = typeof next === 'function' ? next(prev) : next;
+      try {
+        sessionStorage.setItem('compustar-cms-edit', value ? '1' : '0');
+      } catch {
+        /* ignore */
+      }
+      return value;
+    });
+  }
+
   useEffect(() => {
     if (!supabase) return undefined;
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setReady(true);
+      if (!data.session) {
+        setEditMode(false);
+      }
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => setSession(next));
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => {
+      setSession(next);
+      if (!next) setEditMode(false);
+    });
     return () => sub.subscription.unsubscribe();
   }, []);
 

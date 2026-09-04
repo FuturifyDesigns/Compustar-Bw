@@ -33,7 +33,7 @@ const products = JSON.parse(readFileSync(new URL('../src/products.json', import.
 const { count } = await admin.from('products').select('*', { count: 'exact', head: true });
 if (!count) {
   const rows = products.map((p, index) => ({
-    title: p.title,
+    title: '',
     category: p.category || 'General',
     price: null,
     currency: 'BWP',

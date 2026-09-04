@@ -103,6 +103,7 @@ const locations = [
 const pages = ['Home', 'About', 'Products', 'Adverts', 'Services', 'Repairs', 'Location', 'Contact'];
 const fallbackProducts = productsJson.map((item) => ({
   ...item,
+  title: '',
   image_url: `/products/${item.file.replace(/\.(jpe?g|png)$/i, '.webp')}`
 }));
 const advertSlideMs = 8000;
@@ -1028,17 +1029,18 @@ function ProductCarousel({ products: list }) {
 
 function ProductCard({ product, priority = false }) {
   const src = mediaSrc(product);
-  const title = product.title || product.name || 'Compustar product';
+  const title = (product.title || product.name || '').trim();
+  const hasPrice = product.price != null && product.price !== '';
   return (
     <article className="product-card gallery-card" data-reveal>
       <div className="product-image">
-        <SmartImage src={src} alt={title} loading={priority ? 'eager' : 'lazy'} fetchPriority={priority ? 'high' : 'low'} />
+        <SmartImage src={src} alt={title || 'Compustar product'} loading={priority ? 'eager' : 'lazy'} fetchPriority={priority ? 'high' : 'low'} />
         <ProductEditorButton product={product} />
       </div>
-      {(product.title || product.name || product.price != null) && (
+      {(title || hasPrice) && (
         <div className="product-meta">
-          <strong>{title}</strong>
-          {product.price != null && product.price !== '' && (
+          {title ? <strong>{title}</strong> : null}
+          {hasPrice && (
             <span className="product-price">{product.currency || 'BWP'} {Number(product.price).toLocaleString()}</span>
           )}
         </div>

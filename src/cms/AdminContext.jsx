@@ -139,7 +139,7 @@ export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts
       let image_url = payload.image_url;
       if (payload.fileObj) image_url = await uploadMedia(payload.fileObj, 'products');
       const row = {
-        title: payload.title,
+        title: payload.title || '',
         category: payload.category || 'General',
         price: payload.price === '' || payload.price == null ? null : Number(payload.price),
         currency: payload.currency || 'BWP',

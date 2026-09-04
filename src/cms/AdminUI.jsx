@@ -430,8 +430,8 @@ export function EditableText({ contentKey, value, as = 'span', className = '', m
   if (!(isAdmin && editMode)) return <Tag className={className}>{value}</Tag>;
 
   return (
-    <span className={`editable-wrap editable-${as} ${className}`}>
-      <Tag className="editable-text">{value}</Tag>
+    <Tag className={`editable-wrap editable-${as}${className ? ` ${className}` : ''}`}>
+      {value}
       <button
         className="edit-chip"
         type="button"
@@ -442,7 +442,7 @@ export function EditableText({ contentKey, value, as = 'span', className = '', m
           setOpen(true);
         }}
       >
-        <PencilSimple size={18} weight="fill" />
+        <PencilSimple size={16} weight="fill" />
       </button>
       {open && (
         <CmsModal title="Edit text" onClose={() => setOpen(false)}>
@@ -470,7 +470,7 @@ export function EditableText({ contentKey, value, as = 'span', className = '', m
           </div>
         </CmsModal>
       )}
-    </span>
+    </Tag>
   );
 }
 

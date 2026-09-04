@@ -752,9 +752,15 @@ function AdvertsPage() {
 
   return (
     <>
-      <PageHero compact contentPrefix="adverts.hero" eyebrow="Adverts" title="Campaign showcase." text="Browse Compustar promotional adverts — POS, laptops, gaming, accessories, surveillance, and new locations." />
       <section className="section adverts-section">
-        <div className="cms-toolbar"><AdvertEditorButton onAdd /></div>
+        <div className="adverts-heading">
+          <div>
+            <CMSText as="p" className="kicker" contentKey="adverts.hero.eyebrow" fallback="Adverts" />
+            <CMSText as="h1" contentKey="adverts.hero.title" fallback="Campaign showcase." />
+            <CMSText as="p" multiline contentKey="adverts.hero.text" fallback="Browse Compustar promotional adverts — POS, laptops, gaming, accessories, surveillance, and new locations." />
+          </div>
+          <AdvertEditorButton onAdd />
+        </div>
         {!current ? (
           <p className="cms-empty">No adverts yet. Sign in as admin to add one.</p>
         ) : (
@@ -1012,13 +1018,13 @@ function ContactPage() {
   );
 }
 
-function PageHero({ eyebrow, title, text, contentPrefix, compact = false }) {
+function PageHero({ eyebrow, title, text, contentPrefix }) {
   const { getContent } = useAdmin();
   const eyebrowValue = contentPrefix ? getContent(`${contentPrefix}.eyebrow`, eyebrow) : eyebrow;
   const titleValue = contentPrefix ? getContent(`${contentPrefix}.title`, title) : title;
   const textValue = contentPrefix ? getContent(`${contentPrefix}.text`, text) : text;
   return (
-    <section className={`page-hero${compact ? ' page-hero-compact' : ''}`}>
+    <section className="page-hero">
       {contentPrefix
         ? <EditableText as="p" className="kicker" contentKey={`${contentPrefix}.eyebrow`} value={eyebrowValue} />
         : <p className="kicker" data-hero>{eyebrow}</p>}

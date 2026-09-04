@@ -43,22 +43,37 @@ button, a { touch-action: manipulation; }
 .hero > *, .page-hero > * { position: relative; }
 .hero { align-items: center; display: grid; gap: clamp(2rem,5vw,4rem); grid-template-columns: minmax(0,1.05fr) minmax(280px,.72fr); min-height: 70vh; padding: clamp(3.8rem,7vw,6rem) clamp(1rem,5vw,5rem) clamp(5rem,8vw,7rem); }
 .page-hero { min-height: 320px; padding: clamp(3.8rem,7vw,5.8rem) clamp(1rem,5vw,5rem); }
-.page-hero-compact {
-  min-height: 0;
-  padding: clamp(1.4rem, 3.5vw, 2.2rem) clamp(1rem, 5vw, 5rem);
+.page-hero .kicker,
+.page-hero h1,
+.page-hero > p,
+.page-hero .editable-wrap { position: relative; z-index: 1; }
+.section.adverts-section {
+  margin: 0 auto;
+  max-width: 1180px;
+  padding-top: clamp(1.2rem, 2.5vw, 1.8rem);
 }
-.page-hero-compact h1,
-.page-hero-compact .editable-h1 .editable-text {
-  font-size: clamp(1.85rem, 3.4vw, 2.8rem);
-  max-width: 18ch;
+.adverts-heading {
+  align-items: end;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin: 0 auto 1.15rem;
+  max-width: 1180px;
 }
-.page-hero-compact > p:not(.kicker),
-.page-hero-compact .editable-p {
+.adverts-heading .kicker { color: var(--red); margin-bottom: .45rem; }
+.adverts-heading h1 {
+  font-size: clamp(1.85rem, 3.2vw, 2.7rem);
+  line-height: 1.05;
+  max-width: 14ch;
+}
+.adverts-heading > div > p:not(.kicker) {
+  color: var(--muted);
   font-size: 1rem;
-  margin-top: .65rem;
-  max-width: 54ch;
+  line-height: 1.5;
+  margin: .55rem 0 0;
+  max-width: 46ch;
 }
-.page-hero-compact .kicker { margin-bottom: .55rem; }
+.adverts-heading .card-admin-actions { position: static; }
 
 .kicker { color: var(--gold); font-size: .76rem; font-weight: 900; letter-spacing: .18em; margin: 0 0 1rem; text-transform: uppercase; }
 h1, h2 { font-family: "Source Serif 4", Georgia, serif; font-optical-sizing: auto; letter-spacing: -.04em; line-height: .96; margin: 0; }
@@ -393,11 +408,6 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
 .about-location-grid p { align-items: flex-start; color: var(--muted); display: flex; gap: .55rem; line-height: 1.5; margin: .55rem 0; }
 .about-location-grid a { align-items: center; color: var(--red-deep); display: inline-flex; font-weight: 900; gap: .35rem; margin-top: .4rem; text-decoration: none; }
 
-.section.adverts-section {
-  margin: 0 auto;
-  max-width: 1180px;
-  padding-top: clamp(1.2rem, 2.5vw, 1.8rem);
-}
 .advert-showcase {
   background: #fff; border: 1px solid var(--line); border-radius: calc(var(--radius) + 4px);
   box-shadow: 0 24px 70px rgba(12,13,16,.1); overflow: hidden; padding: 1rem;
@@ -509,6 +519,7 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
   align-items: center; background: #111; color: #fff; display: flex; gap: .75rem; justify-content: center;
   padding: .55rem 1rem; position: sticky; top: 0; z-index: 90;
 }
+body:has(.admin-bar) .site-header { top: 44px; }
 .admin-bar button {
   background: rgba(255,255,255,.12); border: 0; border-radius: 999px; color: #fff; cursor: pointer;
   font: inherit; font-size: .85rem; padding: .35rem .8rem;
@@ -738,30 +749,18 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
   .admin-ready-actions .admin-login-btn { width: 100%; }
 }
 .editable-wrap {
-  display: inline;
   max-width: 100%;
   position: relative;
-  vertical-align: baseline;
   z-index: 3;
 }
-.editable-wrap.editable-h1,
-.editable-wrap.editable-h2,
-.editable-wrap.editable-p {
-  display: block;
-  width: 100%;
-}
-.editable-wrap .editable-text {
-  color: inherit;
+span.editable-wrap {
   display: inline;
-  font: inherit;
-  letter-spacing: inherit;
-  line-height: inherit;
-  margin: 0;
-  max-width: 100%;
+  vertical-align: baseline;
 }
-.editable-wrap.editable-h1 .editable-text,
-.editable-wrap.editable-h2 .editable-text,
-.editable-wrap.editable-p .editable-text {
+h1.editable-wrap,
+h2.editable-wrap,
+h3.editable-wrap,
+p.editable-wrap {
   display: block;
 }
 .edit-chip {
@@ -769,34 +768,43 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
   background: #111;
   border: 0;
   border-radius: 999px;
-  box-shadow: 0 8px 20px rgba(0,0,0,.18);
+  box-shadow: 0 6px 16px rgba(0,0,0,.16);
   color: #fff;
   cursor: pointer;
   display: inline-flex;
   flex: 0 0 auto;
-  font: inherit;
-  font-size: .78rem;
+  font-size: .72rem;
   font-weight: 700;
-  gap: .3rem;
-  height: 34px;
+  gap: .25rem;
+  height: 30px;
   justify-content: center;
+  line-height: 1;
   margin-left: .4rem;
-  min-width: 34px;
-  padding: 0 .55rem;
+  min-width: 30px;
+  padding: 0 .5rem;
   pointer-events: auto;
-  position: relative;
   touch-action: manipulation;
   vertical-align: middle;
   z-index: 8;
 }
-.editable-wrap.editable-h1 .edit-chip,
-.editable-wrap.editable-h2 .edit-chip,
-.editable-wrap.editable-p .edit-chip {
-  margin-top: .35rem;
+h1.editable-wrap,
+h2.editable-wrap,
+h3.editable-wrap,
+p.editable-wrap {
+  padding-right: 2.4rem;
 }
-.edit-chip.solid { padding-inline: .9rem; }
+h1.editable-wrap > .edit-chip,
+h2.editable-wrap > .edit-chip,
+h3.editable-wrap > .edit-chip,
+p.editable-wrap > .edit-chip {
+  margin-left: 0;
+  position: absolute;
+  right: 0;
+  top: .12em;
+}
+.edit-chip.solid { padding-inline: .75rem; }
 .edit-chip.danger { background: #8b1010; }
-.edit-chip:hover { filter: brightness(1.08); transform: scale(1.03); }
+.edit-chip:hover { filter: brightness(1.08); }
 .card-admin-actions {
   display: flex;
   gap: .45rem;

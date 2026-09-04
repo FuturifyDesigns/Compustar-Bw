@@ -39,7 +39,7 @@ import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import productsJson from './products.json';
 import { AdminProvider, useAdmin } from './cms/AdminContext';
-import { AdminBar, AdminPage, AdvertEditorButton, EditableText, ProductEditorButton } from './cms/AdminUI';
+import { AdminBar, AdminPage, AdvertEditorButton, CMSText, EditableText, ProductEditorButton } from './cms/AdminUI';
 import './styles.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -487,21 +487,22 @@ function AboutPage() {
       <section className="section about-intro">
         <div className="about-intro-grid">
           <div className="about-copy" data-reveal>
-            <p className="kicker">About Compustar</p>
-            <h2>Your Digital Partner.</h2>
-            <p>Compustar is a Botswana-based technology and electronics company dedicated to providing reliable, practical and accessible technology solutions to individuals, businesses, institutions and organisations.</p>
-            <p>We understand that technology is no longer simply an accessory to business — it is an essential part of how organisations operate, communicate, serve customers, manage information and grow.</p>
-            <p>Our role is to help our customers access the right technology products and solutions to support these needs.</p>
-            <p>From an individual purchasing a laptop or accessory to a business equipping an entire office, a school establishing a computer laboratory, a hospital strengthening its ICT infrastructure, or an organisation requiring technology equipment in bulk, Compustar is positioned to provide solutions tailored to different requirements and budgets.</p>
+            <CMSText as="p" className="kicker" contentKey="about.intro.kicker" fallback="About Compustar" />
+            <CMSText as="h2" contentKey="about.intro.title" fallback="Your Digital Partner." />
+            <CMSText as="p" multiline contentKey="about.intro.p1" fallback="Compustar is a Botswana-based technology and electronics company dedicated to providing reliable, practical and accessible technology solutions to individuals, businesses, institutions and organisations." />
+            <CMSText as="p" multiline contentKey="about.intro.p2" fallback="We understand that technology is no longer simply an accessory to business — it is an essential part of how organisations operate, communicate, serve customers, manage information and grow." />
+            <CMSText as="p" multiline contentKey="about.intro.p3" fallback="Our role is to help our customers access the right technology products and solutions to support these needs." />
+            <CMSText as="p" multiline contentKey="about.intro.p4" fallback="From an individual purchasing a laptop or accessory to a business equipping an entire office, a school establishing a computer laboratory, a hospital strengthening its ICT infrastructure, or an organisation requiring technology equipment in bulk, Compustar is positioned to provide solutions tailored to different requirements and budgets." />
           </div>
           <aside className="about-highlight" data-reveal>
-            <p className="kicker">Who we serve</p>
+            <CMSText as="p" className="kicker" contentKey="about.serve.kicker" fallback="Who we serve" />
             <ul>
-              <li><CheckCircle {...iconProps} /> Individuals & households</li>
-              <li><CheckCircle {...iconProps} /> Businesses & SMEs</li>
-              <li><CheckCircle {...iconProps} /> Schools & institutions</li>
-              <li><CheckCircle {...iconProps} /> Hospitals & NGOs</li>
-              <li><CheckCircle {...iconProps} /> Corporate & bulk buyers</li>
+              {['Individuals & households', 'Businesses & SMEs', 'Schools & institutions', 'Hospitals & NGOs', 'Corporate & bulk buyers'].map((item, index) => (
+                <li key={item}>
+                  <CheckCircle {...iconProps} />
+                  <CMSText contentKey={`about.serve.item.${index}`} fallback={item} />
+                </li>
+              ))}
             </ul>
             <a className="button primary" href={route('Contact')} onClick={(event) => goToPage(event, 'Contact')}>Talk to Compustar <ArrowRight size={16} weight="bold" /></a>
           </aside>
@@ -514,21 +515,23 @@ function AboutPage() {
           {approach.map((step, index) => (
             <article className="approach-step" data-approach-step key={step}>
               <span>{String(index + 1).padStart(2, '0')}</span>
-              <h3>{step}</h3>
+              <h3><CMSText contentKey={`about.approach.step.${index}`} fallback={step} /></h3>
               {index < approach.length - 1 && <ArrowRight className="approach-arrow" size={18} weight="bold" />}
             </article>
           ))}
         </div>
-        <p className="about-note" data-reveal>We work with customers to understand what they need before recommending suitable products and solutions. This allows us to provide practical options rather than simply selling equipment.</p>
+        <p className="about-note" data-reveal>
+          <CMSText multiline contentKey="about.approach.note" fallback="We work with customers to understand what they need before recommending suitable products and solutions. This allows us to provide practical options rather than simply selling equipment." as="span" />
+        </p>
       </section>
 
       <section className="section about-products">
         <SectionIntro contentPrefix="about.products" eyebrow="Our Products & Solutions" title="A broad range of technology products." text="Compustar provides access to a broad range of technology products and solutions, including the categories below. Product availability, specifications and brands may vary according to current stock and customer requirements." />
         <div className="about-product-grid" data-stagger>
-          {productsList.map((item) => (
+          {productsList.map((item, index) => (
             <article className="about-product-item" data-stagger-item key={item}>
               <MagnifyingGlass size={18} weight="fill" />
-              <span>{item}</span>
+              <span><CMSText contentKey={`about.products.item.${index}`} fallback={item} /></span>
             </article>
           ))}
         </div>
@@ -537,45 +540,56 @@ function AboutPage() {
       <section className="section about-corporate">
         <div className="about-corporate-grid">
           <div className="about-copy" data-reveal>
-            <p className="kicker">Corporate & Institutional Solutions</p>
-            <h2>Technology procurement for organisations.</h2>
-            <p>Compustar is developing a strong Corporate and Institutional Supply Division designed to serve organisations with their technology procurement requirements.</p>
-            <p>We understand that organisations often require more than a single product. They may need multiple computers, printers, networking equipment, CCTV systems, POS equipment, accessories and other technology products as part of a project, office setup, expansion or replacement programme.</p>
-            <p>Our corporate and institutional offering is therefore designed to support the organisations listed here.</p>
-            <p>We welcome opportunities involving supplier registration, RFQs, quotations, bulk purchases, institutional requirements, tenders and recurring supply arrangements, subject to applicable procurement procedures.</p>
+            <CMSText as="p" className="kicker" contentKey="about.corporate.kicker" fallback="Corporate & Institutional Solutions" />
+            <CMSText as="h2" contentKey="about.corporate.title" fallback="Technology procurement for organisations." />
+            <CMSText as="p" multiline contentKey="about.corporate.p1" fallback="Compustar is developing a strong Corporate and Institutional Supply Division designed to serve organisations with their technology procurement requirements." />
+            <CMSText as="p" multiline contentKey="about.corporate.p2" fallback="We understand that organisations often require more than a single product. They may need multiple computers, printers, networking equipment, CCTV systems, POS equipment, accessories and other technology products as part of a project, office setup, expansion or replacement programme." />
+            <CMSText as="p" multiline contentKey="about.corporate.p3" fallback="Our corporate and institutional offering is therefore designed to support the organisations listed here." />
+            <CMSText as="p" multiline contentKey="about.corporate.p4" fallback="We welcome opportunities involving supplier registration, RFQs, quotations, bulk purchases, institutional requirements, tenders and recurring supply arrangements, subject to applicable procurement procedures." />
           </div>
           <div className="institution-list" data-stagger>
-            <p className="kicker">Designed to support</p>
-            {institutions.map((item) => (
-              <article data-stagger-item key={item}><Buildings size={16} weight="fill" /><span>{item}</span></article>
+            <CMSText as="p" className="kicker" contentKey="about.institutions.kicker" fallback="Designed to support" />
+            {institutions.map((item, index) => (
+              <article data-stagger-item key={item}>
+                <Buildings size={16} weight="fill" />
+                <span><CMSText contentKey={`about.institutions.item.${index}`} fallback={item} /></span>
+              </article>
             ))}
           </div>
         </div>
       </section>
 
       <section className="section about-focus">
-        <SectionIntro eyebrow="Specialist Areas" title="Practical support across key sectors." text="From business operations to education, security and point-of-sale technology — Compustar helps customers find the right fit." />
+        <SectionIntro contentPrefix="about.focus" eyebrow="Specialist Areas" title="Practical support across key sectors." text="From business operations to education, security and point-of-sale technology — Compustar helps customers find the right fit." />
         <div className="about-focus-grid" data-stagger>
-          {focusAreas.map(([Icon, title, paragraphs]) => (
+          {focusAreas.map(([Icon, title, paragraphs], index) => (
             <article className="about-focus-card" data-stagger-item key={title}>
               <Icon {...iconProps} size={28} />
-              <h3>{title}</h3>
-              {paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+              <h3><CMSText contentKey={`about.focus.${index}.title`} fallback={title} /></h3>
+              {paragraphs.map((paragraph, pIndex) => (
+                <CMSText as="p" multiline key={`${title}-${pIndex}`} contentKey={`about.focus.${index}.p${pIndex}`} fallback={paragraph} />
+              ))}
             </article>
           ))}
         </div>
         <div className="business-journey" data-stagger>
-          {businessJourney.map((item) => (
-            <span data-stagger-item key={item}>{item}</span>
+          {businessJourney.map((item, index) => (
+            <span data-stagger-item key={item}>
+              <CMSText contentKey={`about.journey.${index}`} fallback={item} />
+            </span>
           ))}
         </div>
       </section>
 
       <section className="section about-commitment">
-        <SectionIntro eyebrow="Our Commitment to Customers" title="Our commitment is simple." text="Provide the right technology. Deliver professional service. Build lasting relationships. We aim to achieve this through:" />
+        <SectionIntro contentPrefix="about.commitment" eyebrow="Our Commitment to Customers" title="Our commitment is simple." text="Provide the right technology. Deliver professional service. Build lasting relationships. We aim to achieve this through:" />
         <div className="commitment-grid" data-stagger>
-          {commitments.map(([Icon, title, text]) => (
-            <article data-stagger-item key={title}><Icon {...iconProps} size={26} /><h3>{title}</h3><p>{text}</p></article>
+          {commitments.map(([Icon, title, text], index) => (
+            <article data-stagger-item key={title}>
+              <Icon {...iconProps} size={26} />
+              <h3><CMSText contentKey={`about.commitment.${index}.title`} fallback={title} /></h3>
+              <CMSText as="p" multiline contentKey={`about.commitment.${index}.text`} fallback={text} />
+            </article>
           ))}
         </div>
       </section>
@@ -584,36 +598,40 @@ function AboutPage() {
         <div className="mission-grid" data-stagger>
           <article className="mission-card vision" data-stagger-item>
             <Target {...iconProps} size={28} />
-            <p className="kicker">Our Vision</p>
-            <h3>Trusted technology partner for Botswana.</h3>
-            <p>To become one of Botswana's trusted technology and electronics partners, recognised for reliable products, professional service, responsive customer support and practical technology solutions.</p>
+            <CMSText as="p" className="kicker" contentKey="about.vision.kicker" fallback="Our Vision" />
+            <h3><CMSText contentKey="about.vision.title" fallback="Trusted technology partner for Botswana." /></h3>
+            <CMSText as="p" multiline contentKey="about.vision.text" fallback="To become one of Botswana's trusted technology and electronics partners, recognised for reliable products, professional service, responsive customer support and practical technology solutions." />
           </article>
           <article className="mission-card mission" data-stagger-item>
             <Sparkle {...iconProps} size={28} />
-            <p className="kicker">Our Mission</p>
-            <h3>Make technology accessible and practical.</h3>
-            <p>To make technology accessible, reliable and practical by providing quality products, responsive service and technology solutions that help individuals, businesses and institutions achieve their objectives.</p>
+            <CMSText as="p" className="kicker" contentKey="about.mission.kicker" fallback="Our Mission" />
+            <h3><CMSText contentKey="about.mission.title" fallback="Make technology accessible and practical." /></h3>
+            <CMSText as="p" multiline contentKey="about.mission.text" fallback="To make technology accessible, reliable and practical by providing quality products, responsive service and technology solutions that help individuals, businesses and institutions achieve their objectives." />
           </article>
         </div>
       </section>
 
       <section className="section about-values">
-        <SectionIntro eyebrow="Our Values" title="How we work with every customer." text="These principles shape the way Compustar communicates, supplies and supports." />
+        <SectionIntro contentPrefix="about.values" eyebrow="Our Values" title="How we work with every customer." text="These principles shape the way Compustar communicates, supplies and supports." />
         <div className="values-grid" data-stagger>
-          {values.map(([Icon, title, text]) => (
-            <article data-stagger-item key={title}><Icon {...iconProps} size={26} /><h3>{title}</h3><p>{text}</p></article>
+          {values.map(([Icon, title, text], index) => (
+            <article data-stagger-item key={title}>
+              <Icon {...iconProps} size={26} />
+              <h3><CMSText contentKey={`about.values.${index}.title`} fallback={title} /></h3>
+              <CMSText as="p" multiline contentKey={`about.values.${index}.text`} fallback={text} />
+            </article>
           ))}
         </div>
       </section>
 
       <section className="section about-why">
         <div className="why-panel" data-reveal>
-          <p className="kicker">Why Compustar?</p>
-          <h2>Because your technology requirements deserve more than a product catalogue.</h2>
-          <p>They deserve a partner who listens, understands your requirements and helps you find practical solutions.</p>
-          <p>Whether you need one laptop, accessories for your business, a complete office setup, CCTV equipment, POS solutions, networking equipment or technology products in bulk, Compustar is ready to assist.</p>
-          <p className="why-tagline">From individual customers to large organisations, we are ready to be your Digital Partner.</p>
-          <p className="why-close">Compustar. Your Digital Partner.</p>
+          <CMSText as="p" className="kicker" contentKey="about.why.kicker" fallback="Why Compustar?" />
+          <CMSText as="h2" contentKey="about.why.title" fallback="Because your technology requirements deserve more than a product catalogue." />
+          <CMSText as="p" multiline contentKey="about.why.p1" fallback="They deserve a partner who listens, understands your requirements and helps you find practical solutions." />
+          <CMSText as="p" multiline contentKey="about.why.p2" fallback="Whether you need one laptop, accessories for your business, a complete office setup, CCTV equipment, POS solutions, networking equipment or technology products in bulk, Compustar is ready to assist." />
+          <p className="why-tagline"><CMSText contentKey="about.why.tagline" fallback="From individual customers to large organisations, we are ready to be your Digital Partner." as="span" /></p>
+          <p className="why-close"><CMSText contentKey="about.why.close" fallback="Compustar. Your Digital Partner." as="span" /></p>
           <div className="hero-actions">
             <a className="button primary" href={route('Contact')} onClick={(event) => goToPage(event, 'Contact')}>Get in touch <ArrowRight size={16} weight="bold" /></a>
             <a className="button secondary" href={route('Products')} onClick={(event) => goToPage(event, 'Products')}>Browse products</a>
@@ -622,15 +640,15 @@ function AboutPage() {
       </section>
 
       <section className="section about-locations">
-        <SectionIntro eyebrow="Visit Us" title="Compustar — Your Digital Partner." text="Find us at Game City Mall and G-West Industrial in Gaborone." />
+        <SectionIntro contentPrefix="about.locations" eyebrow="Visit Us" title="Compustar — Your Digital Partner." text="Find us at Game City Mall and G-West Industrial in Gaborone." />
         <div className="about-location-grid" data-stagger>
-          {locations.map((item) => (
+          {locations.map((item, index) => (
             <article data-stagger-item key={item.title}>
               <Storefront {...iconProps} size={26} />
-              <h3>{item.title}</h3>
-              <p><MapPin size={16} weight="fill" /> {item.address}</p>
-              <p><Phone size={16} weight="fill" /> Tel: {item.tel}</p>
-              <p><Phone size={16} weight="fill" /> Mobile: {item.mobile}</p>
+              <h3><CMSText contentKey={`footer.location.${index === 0 ? 'gamecity' : 'gwest'}.title`} fallback={item.title} /></h3>
+              <p><MapPin size={16} weight="fill" /> <CMSText contentKey={`footer.location.${index === 0 ? 'gamecity' : 'gwest'}.address`} fallback={item.address} /></p>
+              <p><Phone size={16} weight="fill" /> Tel: <CMSText contentKey="site.tel_display" fallback={item.tel} /></p>
+              <p><Phone size={16} weight="fill" /> Mobile: <CMSText contentKey={index === 0 ? 'site.phone_display' : 'site.mobile_display'} fallback={item.mobile} /></p>
               <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.mapQuery)}`} target="_blank" rel="noreferrer">Open map <ArrowRight size={15} weight="bold" /></a>
             </article>
           ))}
@@ -668,7 +686,8 @@ function advertThumb(item) {
 }
 
 function AdvertsPage() {
-  const { adverts } = useAdmin();
+  const { adverts, editMode, isAdmin } = useAdmin();
+  const editing = isAdmin && editMode;
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
@@ -677,7 +696,11 @@ function AdvertsPage() {
   const current = adverts[safeIndex];
 
   useEffect(() => {
-    if (!playing || adverts.length < 2) return undefined;
+    if (editing) setPlaying(false);
+  }, [editing]);
+
+  useEffect(() => {
+    if (editing || !playing || adverts.length < 2) return undefined;
     setProgress(0);
     const started = performance.now();
     let frame = 0;
@@ -692,15 +715,21 @@ function AdvertsPage() {
     };
     frame = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(frame);
-  }, [safeIndex, playing, adverts.length]);
+  }, [safeIndex, playing, adverts.length, editing]);
 
   useEffect(() => {
     if (!stageRef.current || !current) return undefined;
     const image = stageRef.current.querySelector('.advert-slide');
     const copy = stageRef.current.querySelector('.advert-copy');
-    const animation = gsap.fromTo([image, copy], { autoAlpha: 0, y: 18 }, { autoAlpha: 1, y: 0, duration: 0.55, stagger: 0.06, ease: 'power3.out' });
+    const targets = [image, copy].filter(Boolean);
+    if (!targets.length) return undefined;
+    if (editing) {
+      gsap.set(targets, { autoAlpha: 1, y: 0, clearProps: 'visibility,opacity,transform' });
+      return undefined;
+    }
+    const animation = gsap.fromTo(targets, { autoAlpha: 0, y: 18 }, { autoAlpha: 1, y: 0, duration: 0.55, stagger: 0.06, ease: 'power3.out', clearProps: 'visibility,opacity,transform' });
     return () => animation.kill();
-  }, [safeIndex, current]);
+  }, [safeIndex, current, editing]);
 
   useEffect(() => {
     if (adverts.length < 2) return undefined;
@@ -729,17 +758,17 @@ function AdvertsPage() {
         {!current ? (
           <p className="cms-empty">No adverts yet. Sign in as admin to add one.</p>
         ) : (
-          <div className="advert-showcase" data-reveal ref={stageRef}>
+          <div className={`advert-showcase${editing ? ' is-editing' : ''}`} data-reveal ref={stageRef}>
             <div className="advert-stage">
-              <SmartImage className="advert-blur" src={mediaSrc(current)} alt="" aria-hidden="true" loading="eager" fetchPriority="high" />
-              <SmartImage className="advert-slide" src={mediaSrc(current)} alt={current.title} loading="eager" fetchPriority="high" />
+              {!editing && <SmartImage className="advert-blur" src={mediaSrc(current)} alt="" aria-hidden="true" loading="eager" fetchPriority="high" />}
+              <SmartImage className="advert-slide" src={mediaSrc(current)} alt={current.title || 'Advert'} loading="eager" fetchPriority="high" />
               <div className="advert-progress" aria-hidden="true"><span style={{ transform: `scaleX(${progress})` }} /></div>
               <AdvertEditorButton advert={current} />
             </div>
             <div className="advert-meta">
               <div className="advert-copy">
                 <p className="kicker">Advert {safeIndex + 1} of {adverts.length}</p>
-                <h2>{current.title}</h2>
+                <h2>{current.title || 'Untitled advert'}</h2>
                 <p>{current.text}</p>
               </div>
               <div className="advert-controls">
@@ -757,7 +786,7 @@ function AdvertsPage() {
                   key={item.id || item.file || itemIndex}
                   className={itemIndex === safeIndex ? 'active' : ''}
                   onClick={() => goTo(itemIndex)}
-                  aria-label={`Show ${item.title}`}
+                  aria-label={`Show ${item.title || 'advert'}`}
                   aria-selected={itemIndex === safeIndex}
                 >
                   <SmartImage src={advertThumb(item)} alt="" loading="lazy" />
@@ -784,16 +813,19 @@ function ServicesPage() {
       <PageHero contentPrefix="services.hero" eyebrow="Services" title="Practical technology support for homes and businesses." text="Compustar helps customers choose equipment, set it up correctly, and keep everyday systems working." />
       <section className="section">
         <div className="horizontal-showcase auto-showcase service-slider">
-          {slides.map(([Icon, title, text, image], index) => (
-            <article className="service-card visual-card" key={`${title}-${index}`} data-reveal>
-              <SmartImage src={image} alt="" loading="lazy" />
-              <div>
-                <Icon {...iconProps} size={26} />
-                <h3>{title}</h3>
-                <p>{text}</p>
-              </div>
-            </article>
-          ))}
+          {slides.map(([Icon, title, text, image], index) => {
+            const sourceIndex = index % services.length;
+            return (
+              <article className="service-card visual-card" key={`${title}-${index}`} data-reveal>
+                <SmartImage src={image} alt="" loading="lazy" />
+                <div>
+                  <Icon {...iconProps} size={26} />
+                  <h3><CMSText contentKey={`services.card.${sourceIndex}.title`} fallback={title} /></h3>
+                  <CMSText as="p" multiline contentKey={`services.card.${sourceIndex}.text`} fallback={text} />
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
     </>
@@ -812,17 +844,20 @@ function RepairsPage() {
       <PageHero contentPrefix="repairs.hero" eyebrow="Repairs" title="A simple repair path from enquiry to support." text="Customers can send the issue first, then visit the store with the right details instead of guessing what to bring." />
       <section className="section repair-story repair-story-full">
         <div className="horizontal-showcase auto-showcase repair-steps">
-          {slides.map(([step, title, text, image], index) => (
-            <article className="repair-step" key={`${step}-${index}`} data-reveal>
-              <SmartImage src={image} alt="" loading="lazy" />
-              <div>
-                <span>{step}</span>
-                <h3>{title}</h3>
-                <p>{text}</p>
-                <a className="button dark" href={route('Contact')} onClick={(event) => goToPage(event, 'Contact')}>Ask about repairs</a>
-              </div>
-            </article>
-          ))}
+          {slides.map(([step, title, text, image], index) => {
+            const sourceIndex = index % steps.length;
+            return (
+              <article className="repair-step" key={`${step}-${index}`} data-reveal>
+                <SmartImage src={image} alt="" loading="lazy" />
+                <div>
+                  <span>{step}</span>
+                  <h3><CMSText contentKey={`repairs.step.${sourceIndex}.title`} fallback={title} /></h3>
+                  <CMSText as="p" multiline contentKey={`repairs.step.${sourceIndex}.text`} fallback={text} />
+                  <a className="button dark" href={route('Contact')} onClick={(event) => goToPage(event, 'Contact')}>Ask about repairs</a>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
     </>
@@ -835,24 +870,27 @@ function LocationPage() {
       <PageHero contentPrefix="location.hero" eyebrow="Location" title="Visit Compustar in Gaborone." text="Find Compustar for product enquiries, repairs, accessories, and practical technology support." />
       <section className="location-page section">
         <div className="location-card" data-reveal>
-          <p className="kicker">Store Locations</p>
-          <h2>Gaborone support points.</h2>
+          <CMSText as="p" className="kicker" contentKey="location.card.kicker" fallback="Store Locations" />
+          <CMSText as="h2" contentKey="location.card.title" fallback="Gaborone support points." />
           <div className="location-list">
-            {locations.map((item) => (
-              <article key={item.title}>
-                <strong>{item.title}</strong>
-                <p><MapPin weight="fill" /> {item.address}</p>
-                <p><Phone weight="fill" /> Tel: {item.tel}</p>
-                <p><Phone weight="fill" /> Mobile: {item.mobile}</p>
-                <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.mapQuery)}`} target="_blank" rel="noreferrer">
-                  Open this location <ArrowRight size={15} weight="bold" />
-                </a>
-              </article>
-            ))}
+            {locations.map((item, index) => {
+              const key = index === 0 ? 'gamecity' : 'gwest';
+              return (
+                <article key={item.title}>
+                  <strong><CMSText contentKey={`footer.location.${key}.title`} fallback={item.title} /></strong>
+                  <p><MapPin weight="fill" /> <CMSText contentKey={`footer.location.${key}.address`} fallback={item.address} /></p>
+                  <p><Phone weight="fill" /> Tel: <CMSText contentKey="site.tel_display" fallback={item.tel} /></p>
+                  <p><Phone weight="fill" /> Mobile: <CMSText contentKey={index === 0 ? 'site.phone_display' : 'site.mobile_display'} fallback={item.mobile} /></p>
+                  <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.mapQuery)}`} target="_blank" rel="noreferrer">
+                    Open this location <ArrowRight size={15} weight="bold" />
+                  </a>
+                </article>
+              );
+            })}
           </div>
           <div className="contact-lines">
-            <p><EnvelopeSimple weight="fill" /> {email}</p>
-            <p><Phone weight="fill" /> Tel: {displayTelPhone}</p>
+            <p><EnvelopeSimple weight="fill" /> <CMSText contentKey="site.email" fallback={email} /></p>
+            <p><Phone weight="fill" /> Tel: <CMSText contentKey="site.tel_display" fallback={displayTelPhone} /></p>
           </div>
         </div>
         <LocationsMap />

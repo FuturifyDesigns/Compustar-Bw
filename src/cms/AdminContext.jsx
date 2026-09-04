@@ -175,8 +175,9 @@ export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts
     try {
       let image_url = payload.image_url;
       if (payload.fileObj) image_url = await uploadMedia(payload.fileObj, 'adverts');
+      if (!image_url) throw new Error('Please upload an advert image');
       const row = {
-        title: payload.title,
+        title: (payload.title || '').trim() || 'New advert',
         text: payload.text || '',
         image_url,
         active: payload.active !== false,

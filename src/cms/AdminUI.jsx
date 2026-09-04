@@ -17,16 +17,27 @@ import {
 } from '@phosphor-icons/react';
 import { useAdmin } from './AdminContext';
 
+let scrollLockCount = 0;
+
+function lockBodyScroll() {
+  scrollLockCount += 1;
+  document.body.style.overflow = 'hidden';
+}
+
+function unlockBodyScroll() {
+  scrollLockCount = Math.max(0, scrollLockCount - 1);
+  if (scrollLockCount === 0) document.body.style.overflow = '';
+}
+
 function CmsModal({ title, onClose, children, wide = false }) {
   useEffect(() => {
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    lockBodyScroll();
     const onKey = (event) => {
       if (event.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', onKey);
     return () => {
-      document.body.style.overflow = previous;
+      unlockBodyScroll();
       window.removeEventListener('keydown', onKey);
     };
   }, [onClose]);
@@ -463,6 +474,19 @@ export function EditableText({ contentKey, value, as = 'span', className = '', m
   );
 }
 
+export function CMSText({ contentKey, fallback = '', as = 'span', className = '', multiline = false }) {
+  const { getContent } = useAdmin();
+  return (
+    <EditableText
+      contentKey={contentKey}
+      value={getContent(contentKey, fallback)}
+      as={as}
+      className={className}
+      multiline={multiline}
+    />
+  );
+}
+
 export function ProductEditorButton({ product, onAdd }) {
   const { isAdmin, editMode, saveProduct, deleteProduct, busy } = useAdmin();
   const [open, setOpen] = useState(false);
@@ -535,6 +559,7 @@ export function ProductEditorButton({ product, onAdd }) {
 export function AdvertEditorButton({ advert, onAdd }) {
   const { isAdmin, editMode, saveAdvert, deleteAdvert, busy } = useAdmin();
   const [open, setOpen] = useState(false);
+  const [error, setError] = useState('');
   const blank = { title: '', text: '', image_url: '', active: true };
   const [draft, setDraft] = useState(blank);
   const [imageFile, setImageFile] = useState(null);
@@ -542,6 +567,7 @@ export function AdvertEditorButton({ advert, onAdd }) {
   if (!(isAdmin && editMode)) return null;
 
   function openEditor() {
+    setError('');
     setDraft(advert ? {
       title: advert.title || '',
       text: advert.text || '',
@@ -563,8 +589,8 @@ export function AdvertEditorButton({ advert, onAdd }) {
             </>}
       </div>
       {open && (
-        <CmsModal title={advert ? 'Edit advert' : 'Add advert'} onClose={() => setOpen(false)} wide>
-          <label>Title<input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} /></label>
+        <CmsModal title={advert ? 'Edit advert' : 'Add advert'} onClose={() => !busy && setOpen(false)} wide>
+          <label>Title<input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} placeholder="Advert title" /></label>
           <label>Text<textarea rows={5} value={draft.text} onChange={(e) => setDraft({ ...draft, text: e.target.value })} /></label>
           <ImageField
             label="Advert image"
@@ -579,15 +605,29 @@ export function AdvertEditorButton({ advert, onAdd }) {
               }
             }}
           />
+          {error && <p className="cms-error">{error}</p>}
           <div className="cms-dialog-actions">
-            <button type="button" className="button secondary" onClick={() => setOpen(false)}>Cancel</button>
+            <button type="button" className="button secondary" disabled={busy} onClick={() => setOpen(false)}>Cancel</button>
             <button
               className="button dark"
               type="button"
               disabled={busy}
               onClick={async () => {
-                await saveAdvert({ ...draft, fileObj: imageFile }, advert?.id);
-                setOpen(false);
+                setError('');
+                if (!imageFile && !draft.image_url) {
+                  setError('Please upload an advert image first.');
+                  return;
+                }
+                try {
+                  await saveAdvert({
+                    ...draft,
+                    title: draft.title.trim() || 'New advert',
+                    fileObj: imageFile
+                  }, advert?.id);
+                  setOpen(false);
+                } catch (err) {
+                  setError(err.message || 'Could not save advert');
+                }
               }}
             >
               {busy ? 'Saving…' : 'Save advert'}

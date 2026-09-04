@@ -845,8 +845,15 @@ h3 { font-size: 1.25rem; letter-spacing: -.04em; margin: 0; }
 .product-meta strong { font-size: .92rem; line-height: 1.25; }
 .product-price { color: var(--brand, #ef1717); font-size: .88rem; font-weight: 700; }
 .product-image { position: relative; }
-.advert-stage { position: relative; }
-.product-card .card-admin-actions,
-.advert-stage .card-admin-actions { z-index: 12; }
+.advert-showcase.is-editing .advert-slide {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+}
+.advert-showcase.is-editing .advert-copy {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+}
 body.cms-editing .product-showcase-section,
 body.cms-editing .product-slider { overflow: visible; }

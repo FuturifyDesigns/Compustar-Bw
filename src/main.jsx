@@ -752,7 +752,7 @@ function AdvertsPage() {
 
   return (
     <>
-      <PageHero contentPrefix="adverts.hero" eyebrow="Adverts" title="Campaign showcase." text="Browse Compustar promotional adverts in an auto-playing showcase — POS, laptops, gaming, accessories, surveillance, and new location announcements." />
+      <PageHero compact contentPrefix="adverts.hero" eyebrow="Adverts" title="Campaign showcase." text="Browse Compustar promotional adverts — POS, laptops, gaming, accessories, surveillance, and new locations." />
       <section className="section adverts-section">
         <div className="cms-toolbar"><AdvertEditorButton onAdd /></div>
         {!current ? (
@@ -1012,13 +1012,13 @@ function ContactPage() {
   );
 }
 
-function PageHero({ eyebrow, title, text, contentPrefix }) {
+function PageHero({ eyebrow, title, text, contentPrefix, compact = false }) {
   const { getContent } = useAdmin();
   const eyebrowValue = contentPrefix ? getContent(`${contentPrefix}.eyebrow`, eyebrow) : eyebrow;
   const titleValue = contentPrefix ? getContent(`${contentPrefix}.title`, title) : title;
   const textValue = contentPrefix ? getContent(`${contentPrefix}.text`, text) : text;
   return (
-    <section className="page-hero">
+    <section className={`page-hero${compact ? ' page-hero-compact' : ''}`}>
       {contentPrefix
         ? <EditableText as="p" className="kicker" contentKey={`${contentPrefix}.eyebrow`} value={eyebrowValue} />
         : <p className="kicker" data-hero>{eyebrow}</p>}

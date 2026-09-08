@@ -27,4 +27,9 @@ async function writeIcon(size, file, { maskable = false } = {}) {
 await writeIcon(192, 'pwa-192.png');
 await writeIcon(512, 'pwa-512.png');
 await writeIcon(512, 'pwa-maskable-512.png', { maskable: true });
+await writeIcon(16, 'favicon-16.png');
+await writeIcon(32, 'favicon-32.png');
+await writeIcon(48, 'favicon-48.png');
+await writeIcon(48, 'favicon.png');
+await writeIcon(180, 'apple-touch-icon.png');
 console.log('PWA icons written.');

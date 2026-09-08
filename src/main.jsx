@@ -137,6 +137,24 @@ function toWebp(src) {
   return src.replace(/\.(jpe?g|png)$/i, '.webp');
 }
 
+function localWebp(src) {
+  if (!src || src.startsWith('http')) return src;
+  return toWebp(src);
+}
+
+function supabaseImage(src, width = 900, quality = 72) {
+  if (!src?.includes('/storage/v1/object/public/')) return src;
+  const [base] = src.split('?');
+  const transformed = base.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
+  return `${transformed}?width=${width}&quality=${quality}&resize=contain`;
+}
+
+function optimizedImageSrc(src, width = 900) {
+  if (!src) return '';
+  if (src.startsWith('http')) return supabaseImage(src, width);
+  return localWebp(src);
+}
+
 function mediaSrc(item) {
   const src = item?.image_url || item?.file || '';
   if (!src) return '';
@@ -144,16 +162,16 @@ function mediaSrc(item) {
   return `/products/${src}`;
 }
 
-function SmartImage({ src, alt, className, loading = 'lazy', fetchPriority = 'low', ...props }) {
-  const webp = toWebp(src);
-  const usePicture = webp && webp !== src && !src.startsWith('http');
+function SmartImage({ src, alt, className, loading = 'lazy', fetchPriority = 'low', width = 900, ...props }) {
+  const optimized = optimizedImageSrc(src, width);
+  const usePicture = optimized && optimized !== src && !src.startsWith('http');
   if (!usePicture) {
-    return <img src={src} alt={alt} className={className} loading={loading} decoding="async" fetchPriority={fetchPriority} {...props} />;
+    return <img src={optimized || src} alt={alt} className={className} loading={loading} decoding="async" fetchPriority={fetchPriority} {...props} />;
   }
   return (
     <picture>
-      <source srcSet={webp} type="image/webp" />
-      <img src={src} alt={alt} className={className} loading={loading} decoding="async" fetchPriority={fetchPriority} {...props} />
+      <source srcSet={optimized} type="image/webp" />
+      <img src={optimized} alt={alt} className={className} loading={loading} decoding="async" fetchPriority={fetchPriority} {...props} />
     </picture>
   );
 }
@@ -680,7 +698,8 @@ function ProductsPage() {
 
 function advertThumb(item) {
   const src = mediaSrc(item);
-  if (!src || src.startsWith('http')) return src;
+  if (!src) return src;
+  if (src.startsWith('http')) return supabaseImage(src, 220, 58);
   const name = src.split('/').pop();
   if (src.includes('/adverts/') && !src.includes('/thumbs/')) return `/adverts/thumbs/${toWebp(name)}`;
   return src;
@@ -735,7 +754,7 @@ function AdvertsPage() {
   useEffect(() => {
     if (adverts.length < 2) return undefined;
     const next = adverts[(safeIndex + 1) % adverts.length];
-    const href = mediaSrc(next);
+    const href = optimizedImageSrc(mediaSrc(next), 900);
     if (!href) return undefined;
     const link = document.createElement('link');
     link.rel = 'prefetch';
@@ -766,8 +785,8 @@ function AdvertsPage() {
         ) : (
           <div className={`advert-showcase${editing ? ' is-editing' : ''}`} data-reveal ref={stageRef}>
             <div className="advert-stage">
-              <SmartImage className="advert-blur" src={mediaSrc(current)} alt="" aria-hidden="true" loading="eager" fetchPriority="high" />
-              <SmartImage className="advert-slide" src={mediaSrc(current)} alt={current.title || 'Advert'} loading="eager" fetchPriority="high" />
+              <SmartImage className="advert-blur" src={mediaSrc(current)} alt="" aria-hidden="true" loading="lazy" fetchPriority="low" width={420} />
+              <SmartImage className="advert-slide" src={mediaSrc(current)} alt={current.title || 'Advert'} loading="eager" fetchPriority="high" width={1100} />
               <div className="advert-progress" aria-hidden="true"><span style={{ transform: `scaleX(${progress})` }} /></div>
               <AdvertEditorButton advert={current} />
             </div>
@@ -795,7 +814,7 @@ function AdvertsPage() {
                   aria-label={`Show ${item.title || 'advert'}`}
                   aria-selected={itemIndex === safeIndex}
                 >
-                  <SmartImage src={advertThumb(item)} alt="" loading="lazy" />
+                  <SmartImage src={advertThumb(item)} alt="" loading="lazy" width={220} />
                 </button>
               ))}
             </div>
@@ -823,7 +842,7 @@ function ServicesPage() {
             const sourceIndex = index % services.length;
             return (
               <article className="service-card visual-card" key={`${title}-${index}`} data-reveal>
-                <SmartImage src={image} alt="" loading="lazy" />
+                <SmartImage src={image} alt="" loading="lazy" width={640} />
                 <div>
                   <Icon {...iconProps} size={26} />
                   <h3><CMSText contentKey={`services.card.${sourceIndex}.title`} fallback={title} /></h3>
@@ -854,7 +873,7 @@ function RepairsPage() {
             const sourceIndex = index % steps.length;
             return (
               <article className="repair-step" key={`${step}-${index}`} data-reveal>
-                <SmartImage src={image} alt="" loading="lazy" />
+                <SmartImage src={image} alt="" loading="lazy" width={640} />
                 <div>
                   <span className="repair-step-num">{step}</span>
                   <h3><CMSText contentKey={`repairs.step.${sourceIndex}.title`} fallback={title} /></h3>
@@ -1063,7 +1082,7 @@ function SectionIntro({ eyebrow, title, text, contentPrefix }) {
 function ProductGrid({ products: list }) {
   return (
     <div className="product-grid gallery-grid">
-        {list.map((product, index) => <ProductCard key={product.id || product.file || index} product={product} priority={index < 8} />)}
+        {list.map((product, index) => <ProductCard key={product.id || product.file || index} product={product} priority={index < 4} />)}
     </div>
   );
 }
@@ -1073,7 +1092,7 @@ function ProductCarousel({ products: list }) {
   return (
     <div className="product-slider" data-reveal>
       <div className="product-track">
-        {slides.map((product, index) => <ProductCard key={`${product.id || product.file}-${index}`} product={product} priority={index < 6} />)}
+        {slides.map((product, index) => <ProductCard key={`${product.id || product.file}-${index}`} product={product} priority={index < 3} />)}
       </div>
     </div>
   );
@@ -1089,7 +1108,7 @@ function ProductCard({ product, priority = false }) {
   return (
     <article className="product-card gallery-card" data-reveal>
       <div className="product-image">
-        <SmartImage src={src} alt={title || 'Compustar product'} loading={priority ? 'eager' : 'lazy'} fetchPriority={priority ? 'high' : 'low'} />
+        <SmartImage src={src} alt={title || 'Compustar product'} loading={priority ? 'eager' : 'lazy'} fetchPriority={priority ? 'high' : 'low'} width={520} />
         <ProductEditorButton product={product} />
       </div>
       {hasMeta && (

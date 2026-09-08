@@ -41,7 +41,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,webmanifest,svg,ico,webp,woff2,json}'],
+        globPatterns: ['**/*.{js,css,html,webmanifest,svg,ico,woff2}'],
         globIgnores: ['**/hero-logo.mp4'],
         navigateFallback: 'index.html',
         navigateFallbackDenylist: [/^\/404\.html$/, /^\/robots\.txt$/, /^\/sitemap\.xml$/],

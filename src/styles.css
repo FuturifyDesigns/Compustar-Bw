@@ -1331,6 +1331,16 @@ body.cms-editing .product-slider { overflow: visible; }
 .orders-empty-card strong { color: var(--ink); font-size: .98rem; }
 .orders-empty-card p,
 .orders-empty { color: var(--muted); font-size: .9rem; margin: 0; }
+.orders-live-note {
+  background: rgba(239, 23, 23, .1);
+  border: 1px solid rgba(239, 23, 23, .18);
+  border-radius: 10px;
+  color: var(--red-deep);
+  font-size: .9rem;
+  font-weight: 700;
+  margin: 0 0 1rem;
+  padding: .7rem .9rem;
+}
 .orders-list { display: grid; gap: .9rem; }
 .order-card {
   background: #fff; border: 1px solid var(--line); border-radius: 14px; display: grid; gap: .55rem; padding: 1rem 1.1rem;

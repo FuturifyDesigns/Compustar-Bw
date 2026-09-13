@@ -11,9 +11,43 @@ const HARD_MAX_BYTES = 750_000;
 export const supabaseConfigured = Boolean(url && anon);
 export const supabase = supabaseConfigured
   ? createClient(url, anon, {
-      realtime: { params: { eventsPerSecond: 8 } }
+      realtime: {
+        params: { eventsPerSecond: 20 },
+        timeout: 20000
+      }
     })
   : null;
+
+/** Tell every open tab/browser to refresh CMS data immediately. */
+export async function broadcastCmsChange(table = 'cms') {
+  if (!supabase) return;
+  try {
+    await new Promise((resolve) => {
+      const channel = supabase.channel(`cms-broadcast-pub-${Date.now()}`);
+      const done = () => {
+        try { supabase.removeChannel(channel); } catch { /* ignore */ }
+        resolve();
+      };
+      const timer = window.setTimeout(done, 2500);
+      channel.subscribe(async (status) => {
+        if (status !== 'SUBSCRIBED') return;
+        try {
+          await channel.send({
+            type: 'broadcast',
+            event: 'changed',
+            payload: { table, at: Date.now() }
+          });
+        } catch {
+          /* ignore */
+        }
+        window.clearTimeout(timer);
+        done();
+      });
+    });
+  } catch {
+    /* realtime optional */
+  }
+}
 
 function canvasToBlob(canvas, type, quality) {
   return new Promise((resolve) => {

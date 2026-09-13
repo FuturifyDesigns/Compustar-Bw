@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { supabase, supabaseConfigured, uploadMedia } from '../lib/supabase';
+import { broadcastCmsChange, supabase, supabaseConfigured, uploadMedia } from '../lib/supabase';
 
 const AdminContext = createContext(null);
 
@@ -28,6 +28,15 @@ function mapAdvert(row) {
   };
 }
 
+function sortByOrder(list) {
+  return [...list].sort((a, b) => {
+    const ao = a.sort_order ?? 0;
+    const bo = b.sort_order ?? 0;
+    if (ao !== bo) return ao - bo;
+    return String(a.title || '').localeCompare(String(b.title || ''));
+  });
+}
+
 export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts = [] }) {
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -45,6 +54,7 @@ export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState('');
   const refreshTimer = useRef(0);
+  const refreshRef = useRef(() => Promise.resolve());
 
   const isAdmin = profile?.role === 'admin';
 
@@ -107,11 +117,13 @@ export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts
     }
   }
 
+  refreshRef.current = refresh;
+
   function scheduleRefresh() {
     window.clearTimeout(refreshTimer.current);
     refreshTimer.current = window.setTimeout(() => {
-      refresh().catch(console.error);
-    }, 120);
+      refreshRef.current().catch(console.error);
+    }, 80);
   }
 
   useEffect(() => {
@@ -119,20 +131,108 @@ export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts
     refresh().catch(console.error);
   }, [session]);
 
-  // Live updates for every visitor when CMS data changes
+  // Live CMS updates: postgres changes + broadcast + light polling while visible
   useEffect(() => {
     if (!supabase) return undefined;
+
+    const applyProduct = (payload) => {
+      const event = payload.eventType;
+      if (event === 'DELETE') {
+        const id = payload.old?.id;
+        if (id) setProducts((prev) => prev.filter((row) => row.id !== id));
+        return;
+      }
+      const next = mapProduct(payload.new);
+      if (payload.new?.active === false && profile?.role !== 'admin') {
+        setProducts((prev) => prev.filter((row) => row.id !== next.id));
+        return;
+      }
+      setProducts((prev) => {
+        const without = prev.filter((row) => row.id !== next.id);
+        return sortByOrder([...without, { ...next, sort_order: payload.new?.sort_order }]);
+      });
+    };
+
+    const applyAdvert = (payload) => {
+      const event = payload.eventType;
+      if (event === 'DELETE') {
+        const id = payload.old?.id;
+        if (id) setAdverts((prev) => prev.filter((row) => row.id !== id));
+        return;
+      }
+      const next = mapAdvert(payload.new);
+      if (payload.new?.active === false && profile?.role !== 'admin') {
+        setAdverts((prev) => prev.filter((row) => row.id !== next.id));
+        return;
+      }
+      setAdverts((prev) => {
+        const without = prev.filter((row) => row.id !== next.id);
+        return sortByOrder([...without, { ...next, sort_order: payload.new?.sort_order }]);
+      });
+    };
+
+    const applyContent = (payload) => {
+      if (payload.eventType === 'DELETE') {
+        const key = payload.old?.key;
+        if (!key) return;
+        setContent((prev) => {
+          const next = { ...prev };
+          delete next[key];
+          return next;
+        });
+        return;
+      }
+      const key = payload.new?.key;
+      if (!key) return;
+      const value = payload.new.value;
+      setContent((prev) => ({
+        ...prev,
+        [key]: typeof value === 'string' ? value : (value ?? '')
+      }));
+    };
+
     const channel = supabase
-      .channel('cms-live')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, scheduleRefresh)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'adverts' }, scheduleRefresh)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'site_content' }, scheduleRefresh)
+      .channel(`cms-live-${Math.random().toString(36).slice(2, 8)}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, (payload) => {
+        applyProduct(payload);
+        scheduleRefresh();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'adverts' }, (payload) => {
+        applyAdvert(payload);
+        scheduleRefresh();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'site_content' }, (payload) => {
+        applyContent(payload);
+        scheduleRefresh();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'service_images' }, () => {
+        window.dispatchEvent(new CustomEvent('compustar:service-images-changed'));
+        scheduleRefresh();
+      })
       .subscribe();
+
+    const broadcast = supabase
+      .channel('cms-broadcast')
+      .on('broadcast', { event: 'changed' }, () => scheduleRefresh())
+      .subscribe();
+
+    const poll = window.setInterval(() => {
+      if (document.visibilityState === 'visible') scheduleRefresh();
+    }, 20000);
+
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') scheduleRefresh();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+
     return () => {
       window.clearTimeout(refreshTimer.current);
+      window.clearInterval(poll);
+      document.removeEventListener('visibilitychange', onVisible);
       supabase.removeChannel(channel);
+      supabase.removeChannel(broadcast);
     };
-  }, []);
+  }, [profile?.role]);
 
   function notify(message) {
     setToast(message);
@@ -175,6 +275,7 @@ export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts
       await refresh();
       throw error;
     }
+    await broadcastCmsChange('site_content');
     notify('Saved');
   }
 
@@ -201,6 +302,7 @@ export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts
         if (error) throw error;
       }
       await refresh();
+      await broadcastCmsChange('products');
       notify(id ? 'Product updated' : 'Product added');
     } finally {
       setBusy(false);
@@ -212,6 +314,7 @@ export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts
     const { error } = await supabase.from('products').delete().eq('id', id);
     if (error) throw error;
     await refresh();
+    await broadcastCmsChange('products');
     notify('Product deleted');
   }
 
@@ -236,6 +339,7 @@ export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts
         if (error) throw error;
       }
       await refresh();
+      await broadcastCmsChange('adverts');
       notify(id ? 'Advert updated' : 'Advert added');
     } finally {
       setBusy(false);
@@ -247,6 +351,7 @@ export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts
     const { error } = await supabase.from('adverts').delete().eq('id', id);
     if (error) throw error;
     await refresh();
+    await broadcastCmsChange('adverts');
     notify('Advert deleted');
   }
 

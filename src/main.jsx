@@ -965,7 +965,8 @@ function ServiceDetailPage({ slug }) {
 
   useEffect(() => {
     let alive = true;
-    (async () => {
+
+    async function loadGallery() {
       if (!supabase || !slug) return;
       const { data } = await supabase
         .from('service_images')
@@ -974,8 +975,30 @@ function ServiceDetailPage({ slug }) {
         .eq('active', true)
         .order('sort_order', { ascending: true });
       if (alive) setGallery(data || []);
-    })().catch(() => alive && setGallery([]));
-    return () => { alive = false; };
+    }
+
+    loadGallery().catch(() => alive && setGallery([]));
+
+    const onChange = () => loadGallery().catch(() => {});
+    window.addEventListener('compustar:service-images-changed', onChange);
+
+    let channel;
+    if (supabase && slug) {
+      channel = supabase
+        .channel(`service-images-${slug}`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'service_images', filter: `service_slug=eq.${slug}` },
+          () => loadGallery().catch(() => {})
+        )
+        .subscribe();
+    }
+
+    return () => {
+      alive = false;
+      window.removeEventListener('compustar:service-images-changed', onChange);
+      if (channel && supabase) supabase.removeChannel(channel);
+    };
   }, [slug]);
 
   if (!service) {

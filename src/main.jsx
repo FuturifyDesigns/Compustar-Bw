@@ -364,18 +364,18 @@ function useRevealAnimations(page) {
           scrollTrigger: { trigger: step, start: 'top 90%', once: true }
         });
       });
-      gsap.utils.toArray('[data-stack-card]').forEach((card) => {
-        gsap.set(card, { autoAlpha: 0, y: 72, scale: 0.96 });
-        gsap.to(card, {
+      gsap.utils.toArray('[data-stack-card]').forEach((card, index) => {
+        gsap.fromTo(card, { autoAlpha: 0, y: 48 }, {
           autoAlpha: 1,
           y: 0,
-          scale: 1,
-          duration: 0.85,
-          ease: 'power3.out',
+          duration: 0.75,
+          delay: 0.04,
+          ease: 'power2.out',
+          clearProps: 'visibility,opacity,transform',
           scrollTrigger: {
             trigger: card,
-            start: 'top 80%',
-            toggleActions: 'play none none reverse'
+            start: 'top 85%',
+            once: true
           }
         });
       });
@@ -411,7 +411,7 @@ function HomePage() {
           </div>
         </div>
         <div className="hero-showcase" data-hero>
-          <SmartImage src="/generated/hero-home.webp" alt="Compustar store team helping a customer" loading="eager" fetchPriority="high" width={1100} />
+          <video src="/hero-logo.mp4" poster="/logo.webp" muted loop autoPlay playsInline preload="metadata" aria-label="Compustar logo animation"></video>
           <div>
             <span><Camera {...iconProps} /> Surveillance</span>
             <span><Monitor {...iconProps} /> Computers</span>
@@ -843,21 +843,29 @@ function AdvertsPage() {
 
 function ServicesPage() {
   const services = [
-    [Cpu, 'Computer Sales', 'Laptops, desktops, monitors, accessories, and straightforward buying guidance.', '/context/service-computers.png'],
-    [Printer, 'Printer Support', 'Printers, consumables, setup cables, and everyday office printing support.', '/context/service-printers.png'],
-    [WifiHigh, 'Networking', 'Routers, CAT cables, Wi-Fi, printer sharing, and tidy connectivity planning.', '/context/service-networking.png'],
-    [Camera, 'Surveillance Systems', 'Camera kits, recorders, GPS trackers, and security product enquiries.', '/context/service-security.png']
+    [Cpu, 'Computer Sales', 'Laptops, desktops, monitors, accessories, and straightforward buying guidance.', '/context/service-computers.webp'],
+    [Printer, 'Printer Support', 'Printers, consumables, setup cables, and everyday office printing support.', '/context/service-printers.webp'],
+    [WifiHigh, 'Networking', 'Routers, CAT cables, Wi-Fi, printer sharing, and tidy connectivity planning.', '/context/service-networking.webp'],
+    [Camera, 'Surveillance Systems', 'Camera kits, recorders, GPS trackers, and security product enquiries.', '/context/service-security.webp']
   ];
   return (
     <>
       <PageHero contentPrefix="services.hero" image="/generated/hero-services.webp" eyebrow="Services" title="Practical technology support for homes and businesses." text="Compustar helps customers choose equipment, set it up correctly, and keep everyday systems working." />
-      <section className="section scroll-stack-section">
-        <div className="scroll-stack">
+      <section className="section reveal-panel-section">
+        <div className="reveal-panel-list">
           {services.map(([Icon, title, text, image], index) => (
-            <article className="service-card visual-card scroll-stack-card" key={title} data-stack-card>
-              <SmartImage src={image} alt="" loading={index === 0 ? 'eager' : 'lazy'} width={960} />
-              <div>
-                <Icon {...iconProps} size={26} />
+            <article className={`reveal-panel${index % 2 ? ' reverse' : ''}`} key={title} data-stack-card>
+              <div className="reveal-panel-media">
+                <SmartImage
+                  src={image}
+                  alt=""
+                  loading={index < 2 ? 'eager' : 'lazy'}
+                  fetchPriority={index === 0 ? 'high' : 'low'}
+                  width={720}
+                />
+              </div>
+              <div className="reveal-panel-copy">
+                <Icon {...iconProps} size={28} />
                 <h3><CMSText contentKey={`services.card.${index}.title`} fallback={title} /></h3>
                 <CMSText as="p" multiline contentKey={`services.card.${index}.text`} fallback={text} />
               </div>
@@ -878,12 +886,20 @@ function RepairsPage() {
   return (
     <>
       <PageHero contentPrefix="repairs.hero" image="/generated/hero-repairs.webp" eyebrow="Repairs" title="A simple repair path from enquiry to support." text="Customers can send the issue first, then visit the store with the right details instead of guessing what to bring." />
-      <section className="section scroll-stack-section repair-story-full">
-        <div className="scroll-stack">
+      <section className="section reveal-panel-section">
+        <div className="reveal-panel-list">
           {steps.map(([step, title, text, image], index) => (
-            <article className="repair-step scroll-stack-card" key={step} data-stack-card>
-              <SmartImage src={image} alt="" loading={index === 0 ? 'eager' : 'lazy'} width={1100} />
-              <div>
+            <article className={`reveal-panel repair-panel${index % 2 ? ' reverse' : ''}`} key={step} data-stack-card>
+              <div className="reveal-panel-media">
+                <SmartImage
+                  src={image}
+                  alt=""
+                  loading={index < 2 ? 'eager' : 'lazy'}
+                  fetchPriority={index === 0 ? 'high' : 'low'}
+                  width={720}
+                />
+              </div>
+              <div className="reveal-panel-copy">
                 <span className="repair-step-num">{step}</span>
                 <h3><CMSText contentKey={`repairs.step.${index}.title`} fallback={title} /></h3>
                 <CMSText as="p" multiline contentKey={`repairs.step.${index}.text`} fallback={text} />

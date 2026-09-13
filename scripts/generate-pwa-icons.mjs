@@ -4,10 +4,10 @@ import path from 'node:path';
 const logo = path.resolve('public/logo.png');
 
 async function writeIcon(size, file, { maskable = false } = {}) {
-  const pad = maskable ? Math.round(size * 0.18) : Math.round(size * 0.08);
+  const pad = maskable ? Math.round(size * 0.18) : Math.round(size * 0.06);
   const inner = size - pad * 2;
   const mark = await sharp(logo)
-    .resize(inner, inner, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .resize(inner, inner, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 1 } })
     .png()
     .toBuffer();
 
@@ -16,7 +16,7 @@ async function writeIcon(size, file, { maskable = false } = {}) {
       width: size,
       height: size,
       channels: 4,
-      background: maskable ? '#98080f' : '#ffffff'
+      background: maskable ? '#98080f' : '#000000'
     }
   })
     .composite([{ input: mark, left: pad, top: pad }])

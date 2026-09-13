@@ -1327,7 +1327,7 @@ function ProductCard({ product, priority = false }) {
       )}
       <div className="product-overlay">
         <button type="button" className="button primary" onClick={onAddToCart}>
-          Add to request
+          Add to cart
         </button>
         <a href={route('Contact')} onClick={(event) => goToPage(event, 'Contact')}>
           Enquire <ArrowRight size={16} weight="bold" />

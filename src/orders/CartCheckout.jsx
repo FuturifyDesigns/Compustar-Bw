@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { supabase, supabaseConfigured } from '../lib/supabase';
 import { useCart } from '../cart/CartContext';
 import { useAuth } from '../auth/AuthContext';
+import { requireAuthForCart } from '../auth/requireAuthForCart';
+import { formatOrderWhatsApp } from './formatOrderWhatsApp';
 
 const whatsappPhone = '26776004665';
 const staffNotifyEmails = ['compustarbw@gmail.com'];
@@ -20,6 +22,22 @@ function mediaSrc(item) {
 
 export function CartPage() {
   const { items, updateQty, removeItem, count } = useCart();
+  const { user, ready } = useAuth();
+
+  useEffect(() => {
+    if (!ready) return;
+    requireAuthForCart(user, { nextPath: '/Cart' });
+  }, [ready, user]);
+
+  if (!ready || !user) {
+    return (
+      <section className="section cart-section">
+        <div className="cart-wrap" data-reveal>
+          <p className="account-lead">Redirecting to sign in…</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="section cart-section">
@@ -63,7 +81,7 @@ export function CartPage() {
 
 export function CheckoutPage() {
   const { items, clearCart, count } = useCart();
-  const { user, profile } = useAuth();
+  const { user, profile, ready } = useAuth();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [done, setDone] = useState(null);
@@ -78,6 +96,11 @@ export function CheckoutPage() {
   });
 
   useEffect(() => {
+    if (!ready) return;
+    requireAuthForCart(user, { nextPath: '/Checkout' });
+  }, [ready, user]);
+
+  useEffect(() => {
     setForm((prev) => ({
       ...prev,
       customer_name: prev.customer_name || profile?.full_name || '',
@@ -85,6 +108,16 @@ export function CheckoutPage() {
       customer_phone: prev.customer_phone || profile?.phone || ''
     }));
   }, [user, profile]);
+
+  if (!ready || !user) {
+    return (
+      <section className="section cart-section">
+        <div className="cart-wrap" data-reveal>
+          <p className="account-lead">Redirecting to sign in…</p>
+        </div>
+      </section>
+    );
+  }
 
   function update(field) {
     return (event) => setForm((prev) => ({ ...prev, [field]: event.target.value }));
@@ -121,28 +154,39 @@ export function CheckoutPage() {
         qty: item.qty,
         image_url: item.image_url
       }));
-      const lines = payloadItems.map((item) => `• ${item.qty}× ${item.title}`).join('\n');
-      const shareText = encodeURIComponent(
-        `New Compustar order request\n${form.customer_name}\n${form.customer_phone}\n${form.customer_email}\n${form.fulfillment.toUpperCase()}\n${form.fulfillment === 'pickup' ? form.pickup_when : form.delivery_address}\n\n${lines}`
-      );
-      const whatsapp_share_url = `https://wa.me/${whatsappPhone}?text=${shareText}`;
+      const baseWhatsApp = {
+        customer_name: form.customer_name.trim(),
+        customer_phone: form.customer_phone.trim(),
+        customer_email: form.customer_email.trim(),
+        fulfillment: form.fulfillment,
+        pickup_when: form.pickup_when.trim(),
+        delivery_address: form.delivery_address.trim(),
+        notes: form.notes.trim(),
+        items: payloadItems
+      };
 
       const row = {
         user_id: user?.id || null,
-        customer_name: form.customer_name.trim(),
-        customer_email: form.customer_email.trim(),
-        customer_phone: form.customer_phone.trim(),
+        customer_name: baseWhatsApp.customer_name,
+        customer_email: baseWhatsApp.customer_email,
+        customer_phone: baseWhatsApp.customer_phone,
         fulfillment: form.fulfillment,
         pickup_when: form.fulfillment === 'pickup' ? form.pickup_when.trim() : '',
         delivery_address: form.fulfillment === 'delivery' ? form.delivery_address.trim() : '',
         notes: form.notes.trim(),
         status: 'new',
         items: payloadItems,
-        whatsapp_share_url
+        whatsapp_share_url: ''
       };
 
       const { data, error: insertError } = await supabase.from('orders').insert(row).select('id').single();
       if (insertError) throw insertError;
+
+      const whatsapp_share_url = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(
+        formatOrderWhatsApp({ ...baseWhatsApp, orderId: data.id })
+      )}`;
+      await supabase.from('orders').update({ whatsapp_share_url }).eq('id', data.id);
+      row.whatsapp_share_url = whatsapp_share_url;
 
       // Notify via Edge Function (Brevo email + WhatsApp share link). Fails soft if not deployed.
       try {

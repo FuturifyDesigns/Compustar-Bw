@@ -49,6 +49,32 @@ export function AccountPage() {
   const [touched, setTouched] = useState({});
   const [error, setError] = useState('');
   const [localMessage, setLocalMessage] = useState('');
+  const [authNotice, setAuthNotice] = useState('');
+
+  useEffect(() => {
+    try {
+      const notice = sessionStorage.getItem('compustar-auth-notice');
+      if (notice) {
+        setAuthNotice(notice);
+        sessionStorage.removeItem('compustar-auth-notice');
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    try {
+      const next = sessionStorage.getItem('compustar-auth-next');
+      if (next) {
+        sessionStorage.removeItem('compustar-auth-next');
+        go(next);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [user]);
 
   const strength = useMemo(() => passwordStrength(form.password), [form.password]);
 
@@ -137,19 +163,20 @@ export function AccountPage() {
         <p className="kicker">Customer access</p>
         <h1>{mode === 'login' ? 'Sign in' : 'Create an account'}</h1>
         <p className="account-lead">
-          {mode === 'login'
-            ? 'Sign in to manage your order requests with Compustar.'
-            : 'Create an account to submit order requests. We’ll email you a link to verify your address.'}
+          {authNotice
+            || (mode === 'login'
+              ? 'Sign in to manage your order requests with Compustar.'
+              : 'Create an account to submit order requests. We’ll email a verification link.')}
         </p>
         <div className="account-tabs">
           <button type="button" className={mode === 'login' ? 'active' : ''} onClick={() => { setMode('login'); setError(''); setTouched({}); }}>Sign in</button>
           <button type="button" className={mode === 'signup' ? 'active' : ''} onClick={() => { setMode('signup'); setError(''); setTouched({}); }}>Sign up</button>
         </div>
-        <form className="account-form" onSubmit={onSubmit} noValidate>
+        <form className={`account-form${mode === 'signup' ? ' is-signup' : ''}`} onSubmit={onSubmit} noValidate>
           {mode === 'signup' && (
-            <>
+            <div className="account-form-row">
               <label className={touched.fullName && fieldErrors.fullName ? 'has-error' : ''}>
-                Full name <span className="req">*</span>
+                <span className="label-text">Full name <span className="req">*</span></span>
                 <input
                   value={form.fullName}
                   onChange={update('fullName')}
@@ -161,7 +188,7 @@ export function AccountPage() {
                 {touched.fullName && fieldErrors.fullName ? <span className="field-error">{fieldErrors.fullName}</span> : null}
               </label>
               <label className={touched.phone && fieldErrors.phone ? 'has-error' : ''}>
-                Phone <span className="req">*</span>
+                <span className="label-text">Phone <span className="req">*</span></span>
                 <input
                   value={form.phone}
                   onChange={update('phone')}
@@ -174,10 +201,10 @@ export function AccountPage() {
                 />
                 {touched.phone && fieldErrors.phone ? <span className="field-error">{fieldErrors.phone}</span> : null}
               </label>
-            </>
+            </div>
           )}
           <label className={touched.email && fieldErrors.email ? 'has-error' : ''}>
-            Email <span className="req">*</span>
+            <span className="label-text">Email <span className="req">*</span></span>
             <input
               type="email"
               value={form.email}
@@ -190,7 +217,7 @@ export function AccountPage() {
             {touched.email && fieldErrors.email ? <span className="field-error">{fieldErrors.email}</span> : null}
           </label>
           <label className={touched.password && fieldErrors.password ? 'has-error' : ''}>
-            Password <span className="req">*</span>
+            <span className="label-text">Password <span className="req">*</span></span>
             <input
               type="password"
               value={form.password}

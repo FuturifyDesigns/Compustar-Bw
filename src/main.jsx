@@ -47,10 +47,11 @@ import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import productsJson from './products.json';
 import { AdminProvider, useAdmin } from './cms/AdminContext';
 import { AdminBar, AdminPage, AdvertEditorButton, CMSText, EditableText, ProductEditorButton } from './cms/AdminUI';
-import { AuthProvider } from './auth/AuthContext';
+import { AuthProvider, useAuth } from './auth/AuthContext';
 import { AccountPage, VerifiedPage } from './auth/AccountPages';
 import { CartProvider, useCart } from './cart/CartContext';
 import { CartPage, CheckoutPage } from './orders/CartCheckout';
+import { requireAuthForCart } from './auth/requireAuthForCart';
 import { OrdersAdminPanel } from './orders/OrdersAdmin';
 import { services as serviceCatalog, getServiceBySlug } from './data/services';
 import { supabase } from './lib/supabase';
@@ -1018,7 +1019,7 @@ function ServiceDetailPage({ slug }) {
           ) : (
             <div className="service-gallery-empty">
               <SmartImage src={service.image} alt={service.title} loading="eager" width={900} />
-              <p>Gallery photos for this service will appear here. You can add them later in the CMS/database.</p>
+              <p>More photos for this category are coming soon. Browse related products below, or contact us for current stock.</p>
             </div>
           )}
         </div>
@@ -1283,12 +1284,19 @@ function ProductCarousel({ products: list }) {
 
 function ProductCard({ product, priority = false }) {
   const { addItem } = useCart();
+  const { user } = useAuth();
   const src = mediaSrc(product);
   const title = (product.title || product.name || '').trim();
   const category = (product.category || '').trim();
   const description = (product.description || '').trim();
   const hasPrice = product.price != null && product.price !== '';
   const hasMeta = title || category || description || hasPrice;
+
+  function onAddToCart() {
+    if (!requireAuthForCart(user, { nextPath: '/Products' })) return;
+    addItem(product);
+  }
+
   return (
     <article className="product-card gallery-card" data-reveal>
       <div className="product-image">
@@ -1306,7 +1314,7 @@ function ProductCard({ product, priority = false }) {
         </div>
       )}
       <div className="product-overlay">
-        <button type="button" className="button primary" onClick={() => addItem(product)}>
+        <button type="button" className="button primary" onClick={onAddToCart}>
           Add to request
         </button>
         <a href={route('Contact')} onClick={(event) => goToPage(event, 'Contact')}>

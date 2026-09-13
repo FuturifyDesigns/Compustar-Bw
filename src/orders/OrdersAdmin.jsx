@@ -64,9 +64,14 @@ export function OrdersAdminPanel() {
         </div>
         <button type="button" className="button dark" onClick={() => load()}>Refresh</button>
       </div>
-      {loading && <p>Loading orders…</p>}
+      {loading && <p className="orders-empty">Loading orders…</p>}
       {error && <p className="cms-error">{error}</p>}
-      {!loading && !orders.length && <p className="account-lead">No order requests yet.</p>}
+      {!loading && !orders.length && (
+        <div className="orders-empty-card">
+          <strong>No order requests yet</strong>
+          <p>When customers submit a cart request on the website, they will show up here for follow-up.</p>
+        </div>
+      )}
       <div className="orders-list">
         {orders.map((order) => (
           <article key={order.id} className="order-card">

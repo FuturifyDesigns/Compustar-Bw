@@ -357,23 +357,30 @@ export function AdminPage({ onEnterSite, children = null }) {
   if (isAdmin) {
     return (
       <div className="admin-workspace">
-        <div className="admin-login admin-login--ready">
-          <div className="admin-login-glow" aria-hidden="true" />
-          <div className="admin-ready" data-hero>
-            <img src="/logo.webp" alt="Compustar" className="admin-ready-logo" />
-            <div className="admin-ready-copy">
-              <p className="admin-login-eyebrow">Signed in</p>
-              <h1>Ready to edit.</h1>
-              <p className="admin-login-lead">Manage order requests below, toggle editing from the bar, then open the live site.</p>
-            </div>
-            <div className="admin-ready-actions">
-              <button type="button" className="admin-login-btn primary" onClick={onEnterSite}>
-                Open the site <ArrowRight size={18} weight="bold" />
-              </button>
-              <button type="button" className="admin-login-link" onClick={logout}>Sign out</button>
-            </div>
+        <header className="admin-dash-header">
+          <a
+            className="admin-dash-brand"
+            href="/"
+            onClick={(event) => {
+              event.preventDefault();
+              onEnterSite();
+            }}
+            aria-label="Go to Compustar homepage"
+          >
+            <img src="/logo.webp" alt="Compustar" />
+          </a>
+          <div className="admin-dash-copy">
+            <p className="admin-dash-eyebrow">Compustar site studio</p>
+            <h1>Admin dashboard</h1>
+            <p>Review order requests, then open the live site to edit products, prices, and page copy.</p>
           </div>
-        </div>
+          <div className="admin-dash-actions">
+            <button type="button" className="admin-dash-btn primary" onClick={onEnterSite}>
+              Open the site <ArrowRight size={16} weight="bold" />
+            </button>
+            <button type="button" className="admin-dash-btn ghost" onClick={logout}>Sign out</button>
+          </div>
+        </header>
         <div className="admin-orders-wrap">
           {children}
         </div>

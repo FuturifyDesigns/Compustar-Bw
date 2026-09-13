@@ -37,6 +37,7 @@ await convertDir('adverts', {
   }
 });
 await convertDir('context', { width: 960, quality: 70 });
+await convertDir('generated', { width: 1600, quality: 72 });
 
 await writeWebp(path.join(root, 'hero-bg.png'), path.join(root, 'hero-bg.webp'), { width: 1920, quality: 68 });
 await writeWebp(path.join(root, 'logo.png'), path.join(root, 'logo.webp'), { width: 360, quality: 82 });

@@ -364,6 +364,21 @@ function useRevealAnimations(page) {
           scrollTrigger: { trigger: step, start: 'top 90%', once: true }
         });
       });
+      gsap.utils.toArray('[data-stack-card]').forEach((card) => {
+        gsap.set(card, { autoAlpha: 0, y: 72, scale: 0.96 });
+        gsap.to(card, {
+          autoAlpha: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.85,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: card,
+            start: 'top 80%',
+            toggleActions: 'play none none reverse'
+          }
+        });
+      });
       requestAnimationFrame(() => ScrollTrigger.refresh());
     });
     return () => ctx.revert();
@@ -385,7 +400,7 @@ function HomePage() {
   const featuredProducts = products.slice(0, 14);
   return (
     <>
-      <section className="hero">
+      <section className="hero has-photo" style={{ '--hero-image': "url('/generated/hero-home.webp')" }}>
         <div className="hero-copy">
           <EditableText as="p" className="kicker" contentKey="home.hero.kicker" value={getContent('home.hero.kicker', 'Compustar Botswana')} />
           <EditableText as="h1" contentKey="home.hero.title" value={getContent('home.hero.title', 'Technology products, repairs, and IT support.')} />
@@ -396,7 +411,7 @@ function HomePage() {
           </div>
         </div>
         <div className="hero-showcase" data-hero>
-          <video src="/hero-logo.mp4" poster="/logo.webp" muted loop autoPlay playsInline preload="metadata" aria-label="Compustar logo animation"></video>
+          <SmartImage src="/generated/hero-home.webp" alt="Compustar store team helping a customer" loading="eager" fetchPriority="high" width={1100} />
           <div>
             <span><Camera {...iconProps} /> Surveillance</span>
             <span><Monitor {...iconProps} /> Computers</span>
@@ -501,7 +516,7 @@ function AboutPage() {
 
   return (
     <>
-      <PageHero contentPrefix="about.hero" eyebrow="About Us" title="About Compustar — Your Digital Partner." text="Compustar is a Botswana-based technology and electronics company dedicated to providing reliable, practical and accessible technology solutions to individuals, businesses, institutions and organisations." />
+      <PageHero contentPrefix="about.hero" image="/generated/hero-about.webp" eyebrow="About Us" title="About Compustar — Your Digital Partner." text="Compustar is a Botswana-based technology and electronics company dedicated to providing reliable, practical and accessible technology solutions to individuals, businesses, institutions and organisations." />
 
       <section className="section about-intro">
         <div className="about-intro-grid">
@@ -682,7 +697,7 @@ function ProductsPage() {
   const [visible, setVisible] = useState(24);
   return (
     <>
-      <PageHero contentPrefix="products.hero" eyebrow="Products" title="A clean product gallery for quick enquiries." text="Browse the product photos and contact Compustar to confirm availability, pricing, or suitable alternatives." />
+      <PageHero contentPrefix="products.hero" image="/generated/hero-products.webp" eyebrow="Products" title="A clean product gallery for quick enquiries." text="Browse the product photos and contact Compustar to confirm availability, pricing, or suitable alternatives." />
       <section className="section catalogue-section">
         <div className="cms-toolbar"><ProductEditorButton onAdd /></div>
         <ProductGrid products={products.slice(0, visible)} />
@@ -774,6 +789,7 @@ function AdvertsPage() {
     <>
       <PageHero
         contentPrefix="adverts.hero"
+        image="/generated/hero-adverts.webp"
         eyebrow="Adverts"
         title="Campaign showcase."
         text="Browse Compustar promotional adverts in an auto-playing showcase — POS, laptops, gaming, accessories, surveillance, and new location announcements."
@@ -832,25 +848,21 @@ function ServicesPage() {
     [WifiHigh, 'Networking', 'Routers, CAT cables, Wi-Fi, printer sharing, and tidy connectivity planning.', '/context/service-networking.png'],
     [Camera, 'Surveillance Systems', 'Camera kits, recorders, GPS trackers, and security product enquiries.', '/context/service-security.png']
   ];
-  const slides = [...services, ...services];
   return (
     <>
-      <PageHero contentPrefix="services.hero" eyebrow="Services" title="Practical technology support for homes and businesses." text="Compustar helps customers choose equipment, set it up correctly, and keep everyday systems working." />
-      <section className="section">
-        <div className="horizontal-showcase auto-showcase service-slider">
-          {slides.map(([Icon, title, text, image], index) => {
-            const sourceIndex = index % services.length;
-            return (
-              <article className="service-card visual-card" key={`${title}-${index}`} data-reveal>
-                <SmartImage src={image} alt="" loading="lazy" width={640} />
-                <div>
-                  <Icon {...iconProps} size={26} />
-                  <h3><CMSText contentKey={`services.card.${sourceIndex}.title`} fallback={title} /></h3>
-                  <CMSText as="p" multiline contentKey={`services.card.${sourceIndex}.text`} fallback={text} />
-                </div>
-              </article>
-            );
-          })}
+      <PageHero contentPrefix="services.hero" image="/generated/hero-services.webp" eyebrow="Services" title="Practical technology support for homes and businesses." text="Compustar helps customers choose equipment, set it up correctly, and keep everyday systems working." />
+      <section className="section scroll-stack-section">
+        <div className="scroll-stack">
+          {services.map(([Icon, title, text, image], index) => (
+            <article className="service-card visual-card scroll-stack-card" key={title} data-stack-card>
+              <SmartImage src={image} alt="" loading={index === 0 ? 'eager' : 'lazy'} width={960} />
+              <div>
+                <Icon {...iconProps} size={26} />
+                <h3><CMSText contentKey={`services.card.${index}.title`} fallback={title} /></h3>
+                <CMSText as="p" multiline contentKey={`services.card.${index}.text`} fallback={text} />
+              </div>
+            </article>
+          ))}
         </div>
       </section>
     </>
@@ -859,30 +871,26 @@ function ServicesPage() {
 
 function RepairsPage() {
   const steps = [
-    ['01', 'Describe the problem', 'Send the device type, model, issue, and when it started.', '/context/repair-diagnose.png'],
-    ['02', 'Get clear guidance', 'The team can advise whether it needs inspection, setup, or replacement parts.', '/context/repair-advise.png'],
-    ['03', 'Visit the store', 'Bring the device or product details for final confirmation and support.', '/context/repair-visit.png']
+    ['01', 'Describe the problem', 'Send the device type, model, issue, and when it started.', '/generated/repair-step-1.webp'],
+    ['02', 'Get clear guidance', 'The team can advise whether it needs inspection, setup, or replacement parts.', '/generated/repair-step-2.webp'],
+    ['03', 'Visit the store', 'Bring the device or product details for final confirmation and support.', '/generated/repair-step-3.webp']
   ];
-  const slides = [...steps, ...steps];
   return (
     <>
-      <PageHero contentPrefix="repairs.hero" eyebrow="Repairs" title="A simple repair path from enquiry to support." text="Customers can send the issue first, then visit the store with the right details instead of guessing what to bring." />
-      <section className="section repair-story repair-story-full">
-        <div className="horizontal-showcase auto-showcase repair-steps">
-          {slides.map(([step, title, text, image], index) => {
-            const sourceIndex = index % steps.length;
-            return (
-              <article className="repair-step" key={`${step}-${index}`} data-reveal>
-                <SmartImage src={image} alt="" loading="lazy" width={640} />
-                <div>
-                  <span className="repair-step-num">{step}</span>
-                  <h3><CMSText contentKey={`repairs.step.${sourceIndex}.title`} fallback={title} /></h3>
-                  <CMSText as="p" multiline contentKey={`repairs.step.${sourceIndex}.text`} fallback={text} />
-                  <a className="button dark" href={route('Contact')} onClick={(event) => goToPage(event, 'Contact')}>Ask about repairs</a>
-                </div>
-              </article>
-            );
-          })}
+      <PageHero contentPrefix="repairs.hero" image="/generated/hero-repairs.webp" eyebrow="Repairs" title="A simple repair path from enquiry to support." text="Customers can send the issue first, then visit the store with the right details instead of guessing what to bring." />
+      <section className="section scroll-stack-section repair-story-full">
+        <div className="scroll-stack">
+          {steps.map(([step, title, text, image], index) => (
+            <article className="repair-step scroll-stack-card" key={step} data-stack-card>
+              <SmartImage src={image} alt="" loading={index === 0 ? 'eager' : 'lazy'} width={1100} />
+              <div>
+                <span className="repair-step-num">{step}</span>
+                <h3><CMSText contentKey={`repairs.step.${index}.title`} fallback={title} /></h3>
+                <CMSText as="p" multiline contentKey={`repairs.step.${index}.text`} fallback={text} />
+                <a className="button dark" href={route('Contact')} onClick={(event) => goToPage(event, 'Contact')}>Ask about repairs</a>
+              </div>
+            </article>
+          ))}
         </div>
       </section>
     </>
@@ -892,7 +900,7 @@ function RepairsPage() {
 function LocationPage() {
   return (
     <>
-      <PageHero contentPrefix="location.hero" eyebrow="Location" title="Visit Compustar in Gaborone." text="Find Compustar for product enquiries, repairs, accessories, and practical technology support." />
+      <PageHero contentPrefix="location.hero" image="/generated/hero-location.webp" eyebrow="Location" title="Visit Compustar in Gaborone." text="Find Compustar for product enquiries, repairs, accessories, and practical technology support." />
       <section className="location-page section">
         <div className="location-card" data-reveal>
           <CMSText as="p" className="kicker" contentKey="location.card.kicker" fallback="Store Locations" />
@@ -989,7 +997,7 @@ function ContactPage() {
 
   return (
     <>
-      <PageHero contentPrefix="contact.hero" eyebrow="Contact" title="Let’s find the right technology for you." text="Reach Compustar for availability, quotations, repairs, and bulk supply. A clear enquiry helps the team respond quickly." />
+      <PageHero contentPrefix="contact.hero" image="/generated/hero-contact.webp" eyebrow="Contact" title="Let’s find the right technology for you." text="Reach Compustar for availability, quotations, repairs, and bulk supply. A clear enquiry helps the team respond quickly." />
       <section className="contact-wrap">
         <div className="contact-layout">
           <article className="contact-intro" data-reveal>
@@ -1037,13 +1045,14 @@ function ContactPage() {
   );
 }
 
-function PageHero({ eyebrow, title, text, contentPrefix }) {
+function PageHero({ eyebrow, title, text, contentPrefix, image }) {
   const { getContent } = useAdmin();
   const eyebrowValue = contentPrefix ? getContent(`${contentPrefix}.eyebrow`, eyebrow) : eyebrow;
   const titleValue = contentPrefix ? getContent(`${contentPrefix}.title`, title) : title;
   const textValue = contentPrefix ? getContent(`${contentPrefix}.text`, text) : text;
+  const heroStyle = image ? { '--hero-image': `url('${image}')` } : undefined;
   return (
-    <section className="page-hero">
+    <section className={`page-hero${image ? ' has-photo' : ''}`} style={heroStyle}>
       {contentPrefix
         ? <EditableText as="p" className="kicker" contentKey={`${contentPrefix}.eyebrow`} value={eyebrowValue} />
         : <p className="kicker" data-hero>{eyebrow}</p>}

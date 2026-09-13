@@ -52,7 +52,9 @@ import { AccountPage, VerifiedPage } from './auth/AccountPages';
 import { CartProvider, useCart } from './cart/CartContext';
 import { CartPage, CheckoutPage } from './orders/CartCheckout';
 import { requireAuthForCart } from './auth/requireAuthForCart';
+import { PrivacyPage, TermsPage } from './legal/LegalPages';
 import { OrdersAdminPanel } from './orders/OrdersAdmin';
+import { ContactForm } from './contact/ContactForm';
 import { services as serviceCatalog, getServiceBySlug } from './data/services';
 import { supabase } from './lib/supabase';
 import './styles.css';
@@ -158,6 +160,8 @@ const seo = {
   Repairs: ['Computer Repairs | Compustar Botswana', 'Ask Compustar Botswana about computer diagnostics, upgrades, setup issues, replacement parts, and repair support.'],
   Location: ['Compustar Location | Game City Mall, Gaborone', 'Visit Compustar at Shop 6U upstairs in Game City Mall, Gaborone, Botswana.'],
   Contact: ['Contact Compustar Botswana', 'Contact Compustar Botswana about product availability, prices, repairs, quotes, and technology support.'],
+  Privacy: ['Privacy Policy | Compustar Botswana', 'How Compustar Botswana collects and protects personal data under Botswana’s Data Protection Act, 2024.'],
+  Terms: ['Terms of Use | Compustar Botswana', 'Terms governing use of the Compustar Botswana website and order-request service.'],
   Admin: ['Admin | Compustar Botswana', 'Compustar site studio sign in.']
 };
 
@@ -294,6 +298,8 @@ function AppShell() {
         {page === 'Checkout' && <CheckoutPage />}
         {page === 'Account' && <AccountPage />}
         {page === 'Verified' && <VerifiedPage />}
+        {page === 'Privacy' && <PrivacyPage />}
+        {page === 'Terms' && <TermsPage />}
       </main>
       <Footer />
       <OfflineNotice />
@@ -361,6 +367,8 @@ function parsePath() {
   if (head === 'Checkout') return { page: 'Checkout', serviceSlug: null };
   if (head === 'Account') return { page: 'Account', serviceSlug: null };
   if (head === 'Verified') return { page: 'Verified', serviceSlug: null };
+  if (head === 'Privacy') return { page: 'Privacy', serviceSlug: null };
+  if (head === 'Terms') return { page: 'Terms', serviceSlug: null };
   if (head === 'Services' && parts[1]) {
     return { page: 'Services', serviceSlug: parts[1] };
   }
@@ -1163,12 +1171,6 @@ function ContactPage() {
     [Phone, 'Game City mobile', 'contact.method.gamecity', 'Game City mobile', 'site.phone_display', contactPhone, `tel:${contactPhone.replace(/\D/g, '')}`],
     [Phone, 'G-West mobile', 'contact.method.gwest', 'G-West mobile', 'site.mobile_display', contactMobile, `tel:${contactMobile.replace(/\D/g, '')}`]
   ];
-  const tips = [
-    'Product name, category or quantity',
-    'Device model if it is a repair',
-    'Budget or intended use, if known',
-    'Your phone number or preferred contact method'
-  ];
 
   return (
     <>
@@ -1176,25 +1178,12 @@ function ContactPage() {
       <section className="contact-wrap">
         <div className="contact-layout">
           <article className="contact-intro" data-reveal>
-            <CMSText as="p" className="kicker" contentKey="contact.intro.kicker" fallback="How to enquire" />
-            <CMSText as="h2" contentKey="contact.intro.title" fallback="Send details we can act on." />
-            <CMSText as="p" multiline contentKey="contact.intro.text" fallback="Tell us what you need and how to reach you. We will come back with availability, a quotation, or repair guidance." />
-            <ol className="contact-tips">
-              {tips.map((tip, index) => (
-                <li key={tip}>
-                  <span className="contact-tips-num">{String(index + 1).padStart(2, '0')}</span>
-                  <CMSText contentKey={`contact.tip.${index}`} fallback={tip} />
-                </li>
-              ))}
-            </ol>
-            <div className="contact-socials">
-              <a href={instagramUrl} target="_blank" rel="noreferrer" aria-label="Instagram"><InstagramIcon size={18} /></a>
-              <a href={facebookUrl} target="_blank" rel="noreferrer" aria-label="Facebook"><FacebookIcon size={18} /></a>
-            </div>
+            <ContactForm />
           </article>
           <article className="contact-sheet" data-reveal>
             <CMSText as="p" className="kicker" contentKey="contact.sheet.kicker" fallback="Direct lines" />
             <CMSText as="h2" contentKey="contact.sheet.title" fallback="Get in touch." />
+            <CMSText as="p" className="contact-sheet-lead" multiline contentKey="contact.sheet.text" fallback="Prefer to call or message us directly? Use the lines below." />
             <div className="contact-rows">
               {methods.map(([Icon, key, labelKey, labelFallback, valueKey, value, href]) => (
                 <a className="contact-row" href={href} key={key}>
@@ -1421,7 +1410,11 @@ function Footer() {
             as="span"
           />
         </span>
-        <a href="https://futurifydesigns.com" target="_blank" rel="noreferrer">Built by Futurify Designs</a>
+        <nav className="footer-legal" aria-label="Legal">
+          <a href={route('Privacy')} onClick={(event) => goToPage(event, 'Privacy')}>Privacy</a>
+          <a href={route('Terms')} onClick={(event) => goToPage(event, 'Terms')}>Terms</a>
+          <a href="https://futurifydesigns.com" target="_blank" rel="noreferrer">Built by Futurify Designs</a>
+        </nav>
       </div>
     </footer>
   );

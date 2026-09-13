@@ -326,9 +326,13 @@ export function AdminPage({ onEnterSite, children = null }) {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (isAdmin) {
+      document.body.classList.remove('admin-login-body');
+      return undefined;
+    }
     document.body.classList.add('admin-login-body');
     return () => document.body.classList.remove('admin-login-body');
-  }, []);
+  }, [isAdmin]);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -360,7 +364,7 @@ export function AdminPage({ onEnterSite, children = null }) {
             <div className="admin-ready-copy">
               <p className="admin-login-eyebrow">Signed in</p>
               <h1>Ready to edit.</h1>
-              <p className="admin-login-lead">Use the bar above to toggle editing, manage order requests below, then open the live site.</p>
+              <p className="admin-login-lead">Manage order requests below, toggle editing from the bar, then open the live site.</p>
             </div>
             <div className="admin-ready-actions">
               <button type="button" className="admin-login-btn primary" onClick={onEnterSite}>
@@ -370,7 +374,9 @@ export function AdminPage({ onEnterSite, children = null }) {
             </div>
           </div>
         </div>
-        {children}
+        <div className="admin-orders-wrap">
+          {children}
+        </div>
       </div>
     );
   }

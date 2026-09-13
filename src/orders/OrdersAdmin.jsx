@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../auth/AuthContext';
+import { useAdmin } from '../cms/AdminContext';
 
 const STATUSES = ['new', 'confirmed', 'preparing', 'ready', 'completed', 'cancelled'];
 
 export function OrdersAdminPanel() {
-  const { isAdmin } = useAuth();
+  const { isAdmin } = useAdmin();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -25,8 +25,12 @@ export function OrdersAdminPanel() {
   }
 
   useEffect(() => {
+    if (!isAdmin) {
+      setLoading(false);
+      return undefined;
+    }
     load().catch(console.error);
-    if (!supabase || !isAdmin) return undefined;
+    if (!supabase) return undefined;
     const channel = supabase
       .channel('orders-admin')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
@@ -56,6 +60,7 @@ export function OrdersAdminPanel() {
         <div>
           <p className="kicker">Order management</p>
           <h2>Customer order requests</h2>
+          <p className="account-lead">New requests from the website appear here. Update status as you progress each order.</p>
         </div>
         <button type="button" className="button dark" onClick={() => load()}>Refresh</button>
       </div>

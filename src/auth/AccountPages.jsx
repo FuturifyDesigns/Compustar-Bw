@@ -44,7 +44,8 @@ export function AccountPage() {
     email: '',
     password: '',
     fullName: '',
-    phone: ''
+    phone: '',
+    acceptTerms: false
   });
   const [touched, setTouched] = useState({});
   const [error, setError] = useState('');
@@ -91,6 +92,7 @@ export function AccountPage() {
       if (!form.fullName.trim()) next.fullName = 'Full name is required.';
       if (!form.phone.trim()) next.phone = 'Phone number is required.';
       else if (!isValidPhone(form.phone.trim())) next.phone = 'Enter a valid phone number.';
+      if (!form.acceptTerms) next.acceptTerms = 'Please accept the Privacy Policy and Terms.';
     }
     return next;
   }, [form, mode, strength.score]);
@@ -110,7 +112,7 @@ export function AccountPage() {
     setTouched({
       email: true,
       password: true,
-      ...(mode === 'signup' ? { fullName: true, phone: true } : {})
+      ...(mode === 'signup' ? { fullName: true, phone: true, acceptTerms: true } : {})
     });
     if (Object.keys(fieldErrors).length) {
       setError('Please fix the highlighted fields.');
@@ -142,7 +144,7 @@ export function AccountPage() {
   if (user) {
     return (
       <section className="section account-section">
-        <div className="account-card account-card--compact" data-reveal>
+        <div className="account-card account-card--compact">
           <p className="kicker">My account</p>
           <h1>Welcome{profile?.full_name ? `, ${profile.full_name}` : ''}.</h1>
           <p className="account-lead">Signed in as {user.email}</p>
@@ -159,7 +161,7 @@ export function AccountPage() {
 
   return (
     <section className="section account-section">
-      <div className="account-card account-card--compact" data-reveal>
+      <div className="account-card account-card--compact">
         <p className="kicker">Customer access</p>
         <h1>{mode === 'login' ? 'Sign in' : 'Create an account'}</h1>
         <p className="account-lead">
@@ -169,7 +171,7 @@ export function AccountPage() {
               : 'Create an account to submit order requests. We’ll email a verification link.')}
         </p>
         <div className="account-tabs">
-          <button type="button" className={mode === 'login' ? 'active' : ''} onClick={() => { setMode('login'); setError(''); setTouched({}); }}>Sign in</button>
+          <button type="button" className={mode === 'login' ? 'active' : ''} onClick={() => { setMode('login'); setError(''); setTouched({}); setForm((prev) => ({ ...prev, acceptTerms: false })); }}>Sign in</button>
           <button type="button" className={mode === 'signup' ? 'active' : ''} onClick={() => { setMode('signup'); setError(''); setTouched({}); }}>Sign up</button>
         </div>
         <form className={`account-form${mode === 'signup' ? ' is-signup' : ''}`} onSubmit={onSubmit} noValidate>
@@ -238,6 +240,24 @@ export function AccountPage() {
             ) : null}
             {touched.password && fieldErrors.password ? <span className="field-error">{fieldErrors.password}</span> : null}
           </label>
+          {mode === 'signup' && (
+            <label className={`account-consent${touched.acceptTerms && fieldErrors.acceptTerms ? ' has-error' : ''}`}>
+              <input
+                type="checkbox"
+                checked={form.acceptTerms}
+                onChange={(event) => setForm((prev) => ({ ...prev, acceptTerms: event.target.checked }))}
+                onBlur={() => markTouched('acceptTerms')}
+              />
+              <span>
+                I agree to the{' '}
+                <a href="/Privacy" onClick={(event) => { event.preventDefault(); go('/Privacy'); }}>Privacy Policy</a>
+                {' '}and{' '}
+                <a href="/Terms" onClick={(event) => { event.preventDefault(); go('/Terms'); }}>Terms of Use</a>
+                , including processing of my personal data under Botswana’s Data Protection Act, 2024.
+              </span>
+              {touched.acceptTerms && fieldErrors.acceptTerms ? <span className="field-error">{fieldErrors.acceptTerms}</span> : null}
+            </label>
+          )}
           {error && <p className="cms-error">{error}</p>}
           {(message || localMessage) && <p className="account-note">{localMessage || message}</p>}
           <button className="button dark" type="submit" disabled={busy || !supabaseConfigured}>
@@ -275,7 +295,7 @@ export function VerifiedPage() {
 
   return (
     <section className="section account-section">
-      <div className="account-card account-card--compact verified-card" data-reveal>
+      <div className="account-card account-card--compact verified-card">
         <p className="kicker">Email verification</p>
         <h1>{status === 'error' ? 'Verification issue' : 'You are verified.'}</h1>
         <p className="account-lead">

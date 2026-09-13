@@ -8,12 +8,14 @@ export function requireAuthForCart(user, { nextPath } = {}) {
     );
     sessionStorage.setItem(
       'compustar-auth-notice',
-      'Sign in or create an account to add products to your request cart.'
+      'Sign in or create an account to add products to your cart.'
     );
   } catch {
     /* ignore */
   }
   window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
   window.history.pushState({}, '', '/Account');
   window.dispatchEvent(new PopStateEvent('popstate'));
   return false;

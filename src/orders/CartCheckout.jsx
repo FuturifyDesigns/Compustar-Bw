@@ -10,6 +10,9 @@ import { formatOrderWhatsApp } from './formatOrderWhatsApp';
 const whatsappPhone = '26776004665';
 
 function go(path) {
+  window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
   window.history.pushState({}, '', path);
   window.dispatchEvent(new PopStateEvent('popstate'));
 }

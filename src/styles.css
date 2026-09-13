@@ -1195,28 +1195,20 @@ p.editable-wrap > .edit-chip {
 body.cms-editing .product-showcase-section,
 body.cms-editing .product-slider { overflow: visible; }
 
-.service-category-grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin: 0 auto;
-  max-width: 1100px;
-}
-.service-category-card {
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: 0 12px 32px rgba(12,13,16,.05);
+a.reveal-panel.service-panel {
   color: inherit;
-  display: grid;
-  grid-template-columns: .9fr 1.1fr;
-  overflow: hidden;
   text-decoration: none;
   transition: transform .18s ease, box-shadow .18s ease;
 }
-.service-category-card:hover { box-shadow: var(--shadow); transform: translateY(-3px); }
-.service-open-link {
-  align-items: center; color: var(--red-deep); display: inline-flex; font-size: .88rem; font-weight: 700; gap: .3rem; margin-top: .35rem;
+a.reveal-panel.service-panel:hover {
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+a.reveal-panel.service-panel .button {
+  align-items: center;
+  display: inline-flex;
+  gap: .35rem;
+  pointer-events: none;
 }
 .service-detail-section { max-width: 1100px; margin: 0 auto; }
 .service-detail-head { display: grid; gap: .7rem; margin-bottom: 1.5rem; }
@@ -1567,8 +1559,6 @@ body.cms-editing .product-slider { overflow: visible; }
 .product-overlay .button { border: 0; cursor: pointer; }
 
 @media (max-width: 980px) {
-  .service-category-grid { grid-template-columns: 1fr; }
-  .service-category-card { grid-template-columns: 1fr; }
   .service-gallery-grid { grid-template-columns: 1fr 1fr; }
   .site-header { flex-wrap: wrap; }
   .header-tools { order: 2; }

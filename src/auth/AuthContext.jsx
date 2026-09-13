@@ -35,7 +35,10 @@ export function AuthProvider({ children }) {
     const { data: sub } = supabase.auth.onAuthStateChange(async (_event, next) => {
       setSession(next);
       if (next?.user) await loadProfile(next.user.id);
-      else setProfile(null);
+      else {
+        setProfile(null);
+        setMessage('');
+      }
     });
     return () => sub.subscription.unsubscribe();
   }, []);
@@ -88,9 +91,15 @@ export function AuthProvider({ children }) {
 
   async function signOut() {
     if (!supabase) return;
-    await supabase.auth.signOut();
-    setProfile(null);
-    setMessage('Signed out');
+    setBusy(true);
+    setMessage('');
+    try {
+      await supabase.auth.signOut();
+      setSession(null);
+      setProfile(null);
+    } finally {
+      setBusy(false);
+    }
   }
 
   const value = useMemo(() => ({

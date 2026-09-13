@@ -6,6 +6,9 @@ import { useAuth } from './AuthContext';
 const whatsappPhone = '26776004665';
 
 function go(path) {
+  window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
   window.history.pushState({}, '', path);
   window.dispatchEvent(new PopStateEvent('popstate'));
 }
@@ -141,6 +144,11 @@ export function AccountPage() {
     }
   }
 
+  useEffect(() => {
+    if (user) return;
+    setLocalMessage((prev) => (prev === 'Signed in.' ? '' : prev));
+  }, [user]);
+
   if (!ready) return <section className="section account-section"><p>Loading account…</p></section>;
 
   if (user) {
@@ -153,9 +161,19 @@ export function AccountPage() {
           <div className="account-actions">
             <button type="button" className="button dark" onClick={() => go('/Cart')}>View cart</button>
             <button type="button" className="button secondary-dark" onClick={() => go('/Checkout')}>Request an order</button>
-            <button type="button" className="button ghost-dark" onClick={() => signOut()}>Sign out</button>
+            <button
+              type="button"
+              className="button ghost-dark"
+              onClick={async () => {
+                setLocalMessage('');
+                setError('');
+                await signOut();
+              }}
+            >
+              Sign out
+            </button>
           </div>
-          {(message || localMessage) && <p className="account-note">{localMessage || message}</p>}
+          {localMessage ? <p className="account-note">{localMessage}</p> : null}
         </div>
       </section>
     );

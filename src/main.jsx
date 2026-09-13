@@ -266,6 +266,16 @@ function AppShell() {
     setMenuOpen(false);
   }, [page, serviceSlug]);
 
+  useEffect(() => {
+    resetPageScroll('auto');
+    const frame = window.requestAnimationFrame(() => resetPageScroll('auto'));
+    const timer = window.setTimeout(() => resetPageScroll('auto'), 80);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(timer);
+    };
+  }, [page, serviceSlug]);
+
   useRevealAnimations(`${page}:${serviceSlug || ''}`);
   usePageSeo(page, serviceSlug);
 
@@ -405,9 +415,10 @@ function resetPageScroll(behavior = 'smooth') {
 
 function goToPage(event, page, slug) {
   event.preventDefault();
-  resetPageScroll('auto');
   window.history.pushState({}, '', route(page, slug));
   window.dispatchEvent(new PopStateEvent('popstate'));
+  resetPageScroll('auto');
+  window.requestAnimationFrame(() => resetPageScroll('auto'));
 }
 
 function useRevealAnimations(page) {
@@ -929,12 +940,12 @@ function ServicesPage() {
     <>
       <PageHero contentPrefix="services.hero" image="/generated/hero-services.webp" eyebrow="Services" title="Browse Compustar service categories." text="Open a category to view products and images for that service. More gallery photos can be added anytime." />
       <section className="section reveal-panel-section">
-        <div className="service-category-grid">
+        <div className="reveal-panel-list">
           {serviceCatalog.map((service, index) => {
             const Icon = serviceIcons[service.icon] || Cpu;
             return (
               <a
-                className="service-category-card"
+                className={`reveal-panel service-panel${index % 2 ? ' reverse' : ''}`}
                 href={route('Services', service.slug)}
                 onClick={(event) => goToPage(event, 'Services', service.slug)}
                 key={service.slug}
@@ -947,7 +958,7 @@ function ServicesPage() {
                   <Icon {...iconProps} size={26} />
                   <h3><CMSText contentKey={`services.card.${service.slug}.title`} fallback={service.title} /></h3>
                   <CMSText as="p" multiline contentKey={`services.card.${service.slug}.text`} fallback={service.summary} />
-                  <span className="service-open-link">View category <ArrowRight size={16} weight="bold" /></span>
+                  <span className="button dark">View category <ArrowRight size={16} weight="bold" /></span>
                 </div>
               </a>
             );

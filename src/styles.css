@@ -1059,24 +1059,52 @@ body.cms-editing .product-slider { overflow: visible; }
 .service-gallery-empty p { color: var(--muted); margin: 0; padding: 0 1rem; }
 
 .account-section, .cart-section { max-width: 820px; margin: 0 auto; }
+.account-section { max-width: 420px; }
 .account-card, .cart-wrap {
   background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 14px 36px rgba(12,13,16,.06);
   display: grid; gap: 1rem; padding: clamp(1.2rem, 3vw, 2rem);
 }
-.account-lead { color: var(--muted); margin: 0; }
-.account-tabs { display: flex; gap: .4rem; }
+.account-card--compact {
+  gap: .75rem;
+  padding: 1.1rem 1.15rem 1.25rem;
+}
+.account-card--compact h1 {
+  font-size: clamp(1.35rem, 3vw, 1.65rem);
+}
+.account-lead { color: var(--muted); font-size: .9rem; line-height: 1.45; margin: 0; }
+.account-tabs { display: flex; gap: .35rem; }
 .account-tabs button {
-  background: #f3f5f7; border: 0; border-radius: 8px; cursor: pointer; font: inherit; font-weight: 700; padding: .55rem .9rem;
+  background: #f3f5f7; border: 0; border-radius: 8px; cursor: pointer; flex: 1; font: inherit; font-size: .88rem; font-weight: 700; padding: .45rem .7rem;
 }
 .account-tabs button.active { background: var(--ink); color: #fff; }
-.account-form, .checkout-form { display: grid; gap: .85rem; }
+.account-form, .checkout-form { display: grid; gap: .7rem; }
 .account-form label, .checkout-form label, .cart-qty {
-  display: grid; font-size: .86rem; font-weight: 700; gap: .35rem;
+  display: grid; font-size: .82rem; font-weight: 700; gap: .3rem;
 }
+.account-form .req { color: var(--red); }
 .account-form input, .checkout-form input, .checkout-form textarea, .cart-qty input, .order-actions select {
-  border: 1px solid var(--line); border-radius: 10px; font: inherit; padding: .75rem .9rem;
+  border: 1px solid var(--line); border-radius: 10px; font: inherit; font-size: .92rem; padding: .65rem .8rem;
 }
+.account-form label.has-error input {
+  border-color: rgba(239, 23, 23, .55);
+  box-shadow: 0 0 0 3px rgba(239, 23, 23, .1);
+}
+.field-error { color: #b00020; font-size: .78rem; font-weight: 600; }
+.password-meter { display: grid; gap: .28rem; margin-top: .15rem; }
+.password-meter-track {
+  background: #e8ebf0; border-radius: 999px; height: 6px; overflow: hidden; width: 100%;
+}
+.password-meter-track span {
+  background: #c4cad3; border-radius: inherit; display: block; height: 100%; transition: width .2s ease, background-color .2s ease;
+}
+.password-meter.tone-weak .password-meter-track span { background: #ef1717; }
+.password-meter.tone-fair .password-meter-track span { background: #e39b12; }
+.password-meter.tone-good .password-meter-track span { background: #2f9e44; }
+.password-meter.tone-strong .password-meter-track span { background: #087f5b; }
+.password-meter small { color: var(--muted); font-size: .75rem; font-weight: 700; }
+.account-card--compact .button { font-size: .88rem; padding: .65rem .95rem; width: 100%; }
 .account-actions, .cart-actions { display: flex; flex-wrap: wrap; gap: .65rem; }
+.account-card--compact .account-actions .button { width: auto; }
 .button.secondary-dark { background: #fff; border: 1px solid var(--line); color: var(--ink); }
 .button.ghost-dark { background: transparent; border: 0; color: var(--muted); cursor: pointer; font: inherit; font-weight: 700; padding: .4rem 0; }
 .account-note { color: var(--red-deep); margin: 0; }

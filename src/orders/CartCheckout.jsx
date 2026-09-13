@@ -26,7 +26,7 @@ export function CartPage() {
       <div className="cart-wrap" data-reveal>
         <p className="kicker">Order request cart</p>
         <h1>Your selected products</h1>
-        <p className="account-lead">No online payment — submit an order request and Compustar will confirm availability.</p>
+        <p className="account-lead">Add the products you need, then send an order request. Compustar will confirm availability.</p>
         {!count ? (
           <div className="cart-empty">
             <p>Your cart is empty.</p>
@@ -195,7 +195,7 @@ export function CheckoutPage() {
       <div className="cart-wrap checkout-wrap" data-reveal>
         <p className="kicker">Checkout</p>
         <h1>Submit an order request</h1>
-        <p className="account-lead">No payment online. Compustar reviews the request and confirms pickup or delivery.</p>
+        <p className="account-lead">Compustar will review your request and confirm pickup or delivery.</p>
         {!count ? (
           <div className="cart-empty">
             <p>Your cart is empty.</p>

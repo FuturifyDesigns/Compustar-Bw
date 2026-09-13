@@ -319,7 +319,7 @@ export function AdminBar() {
   );
 }
 
-export function AdminPage({ onEnterSite }) {
+export function AdminPage({ onEnterSite, children = null }) {
   const { isAdmin, login, logout, busy, ready } = useAdmin();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -352,22 +352,25 @@ export function AdminPage({ onEnterSite }) {
 
   if (isAdmin) {
     return (
-      <div className="admin-login admin-login--ready">
-        <div className="admin-login-glow" aria-hidden="true" />
-        <div className="admin-ready" data-hero>
-          <img src="/logo.webp" alt="Compustar" className="admin-ready-logo" />
-          <div className="admin-ready-copy">
-            <p className="admin-login-eyebrow">Signed in</p>
-            <h1>Ready to edit.</h1>
-            <p className="admin-login-lead">Use the bar above to toggle editing, then open the live site and change anything in place.</p>
-          </div>
-          <div className="admin-ready-actions">
-            <button type="button" className="admin-login-btn primary" onClick={onEnterSite}>
-              Open the site <ArrowRight size={18} weight="bold" />
-            </button>
-            <button type="button" className="admin-login-link" onClick={logout}>Sign out</button>
+      <div className="admin-workspace">
+        <div className="admin-login admin-login--ready">
+          <div className="admin-login-glow" aria-hidden="true" />
+          <div className="admin-ready" data-hero>
+            <img src="/logo.webp" alt="Compustar" className="admin-ready-logo" />
+            <div className="admin-ready-copy">
+              <p className="admin-login-eyebrow">Signed in</p>
+              <h1>Ready to edit.</h1>
+              <p className="admin-login-lead">Use the bar above to toggle editing, manage order requests below, then open the live site.</p>
+            </div>
+            <div className="admin-ready-actions">
+              <button type="button" className="admin-login-btn primary" onClick={onEnterSite}>
+                Open the site <ArrowRight size={18} weight="bold" />
+              </button>
+              <button type="button" className="admin-login-link" onClick={logout}>Sign out</button>
+            </div>
           </div>
         </div>
+        {children}
       </div>
     );
   }

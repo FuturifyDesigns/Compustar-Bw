@@ -1,0 +1,108 @@
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { supabase, supabaseConfigured } from '../lib/supabase';
+
+const AuthContext = createContext(null);
+
+export function AuthProvider({ children }) {
+  const [session, setSession] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [ready, setReady] = useState(!supabaseConfigured);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState('');
+
+  const user = session?.user || null;
+  const isAdmin = profile?.role === 'admin';
+  const isCustomer = Boolean(user) && !isAdmin;
+
+  async function loadProfile(userId) {
+    if (!supabase || !userId) {
+      setProfile(null);
+      return null;
+    }
+    const { data } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
+    setProfile(data || null);
+    return data;
+  }
+
+  useEffect(() => {
+    if (!supabase) return undefined;
+    supabase.auth.getSession().then(async ({ data }) => {
+      setSession(data.session);
+      if (data.session?.user) await loadProfile(data.session.user.id);
+      setReady(true);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, next) => {
+      setSession(next);
+      if (next?.user) await loadProfile(next.user.id);
+      else setProfile(null);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  async function signUp({ email, password, fullName, phone }) {
+    if (!supabase) throw new Error('Supabase is not configured');
+    setBusy(true);
+    setMessage('');
+    try {
+      const redirectTo = `${window.location.origin}/Verified`;
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectTo,
+          data: { full_name: fullName || '', phone: phone || '' }
+        }
+      });
+      if (error) throw error;
+      setMessage('Check your email to verify your account.');
+      return data;
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function signIn(email, password) {
+    if (!supabase) throw new Error('Supabase is not configured');
+    setBusy(true);
+    setMessage('');
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      await loadProfile(data.user.id);
+      return data;
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function signOut() {
+    if (!supabase) return;
+    await supabase.auth.signOut();
+    setProfile(null);
+    setMessage('Signed out');
+  }
+
+  const value = useMemo(() => ({
+    ready,
+    busy,
+    message,
+    setMessage,
+    session,
+    user,
+    profile,
+    isAdmin,
+    isCustomer,
+    signUp,
+    signIn,
+    signOut,
+    refreshProfile: () => (user ? loadProfile(user.id) : Promise.resolve(null))
+  }), [ready, busy, message, session, user, profile, isAdmin, isCustomer]);
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  return ctx;
+}

@@ -5,15 +5,20 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import L from 'leaflet';
 import {
   ArrowRight,
+  BatteryCharging,
+  Briefcase,
   Buildings,
   Camera,
   CaretLeft,
   CaretRight,
   CheckCircle,
   Cpu,
+  DeviceMobile,
   EnvelopeSimple,
+  GameController,
   GraduationCap,
   Handshake,
+  Laptop,
   Lightbulb,
   List,
   MagnifyingGlass,
@@ -25,9 +30,11 @@ import {
   Printer,
   SealCheck,
   ShoppingCart,
+  SpeakerHigh,
   Sparkle,
   Storefront,
   Target,
+  User,
   Users,
   WifiHigh,
   Wrench,
@@ -40,6 +47,13 @@ import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import productsJson from './products.json';
 import { AdminProvider, useAdmin } from './cms/AdminContext';
 import { AdminBar, AdminPage, AdvertEditorButton, CMSText, EditableText, ProductEditorButton } from './cms/AdminUI';
+import { AuthProvider } from './auth/AuthContext';
+import { AccountPage, VerifiedPage } from './auth/AccountPages';
+import { CartProvider, useCart } from './cart/CartContext';
+import { CartPage, CheckoutPage } from './orders/CartCheckout';
+import { OrdersAdminPanel } from './orders/OrdersAdmin';
+import { services as serviceCatalog, getServiceBySlug } from './data/services';
+import { supabase } from './lib/supabase';
 import './styles.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -101,6 +115,20 @@ const locations = [
   }
 ];
 const pages = ['Home', 'About', 'Products', 'Adverts', 'Services', 'Repairs', 'Location', 'Contact'];
+const navPages = pages;
+
+const serviceIcons = {
+  Cpu,
+  Printer,
+  WifiHigh,
+  Camera,
+  SpeakerHigh,
+  GameController,
+  Laptop,
+  DeviceMobile,
+  Briefcase,
+  BatteryCharging
+};
 const fallbackProducts = productsJson.map((item) => ({
   ...item,
   title: '',
@@ -202,14 +230,19 @@ function FacebookIcon({ size = 22 }) {
 
 function App() {
   return (
-    <AdminProvider fallbackProducts={fallbackProducts} fallbackAdverts={fallbackAdverts}>
-      <AppShell />
-    </AdminProvider>
+    <AuthProvider>
+      <CartProvider>
+        <AdminProvider fallbackProducts={fallbackProducts} fallbackAdverts={fallbackAdverts}>
+          <AppShell />
+        </AdminProvider>
+      </CartProvider>
+    </AuthProvider>
   );
 }
 
 function AppShell() {
-  const [page, setPage] = useState(getInitialPage);
+  const routeState = useRouteState();
+  const { page, serviceSlug } = routeState;
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -217,28 +250,27 @@ function AppShell() {
     if (redirectedPath) {
       window.history.replaceState({}, '', redirectedPath);
       resetPageScroll('auto');
-      setPage(getInitialPage());
+      window.dispatchEvent(new PopStateEvent('popstate'));
     }
-    const onRouteChange = () => {
-      resetPageScroll('auto');
-      setPage(getInitialPage());
-    };
+    const onRouteChange = () => resetPageScroll('auto');
     window.addEventListener('popstate', onRouteChange);
     return () => window.removeEventListener('popstate', onRouteChange);
   }, []);
 
   useEffect(() => {
     setMenuOpen(false);
-  }, [page]);
+  }, [page, serviceSlug]);
 
-  useRevealAnimations(page);
-  usePageSeo(page);
+  useRevealAnimations(`${page}:${serviceSlug || ''}`);
+  usePageSeo(page, serviceSlug);
 
   if (page === 'Admin') {
     return (
       <>
         <AdminBar />
-        <AdminPage onEnterSite={() => goToPage({ preventDefault() {} }, 'Home')} />
+        <AdminPage onEnterSite={() => goToPage({ preventDefault() {} }, 'Home')}>
+          <OrdersAdminPanel />
+        </AdminPage>
       </>
     );
   }
@@ -252,10 +284,15 @@ function AppShell() {
         {page === 'About' && <AboutPage />}
         {page === 'Products' && <ProductsPage />}
         {page === 'Adverts' && <AdvertsPage />}
-        {page === 'Services' && <ServicesPage />}
+        {page === 'Services' && !serviceSlug && <ServicesPage />}
+        {page === 'Services' && serviceSlug && <ServiceDetailPage slug={serviceSlug} />}
         {page === 'Repairs' && <RepairsPage />}
         {page === 'Location' && <LocationPage />}
         {page === 'Contact' && <ContactPage />}
+        {page === 'Cart' && <CartPage />}
+        {page === 'Checkout' && <CheckoutPage />}
+        {page === 'Account' && <AccountPage />}
+        {page === 'Verified' && <VerifiedPage />}
       </main>
       <Footer />
       <OfflineNotice />
@@ -284,10 +321,13 @@ function OfflineNotice() {
   return <div className="offline-banner" role="status">You are offline. Browsing saved Compustar pages and images.</div>;
 }
 
-function usePageSeo(page) {
+function usePageSeo(page, serviceSlug) {
   useEffect(() => {
-    const [title, description] = seo[page] || seo.Home;
-    const pageUrl = `https://compustar.co.bw${route(page)}`;
+    const service = serviceSlug ? getServiceBySlug(serviceSlug) : null;
+    const [title, description] = service
+      ? [`${service.title} | Compustar Services`, service.description]
+      : (seo[page] || seo.Home);
+    const pageUrl = `https://compustar.co.bw${service ? `/Services/${service.slug}` : route(page)}`;
     document.title = title;
     document.querySelector('meta[name="description"]')?.setAttribute('content', description);
     document.querySelector('link[rel="canonical"]')?.setAttribute('href', pageUrl);
@@ -297,7 +337,7 @@ function usePageSeo(page) {
     document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', title);
     document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', description);
     let robots = document.querySelector('meta[name="robots"]');
-    if (page === 'Admin') {
+    if (page === 'Admin' || page === 'Checkout' || page === 'Account') {
       if (!robots) {
         robots = document.createElement('meta');
         robots.name = 'robots';
@@ -307,18 +347,44 @@ function usePageSeo(page) {
     } else if (robots) {
       robots.setAttribute('content', 'index, follow');
     }
-  }, [page]);
+  }, [page, serviceSlug]);
+}
+
+function parsePath() {
+  const raw = window.location.pathname.replace(/^\/+/, '').replace(/\/+$/, '');
+  const parts = raw ? raw.split('/') : [];
+  const head = parts[0] || '';
+  if (!head) return { page: 'Home', serviceSlug: null };
+  if (head.toLowerCase() === 'admin') return { page: 'Admin', serviceSlug: null };
+  if (head === 'Cart') return { page: 'Cart', serviceSlug: null };
+  if (head === 'Checkout') return { page: 'Checkout', serviceSlug: null };
+  if (head === 'Account') return { page: 'Account', serviceSlug: null };
+  if (head === 'Verified') return { page: 'Verified', serviceSlug: null };
+  if (head === 'Services' && parts[1]) {
+    return { page: 'Services', serviceSlug: parts[1] };
+  }
+  if (pages.includes(head)) return { page: head, serviceSlug: null };
+  return { page: 'Home', serviceSlug: null };
+}
+
+function useRouteState() {
+  const [state, setState] = useState(parsePath);
+  useEffect(() => {
+    const sync = () => setState(parsePath());
+    window.addEventListener('popstate', sync);
+    return () => window.removeEventListener('popstate', sync);
+  }, []);
+  return state;
 }
 
 function getInitialPage() {
-  const value = window.location.pathname.replace(/^\/+/, '').replace(/\/+$/, '');
-  if (value.toLowerCase() === 'admin') return 'Admin';
-  return pages.includes(value) ? value : 'Home';
+  return parsePath().page;
 }
 
-function route(page) {
+function route(page, slug) {
   if (page === 'Home') return '/';
   if (page === 'Admin') return '/admin';
+  if (page === 'Services' && slug) return `/Services/${slug}`;
   return `/${page}`;
 }
 
@@ -328,10 +394,10 @@ function resetPageScroll(behavior = 'smooth') {
   document.body.scrollTop = 0;
 }
 
-function goToPage(event, page) {
+function goToPage(event, page, slug) {
   event.preventDefault();
   resetPageScroll('auto');
-  window.history.pushState({}, '', route(page));
+  window.history.pushState({}, '', route(page, slug));
   window.dispatchEvent(new PopStateEvent('popstate'));
 }
 
@@ -386,11 +452,19 @@ function useRevealAnimations(page) {
 }
 
 function Header({ menuOpen, page, setMenuOpen }) {
+  const { count } = useCart();
   return (
     <header className="site-header">
       <a className="brand" href={route('Home')} onClick={(event) => goToPage(event, 'Home')} aria-label="Compustar home"><SmartImage src="/logo.png" alt="Compustar logo" loading="eager" fetchPriority="high" /></a>
-      <button className="menu-button" onClick={() => setMenuOpen((open) => !open)} aria-label="Toggle menu">{menuOpen ? <X {...iconProps} /> : <List {...iconProps} />}</button>
-      <nav className={menuOpen ? 'open' : ''}>{pages.map((item) => <a className={page === item ? 'active' : ''} href={route(item)} onClick={(event) => goToPage(event, item)} key={item}>{item}</a>)}</nav>
+      <div className="header-tools">
+        <a className="header-tool" href={route('Account')} onClick={(event) => goToPage(event, 'Account')} aria-label="Account"><User {...iconProps} size={20} /></a>
+        <a className="header-tool cart-tool" href={route('Cart')} onClick={(event) => goToPage(event, 'Cart')} aria-label="Cart">
+          <ShoppingCart {...iconProps} size={20} />
+          {count > 0 ? <span className="cart-count">{count}</span> : null}
+        </a>
+        <button className="menu-button" onClick={() => setMenuOpen((open) => !open)} aria-label="Toggle menu">{menuOpen ? <X {...iconProps} /> : <List {...iconProps} />}</button>
+      </div>
+      <nav className={menuOpen ? 'open' : ''}>{navPages.map((item) => <a className={page === item ? 'active' : ''} href={route(item)} onClick={(event) => goToPage(event, item)} key={item}>{item}</a>)}</nav>
     </header>
   );
 }
@@ -842,36 +916,120 @@ function AdvertsPage() {
 }
 
 function ServicesPage() {
-  const services = [
-    [Cpu, 'Computer Sales', 'Laptops, desktops, monitors, accessories, and straightforward buying guidance.', '/context/service-computers.webp'],
-    [Printer, 'Printer Support', 'Printers, consumables, setup cables, and everyday office printing support.', '/context/service-printers.webp'],
-    [WifiHigh, 'Networking', 'Routers, CAT cables, Wi-Fi, printer sharing, and tidy connectivity planning.', '/context/service-networking.webp'],
-    [Camera, 'Surveillance Systems', 'Camera kits, recorders, GPS trackers, and security product enquiries.', '/context/service-security.webp']
-  ];
   return (
     <>
-      <PageHero contentPrefix="services.hero" image="/generated/hero-services.webp" eyebrow="Services" title="Practical technology support for homes and businesses." text="Compustar helps customers choose equipment, set it up correctly, and keep everyday systems working." />
+      <PageHero contentPrefix="services.hero" image="/generated/hero-services.webp" eyebrow="Services" title="Browse Compustar service categories." text="Open a category to view products and images for that service. More gallery photos can be added anytime." />
       <section className="section reveal-panel-section">
-        <div className="reveal-panel-list">
-          {services.map(([Icon, title, text, image], index) => (
-            <article className={`reveal-panel${index % 2 ? ' reverse' : ''}`} key={title} data-stack-card>
-              <div className="reveal-panel-media">
-                <SmartImage
-                  src={image}
-                  alt=""
-                  loading={index < 2 ? 'eager' : 'lazy'}
-                  fetchPriority={index === 0 ? 'high' : 'low'}
-                  width={720}
-                />
-              </div>
-              <div className="reveal-panel-copy">
-                <Icon {...iconProps} size={28} />
-                <h3><CMSText contentKey={`services.card.${index}.title`} fallback={title} /></h3>
-                <CMSText as="p" multiline contentKey={`services.card.${index}.text`} fallback={text} />
-              </div>
-            </article>
-          ))}
+        <div className="service-category-grid">
+          {serviceCatalog.map((service, index) => {
+            const Icon = serviceIcons[service.icon] || Cpu;
+            return (
+              <a
+                className="service-category-card"
+                href={route('Services', service.slug)}
+                onClick={(event) => goToPage(event, 'Services', service.slug)}
+                key={service.slug}
+                data-stack-card
+              >
+                <div className="reveal-panel-media">
+                  <SmartImage src={service.image} alt="" loading={index < 2 ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : 'low'} width={720} />
+                </div>
+                <div className="reveal-panel-copy">
+                  <Icon {...iconProps} size={26} />
+                  <h3><CMSText contentKey={`services.card.${service.slug}.title`} fallback={service.title} /></h3>
+                  <CMSText as="p" multiline contentKey={`services.card.${service.slug}.text`} fallback={service.summary} />
+                  <span className="service-open-link">View category <ArrowRight size={16} weight="bold" /></span>
+                </div>
+              </a>
+            );
+          })}
         </div>
+      </section>
+    </>
+  );
+}
+
+function ServiceDetailPage({ slug }) {
+  const service = getServiceBySlug(slug);
+  const { products } = useAdmin();
+  const [gallery, setGallery] = useState([]);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      if (!supabase || !slug) return;
+      const { data } = await supabase
+        .from('service_images')
+        .select('*')
+        .eq('service_slug', slug)
+        .eq('active', true)
+        .order('sort_order', { ascending: true });
+      if (alive) setGallery(data || []);
+    })().catch(() => alive && setGallery([]));
+    return () => { alive = false; };
+  }, [slug]);
+
+  if (!service) {
+    return (
+      <section className="section">
+        <p>Service not found.</p>
+        <a href={route('Services')} onClick={(event) => goToPage(event, 'Services')}>Back to services</a>
+      </section>
+    );
+  }
+
+  const Icon = serviceIcons[service.icon] || Cpu;
+  const related = products.filter((item) => {
+    const category = (item.category || '').toLowerCase();
+    return category && (
+      category.includes(service.title.toLowerCase().split(' ')[0])
+      || service.title.toLowerCase().includes(category)
+    );
+  }).slice(0, 8);
+
+  return (
+    <>
+      <PageHero
+        image={service.image}
+        eyebrow="Services"
+        title={service.title}
+        text={service.description}
+      />
+      <section className="section service-detail-section">
+        <div className="service-detail-head" data-reveal>
+          <a href={route('Services')} onClick={(event) => goToPage(event, 'Services')}>← All categories</a>
+          <div className="service-detail-title">
+            <Icon {...iconProps} size={28} />
+            <h2>{service.title}</h2>
+          </div>
+          <p>{service.summary}</p>
+        </div>
+        <div className="service-gallery" data-reveal>
+          <h3>Category images</h3>
+          {gallery.length ? (
+            <div className="service-gallery-grid">
+              {gallery.map((item) => (
+                <figure key={item.id}>
+                  <SmartImage src={item.image_url} alt={item.caption || service.title} loading="lazy" width={720} />
+                  {item.caption ? <figcaption>{item.caption}</figcaption> : null}
+                </figure>
+              ))}
+            </div>
+          ) : (
+            <div className="service-gallery-empty">
+              <SmartImage src={service.image} alt={service.title} loading="eager" width={900} />
+              <p>Gallery photos for this service will appear here. You can add them later in the CMS/database.</p>
+            </div>
+          )}
+        </div>
+        {related.length > 0 && (
+          <div className="service-related" data-reveal>
+            <h3>Related products</h3>
+            <div className="product-grid">
+              {related.map((product, index) => <ProductCard key={product.id || index} product={product} priority={index < 2} />)}
+            </div>
+          </div>
+        )}
       </section>
     </>
   );
@@ -1124,6 +1282,7 @@ function ProductCarousel({ products: list }) {
 }
 
 function ProductCard({ product, priority = false }) {
+  const { addItem } = useCart();
   const src = mediaSrc(product);
   const title = (product.title || product.name || '').trim();
   const category = (product.category || '').trim();
@@ -1147,6 +1306,9 @@ function ProductCard({ product, priority = false }) {
         </div>
       )}
       <div className="product-overlay">
+        <button type="button" className="button primary" onClick={() => addItem(product)}>
+          Add to request
+        </button>
         <a href={route('Contact')} onClick={(event) => goToPage(event, 'Contact')}>
           Enquire <ArrowRight size={16} weight="bold" />
         </a>

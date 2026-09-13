@@ -30,6 +30,7 @@ function mapAdvert(row) {
 
 export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts = [] }) {
   const [session, setSession] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [editMode, setEditModeState] = useState(() => {
     try {
       return sessionStorage.getItem('compustar-cms-edit') === '1';
@@ -45,7 +46,17 @@ export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts
   const [toast, setToast] = useState('');
   const refreshTimer = useRef(0);
 
-  const isAdmin = Boolean(session?.user);
+  const isAdmin = profile?.role === 'admin';
+
+  async function loadProfile(userId) {
+    if (!supabase || !userId) {
+      setProfile(null);
+      return null;
+    }
+    const { data } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
+    setProfile(data || null);
+    return data;
+  }
 
   function setEditMode(next) {
     setEditModeState((prev) => {
@@ -61,16 +72,19 @@ export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts
 
   useEffect(() => {
     if (!supabase) return undefined;
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
       setSession(data.session);
+      if (data.session?.user) await loadProfile(data.session.user.id);
       setReady(true);
-      if (!data.session) {
+      if (!data.session) setEditMode(false);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, next) => {
+      setSession(next);
+      if (next?.user) await loadProfile(next.user.id);
+      else {
+        setProfile(null);
         setEditMode(false);
       }
-    });
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => {
-      setSession(next);
-      if (!next) setEditMode(false);
     });
     return () => sub.subscription.unsubscribe();
   }, []);
@@ -128,8 +142,14 @@ export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts
   async function login(email, password) {
     setBusy(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
+      const nextProfile = await loadProfile(data.user.id);
+      if (nextProfile?.role !== 'admin') {
+        await supabase.auth.signOut();
+        setProfile(null);
+        throw new Error('This account is not an admin. Use Account for customer sign-in.');
+      }
       setEditMode(true);
       notify('Admin mode enabled');
     } finally {
@@ -139,6 +159,7 @@ export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts
 
   async function logout() {
     await supabase.auth.signOut();
+    setProfile(null);
     setEditMode(false);
     notify('Signed out');
   }
@@ -229,14 +250,20 @@ export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts
     notify('Advert deleted');
   }
 
+  useEffect(() => {
+    if (!isAdmin) {
+      setEditMode(false);
+    }
+  }, [isAdmin]);
+
   const value = useMemo(() => ({
-    ready, busy, toast, isAdmin, editMode, setEditMode, products, adverts, content,
+    ready, busy, toast, isAdmin, editMode, setEditMode, products, adverts, content, profile,
     getContent(key, fallback = '') {
       const value = content[key];
       return value == null || value === '' ? fallback : value;
     },
     login, logout, saveContent, saveProduct, deleteProduct, saveAdvert, deleteAdvert, refresh
-  }), [ready, busy, toast, isAdmin, editMode, products, adverts, content]);
+  }), [ready, busy, toast, isAdmin, editMode, products, adverts, content, profile]);
 
   return <AdminContext.Provider value={value}>{children}</AdminContext.Provider>;
 }

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { supabase, supabaseConfigured } from '../lib/supabase';
+import { assertClientCooldown } from '../lib/clientSecurity';
 
 const AuthContext = createContext(null);
 
@@ -41,16 +42,21 @@ export function AuthProvider({ children }) {
 
   async function signUp({ email, password, fullName, phone }) {
     if (!supabase) throw new Error('Supabase is not configured');
+    const cooldown = assertClientCooldown('auth-signup', 30_000);
+    if (!cooldown.ok) throw new Error(cooldown.error);
     setBusy(true);
     setMessage('');
     try {
       const redirectTo = `${window.location.origin}/Verified`;
       const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: String(email || '').trim().slice(0, 254),
+        password: String(password || '').slice(0, 128),
         options: {
           emailRedirectTo: redirectTo,
-          data: { full_name: fullName || '', phone: phone || '' }
+          data: {
+            full_name: String(fullName || '').trim().slice(0, 120),
+            phone: String(phone || '').trim().slice(0, 40)
+          }
         }
       });
       if (error) throw error;
@@ -63,10 +69,15 @@ export function AuthProvider({ children }) {
 
   async function signIn(email, password) {
     if (!supabase) throw new Error('Supabase is not configured');
+    const cooldown = assertClientCooldown('auth-signin', 8_000);
+    if (!cooldown.ok) throw new Error(cooldown.error);
     setBusy(true);
     setMessage('');
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: String(email || '').trim().slice(0, 254),
+        password: String(password || '').slice(0, 128)
+      });
       if (error) throw error;
       await loadProfile(data.user.id);
       return data;

@@ -105,8 +105,13 @@ create policy "Admin write service images" on public.service_images
   for all using (public.is_admin()) with check (public.is_admin());
 
 drop policy if exists "Anyone insert orders" on public.orders;
-create policy "Anyone insert orders" on public.orders
-  for insert with check (true);
+drop policy if exists "Authenticated insert orders" on public.orders;
+create policy "Authenticated insert orders" on public.orders
+  for insert
+  with check (
+    auth.uid() is not null
+    and (user_id is null or user_id = auth.uid())
+  );
 
 drop policy if exists "Users read own orders" on public.orders;
 create policy "Users read own orders" on public.orders

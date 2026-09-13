@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Eye, EyeSlash } from '@phosphor-icons/react';
 import { supabase, supabaseConfigured } from '../lib/supabase';
 import { useAuth } from './AuthContext';
 
@@ -51,6 +52,7 @@ export function AccountPage() {
   const [error, setError] = useState('');
   const [localMessage, setLocalMessage] = useState('');
   const [authNotice, setAuthNotice] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     try {
@@ -171,8 +173,8 @@ export function AccountPage() {
               : 'Create an account to submit order requests. We’ll email a verification link.')}
         </p>
         <div className="account-tabs">
-          <button type="button" className={mode === 'login' ? 'active' : ''} onClick={() => { setMode('login'); setError(''); setTouched({}); setForm((prev) => ({ ...prev, acceptTerms: false })); }}>Sign in</button>
-          <button type="button" className={mode === 'signup' ? 'active' : ''} onClick={() => { setMode('signup'); setError(''); setTouched({}); }}>Sign up</button>
+          <button type="button" className={mode === 'login' ? 'active' : ''} onClick={() => { setMode('login'); setError(''); setTouched({}); setShowPassword(false); setForm((prev) => ({ ...prev, acceptTerms: false })); }}>Sign in</button>
+          <button type="button" className={mode === 'signup' ? 'active' : ''} onClick={() => { setMode('signup'); setError(''); setTouched({}); setShowPassword(false); }}>Sign up</button>
         </div>
         <form className={`account-form${mode === 'signup' ? ' is-signup' : ''}`} onSubmit={onSubmit} noValidate>
           {mode === 'signup' && (
@@ -220,16 +222,28 @@ export function AccountPage() {
           </label>
           <label className={touched.password && fieldErrors.password ? 'has-error' : ''}>
             <span className="label-text">Password <span className="req">*</span></span>
-            <input
-              type="password"
-              value={form.password}
-              onChange={update('password')}
-              onBlur={() => markTouched('password')}
-              required
-              minLength={6}
-              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-              aria-invalid={Boolean(touched.password && fieldErrors.password)}
-            />
+            <div className="password-field">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={form.password}
+                onChange={update('password')}
+                onBlur={() => markTouched('password')}
+                required
+                minLength={6}
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                aria-invalid={Boolean(touched.password && fieldErrors.password)}
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showPassword}
+              >
+                {showPassword ? <EyeSlash size={18} weight="bold" /> : <Eye size={18} weight="bold" />}
+                <span>{showPassword ? 'Hide' : 'Show'}</span>
+              </button>
+            </div>
             {form.password ? (
               <div className={`password-meter tone-${strength.tone}`} aria-live="polite">
                 <div className="password-meter-track">

@@ -1,33 +1,18 @@
-// Supabase Edge Function: notify-contact
 // Secrets: BREVO_API_KEY, BREVO_SENDER_EMAIL, BREVO_SENDER_NAME, ADMIN_EMAILS
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts';
+import {
+  clampText,
+  corsHeaders,
+  enforceRateLimit,
+  escapeHtml,
+  isHoneypotTripped,
+  isValidEmail,
+  jsonResponse,
+  parseStaffEmails,
+  readJsonBody
+} from '../_shared/security.ts';
 
-const cors = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
-};
-
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-function parseEmails(...chunks) {
-  const set = new Set();
-  for (const chunk of chunks) {
-    String(chunk || '')
-      .split(/[,;\s]+/)
-      .map((v) => v.trim().toLowerCase())
-      .filter(Boolean)
-      .forEach((email) => set.add(email));
-  }
-  return [...set];
-}
-
-function emailShell({ title, preheader = '', bodyHtml }) {
+function emailShell({ title, preheader = '', bodyHtml }: { title: string; preheader?: string; bodyHtml: string }) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>${escapeHtml(title)}</title></head>
@@ -57,41 +42,47 @@ function emailShell({ title, preheader = '', bodyHtml }) {
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders(req) });
+  if (req.method !== 'POST') return jsonResponse(req, { ok: false, error: 'Method not allowed' }, 405);
 
   try {
+    const parsed = await readJsonBody(req, 12_000);
+    if (!parsed.ok) return jsonResponse(req, { ok: false, error: parsed.error }, 400);
+    const body = parsed.body;
+
+    if (isHoneypotTripped(body)) {
+      return jsonResponse(req, { ok: true });
+    }
+
+    const name = clampText(body.name, 120);
+    const email = clampText(body.email, 254).toLowerCase();
+    const phone = clampText(body.phone, 40);
+    const subject = clampText(body.subject, 140) || 'Website enquiry';
+    const message = clampText(body.message, 4000);
+
+    if (!name || !email || !message) {
+      return jsonResponse(req, { ok: false, error: 'Name, email, and message are required.' }, 400);
+    }
+    if (!isValidEmail(email)) {
+      return jsonResponse(req, { ok: false, error: 'Enter a valid email address.' }, 400);
+    }
+
+    const limited = await enforceRateLimit(req, 'contact', 5, 3600, email);
+    if (!limited.ok) return jsonResponse(req, { ok: false, error: limited.error }, 429);
+
     const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY');
     const senderEmail = Deno.env.get('BREVO_SENDER_EMAIL') || 'futurifydesigns@gmail.com';
     const senderName = Deno.env.get('BREVO_SENDER_NAME') || 'Compustar Botswana';
-    const body = await req.json();
-
-    const name = String(body.name || '').trim();
-    const email = String(body.email || '').trim();
-    const phone = String(body.phone || '').trim();
-    const subject = String(body.subject || 'Website enquiry').trim() || 'Website enquiry';
-    const message = String(body.message || '').trim();
-
-    if (!name || !email || !message) {
-      return new Response(JSON.stringify({ ok: false, error: 'Name, email, and message are required.' }), {
-        status: 400,
-        headers: { ...cors, 'Content-Type': 'application/json' }
-      });
+    if (!BREVO_API_KEY) {
+      return jsonResponse(req, { ok: false, error: 'Email service unavailable' }, 500);
     }
 
-    const staffEmails = parseEmails(
-      body.adminEmail,
-      body.adminEmails,
+    // Never trust client-provided staff recipient lists
+    const staffEmails = parseStaffEmails(
       Deno.env.get('ADMIN_EMAILS'),
       Deno.env.get('ADMIN_EMAIL'),
       'compustarbw@gmail.com'
     );
-
-    if (!BREVO_API_KEY) {
-      return new Response(JSON.stringify({ ok: false, error: 'BREVO_API_KEY missing' }), {
-        status: 500,
-        headers: { ...cors, 'Content-Type': 'application/json' }
-      });
-    }
 
     const staffHtml = emailShell({
       title: 'New website enquiry',
@@ -120,12 +111,13 @@ serve(async (req) => {
         sender: { name: senderName, email: senderEmail },
         to: staffEmails.map((addr) => ({ email: addr })),
         replyTo: { email, name },
-        subject: `Contact · ${subject} · ${name}`,
+        subject: `Contact · ${subject} · ${name}`.slice(0, 200),
         htmlContent: staffHtml
       })
     });
     if (!staffRes.ok) {
-      throw new Error(`Brevo staff email error: ${await staffRes.text()}`);
+      console.error('Brevo staff email error', await staffRes.text());
+      return jsonResponse(req, { ok: false, error: 'Could not send message right now.' }, 502);
     }
 
     const customerHtml = emailShell({
@@ -154,13 +146,9 @@ serve(async (req) => {
       })
     });
 
-    return new Response(JSON.stringify({ ok: true, staffEmails }), {
-      headers: { ...cors, 'Content-Type': 'application/json' }
-    });
+    return jsonResponse(req, { ok: true });
   } catch (error) {
-    return new Response(JSON.stringify({ ok: false, error: String(error?.message || error) }), {
-      status: 500,
-      headers: { ...cors, 'Content-Type': 'application/json' }
-    });
+    console.error(error);
+    return jsonResponse(req, { ok: false, error: 'Unexpected error' }, 500);
   }
 });

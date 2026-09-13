@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { supabase, supabaseConfigured } from '../lib/supabase';
-
-const staffNotifyEmails = ['compustarbw@gmail.com'];
+import { assertClientCooldown } from '../lib/clientSecurity';
 
 export function ContactForm() {
   const [form, setForm] = useState({
@@ -9,7 +8,8 @@ export function ContactForm() {
     email: '',
     phone: '',
     subject: '',
-    message: ''
+    message: '',
+    website: ''
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -22,8 +22,21 @@ export function ContactForm() {
   async function onSubmit(event) {
     event.preventDefault();
     setError('');
+    if (form.website.trim()) {
+      setDone(true);
+      return;
+    }
     if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
       setError('Please fill in your name, email, and message.');
+      return;
+    }
+    if (form.message.trim().length > 4000) {
+      setError('Message is too long.');
+      return;
+    }
+    const cooldown = assertClientCooldown('contact', 60_000);
+    if (!cooldown.ok) {
+      setError(cooldown.error);
       return;
     }
     if (!supabaseConfigured || !supabase) {
@@ -40,13 +53,13 @@ export function ContactForm() {
           phone: form.phone.trim(),
           subject: form.subject.trim() || 'Website enquiry',
           message: form.message.trim(),
-          adminEmails: staffNotifyEmails
+          website: form.website
         }
       });
       if (invokeError) throw invokeError;
       if (data?.ok === false) throw new Error(data.error || 'Could not send message');
       setDone(true);
-      setForm({ name: '', email: '', phone: '', subject: '', message: '' });
+      setForm({ name: '', email: '', phone: '', subject: '', message: '', website: '' });
     } catch (err) {
       setError(err.message || 'Could not send your message. Please try WhatsApp or email.');
     } finally {
@@ -70,27 +83,38 @@ export function ContactForm() {
       <p className="kicker">Send a message</p>
       <h3>Contact Compustar</h3>
       <p className="contact-form-lead">Tell us what you need. Your message goes straight to our team email.</p>
+      <div className="hp-field" aria-hidden="true">
+        <label>
+          Website
+          <input
+            tabIndex={-1}
+            autoComplete="off"
+            value={form.website}
+            onChange={update('website')}
+          />
+        </label>
+      </div>
       <div className="contact-form-row">
         <label>
           Full name <span className="req">*</span>
-          <input value={form.name} onChange={update('name')} required autoComplete="name" />
+          <input value={form.name} onChange={update('name')} required autoComplete="name" maxLength={120} />
         </label>
         <label>
           Phone
-          <input value={form.phone} onChange={update('phone')} inputMode="tel" autoComplete="tel" placeholder="+267…" />
+          <input value={form.phone} onChange={update('phone')} inputMode="tel" autoComplete="tel" placeholder="+267…" maxLength={40} />
         </label>
       </div>
       <label>
         Email <span className="req">*</span>
-        <input type="email" value={form.email} onChange={update('email')} required autoComplete="email" />
+        <input type="email" value={form.email} onChange={update('email')} required autoComplete="email" maxLength={254} />
       </label>
       <label>
         Subject
-        <input value={form.subject} onChange={update('subject')} placeholder="Availability, quote, repair…" />
+        <input value={form.subject} onChange={update('subject')} placeholder="Availability, quote, repair…" maxLength={140} />
       </label>
       <label>
         Message <span className="req">*</span>
-        <textarea value={form.message} onChange={update('message')} required rows={5} placeholder="Include product names, quantities, or device details if relevant." />
+        <textarea value={form.message} onChange={update('message')} required rows={5} maxLength={4000} placeholder="Include product names, quantities, or device details if relevant." />
       </label>
       {error ? <p className="cms-error">{error}</p> : null}
       <button className="button dark" type="submit" disabled={busy}>

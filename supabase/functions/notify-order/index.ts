@@ -1,36 +1,23 @@
-// Supabase Edge Function: notify-order
 // Secrets: BREVO_API_KEY, BREVO_SENDER_EMAIL, BREVO_SENDER_NAME, ADMIN_EMAILS
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
+import {
+  clampText,
+  corsHeaders,
+  enforceRateLimit,
+  escapeHtml,
+  isHoneypotTripped,
+  isValidEmail,
+  jsonResponse,
+  parseStaffEmails,
+  readJsonBody
+} from '../_shared/security.ts';
 
-const cors = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
-};
-
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-function parseEmails(...chunks) {
-  const set = new Set();
-  for (const chunk of chunks) {
-    String(chunk || '')
-      .split(/[,;\s]+/)
-      .map((v) => v.trim().toLowerCase())
-      .filter(Boolean)
-      .forEach((email) => set.add(email));
-  }
-  return [...set];
-}
-
-function formatWhatsApp(order, orderId) {
+function formatWhatsApp(order: Record<string, unknown>, orderId: string) {
   const ref = String(orderId || '').slice(0, 8).toUpperCase() || 'PENDING';
   const isPickup = String(order.fulfillment || '').toLowerCase() === 'pickup';
-  const itemLines = (order.items || []).map((item, i) => {
+  const items = Array.isArray(order.items) ? order.items : [];
+  const itemLines = items.map((item: Record<string, unknown>, i: number) => {
     const qty = item.qty || 1;
     const title = item.title || 'Item';
     const price = item.price != null && item.price !== ''
@@ -66,7 +53,7 @@ function formatWhatsApp(order, orderId) {
   return lines.join('\n');
 }
 
-function emailShell({ title, preheader = '', bodyHtml }) {
+function emailShell({ title, preheader = '', bodyHtml }: { title: string; preheader?: string; bodyHtml: string }) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>${escapeHtml(title)}</title></head>
@@ -96,8 +83,9 @@ function emailShell({ title, preheader = '', bodyHtml }) {
 </html>`;
 }
 
-function itemsTable(items) {
-  const rows = (items || []).map((item) => {
+function itemsTable(items: unknown) {
+  const list = Array.isArray(items) ? items : [];
+  const rows = list.map((item: Record<string, unknown>) => {
     const qty = escapeHtml(item.qty || 1);
     const title = escapeHtml(item.title || 'Item');
     const price = item.price != null && item.price !== ''
@@ -110,9 +98,7 @@ function itemsTable(items) {
     </tr>`;
   }).join('');
 
-  if (!rows) {
-    return `<p style="margin:0;color:#69727f;font-size:14px;">No items listed.</p>`;
-  }
+  if (!rows) return `<p style="margin:0;color:#69727f;font-size:14px;">No items listed.</p>`;
 
   return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #e6e9ef;border-radius:10px;overflow:hidden;margin:8px 0 0;">
     <tr style="background:#f8f9fb;">
@@ -124,7 +110,7 @@ function itemsTable(items) {
   </table>`;
 }
 
-function detailRow(label, value) {
+function detailRow(label: string, value: string) {
   return `<tr>
     <td style="padding:8px 0;width:120px;vertical-align:top;color:#69727f;font-size:13px;">${escapeHtml(label)}</td>
     <td style="padding:8px 0;font-size:14px;font-weight:600;color:#111318;">${value}</td>
@@ -132,26 +118,67 @@ function detailRow(label, value) {
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders(req) });
+  if (req.method !== 'POST') return jsonResponse(req, { ok: false, error: 'Method not allowed' }, 405);
 
   try {
+    const parsed = await readJsonBody(req, 40_000);
+    if (!parsed.ok) return jsonResponse(req, { ok: false, error: parsed.error }, 400);
+    const body = parsed.body;
+    if (isHoneypotTripped(body)) return jsonResponse(req, { ok: true });
+
+    const authHeader = req.headers.get('Authorization') || '';
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY') || '';
+    if (!authHeader || !supabaseUrl || !anonKey) {
+      return jsonResponse(req, { ok: false, error: 'Unauthorized' }, 401);
+    }
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+      auth: { persistSession: false, autoRefreshToken: false }
+    });
+    const { data: userData, error: userError } = await userClient.auth.getUser();
+    if (userError || !userData?.user) {
+      return jsonResponse(req, { ok: false, error: 'Sign in required' }, 401);
+    }
+
+    const rawOrder = (body.order && typeof body.order === 'object') ? body.order as Record<string, unknown> : {};
+    const orderId = clampText(body.orderId, 80);
+    const order = {
+      customer_name: clampText(rawOrder.customer_name, 120),
+      customer_email: clampText(rawOrder.customer_email, 254).toLowerCase(),
+      customer_phone: clampText(rawOrder.customer_phone, 40),
+      fulfillment: clampText(rawOrder.fulfillment, 20).toLowerCase() === 'delivery' ? 'delivery' : 'pickup',
+      pickup_when: clampText(rawOrder.pickup_when, 200),
+      delivery_address: clampText(rawOrder.delivery_address, 1200),
+      notes: clampText(rawOrder.notes, 2000),
+      items: Array.isArray(rawOrder.items) ? rawOrder.items.slice(0, 50) : [],
+      whatsapp_share_url: clampText(rawOrder.whatsapp_share_url, 2000)
+    };
+
+    if (!order.customer_name || !order.customer_email || !order.customer_phone) {
+      return jsonResponse(req, { ok: false, error: 'Missing customer details' }, 400);
+    }
+    if (!isValidEmail(order.customer_email)) {
+      return jsonResponse(req, { ok: false, error: 'Invalid customer email' }, 400);
+    }
+
+    const limited = await enforceRateLimit(req, 'order-notify', 8, 3600, userData.user.id);
+    if (!limited.ok) return jsonResponse(req, { ok: false, error: limited.error }, 429);
+
     const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY');
     const senderEmail = Deno.env.get('BREVO_SENDER_EMAIL') || 'futurifydesigns@gmail.com';
     const senderName = Deno.env.get('BREVO_SENDER_NAME') || 'Compustar Botswana';
-    const body = await req.json();
-    const order = body.order || {};
-    const orderId = body.orderId || '';
-    const ref = String(orderId).slice(0, 8).toUpperCase() || '—';
-    const isPickup = String(order.fulfillment || '').toLowerCase() === 'pickup';
+    if (!BREVO_API_KEY) return jsonResponse(req, { ok: false, error: 'Email service unavailable' }, 500);
 
-    const staffEmails = parseEmails(
-      body.adminEmail,
-      body.adminEmails,
+    const staffEmails = parseStaffEmails(
       Deno.env.get('ADMIN_EMAILS'),
       Deno.env.get('ADMIN_EMAIL'),
       'compustarbw@gmail.com'
     );
 
+    const ref = String(orderId).slice(0, 8).toUpperCase() || '—';
+    const isPickup = order.fulfillment === 'pickup';
     const fulfillmentLabel = isPickup ? 'Store pickup' : 'Delivery';
     const fulfillmentDetail = isPickup
       ? escapeHtml(order.pickup_when || '—')
@@ -206,13 +233,6 @@ serve(async (req) => {
       `
     });
 
-    if (!BREVO_API_KEY) {
-      return new Response(JSON.stringify({ ok: false, error: 'BREVO_API_KEY missing' }), {
-        status: 500,
-        headers: { ...cors, 'Content-Type': 'application/json' }
-      });
-    }
-
     const staffRes = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
@@ -223,12 +243,13 @@ serve(async (req) => {
       body: JSON.stringify({
         sender: { name: senderName, email: senderEmail },
         to: staffEmails.map((email) => ({ email })),
-        subject: `New order request · ${ref} · ${order.customer_name || 'Customer'}`,
+        subject: `New order request · ${ref} · ${order.customer_name || 'Customer'}`.slice(0, 200),
         htmlContent: staffHtml
       })
     });
     if (!staffRes.ok) {
-      throw new Error(`Brevo staff email error: ${await staffRes.text()}`);
+      console.error('Brevo staff email error', await staffRes.text());
+      return jsonResponse(req, { ok: false, error: 'Could not send staff notification' }, 502);
     }
 
     if (order.customer_email) {
@@ -247,21 +268,13 @@ serve(async (req) => {
         })
       });
       if (!customerRes.ok) {
-        throw new Error(`Brevo customer email error: ${await customerRes.text()}`);
+        console.error('Brevo customer email error', await customerRes.text());
       }
     }
 
-    return new Response(JSON.stringify({
-      ok: true,
-      staffEmails,
-      whatsappShareUrl
-    }), {
-      headers: { ...cors, 'Content-Type': 'application/json' }
-    });
+    return jsonResponse(req, { ok: true, whatsappShareUrl });
   } catch (error) {
-    return new Response(JSON.stringify({ ok: false, error: String(error?.message || error) }), {
-      status: 500,
-      headers: { ...cors, 'Content-Type': 'application/json' }
-    });
+    console.error(error);
+    return jsonResponse(req, { ok: false, error: 'Unexpected error' }, 500);
   }
 });

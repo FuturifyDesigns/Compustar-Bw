@@ -156,12 +156,16 @@ export function CheckoutPage() {
     setTouched((prev) => ({ ...prev, [field]: true }));
   }
 
-  async function pinCurrentLocation() {
+  async function pinCurrentLocation(event) {
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
     setError('');
     if (!navigator.geolocation) {
       setError('Location is not supported on this device. Please type your address.');
       return;
     }
+
+    const scrollY = window.scrollY;
     setLocating(true);
     try {
       const position = await new Promise((resolve, reject) => {
@@ -173,23 +177,11 @@ export function CheckoutPage() {
       });
       const { latitude, longitude } = position.coords;
       const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
-      let placeName = '';
-      try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`,
-          { headers: { Accept: 'application/json' } }
-        );
-        if (res.ok) {
-          const data = await res.json();
-          placeName = data.display_name || '';
-        }
-      } catch {
-        /* reverse geocode optional */
-      }
-
-      const address = placeName
-        ? `${placeName}\nPinned location: ${mapsUrl}`
-        : `Pinned location: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}\n${mapsUrl}`;
+      const address = [
+        'Current location pinned',
+        mapsUrl,
+        `Coordinates: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`
+      ].join('\n');
 
       setForm((prev) => ({
         ...prev,
@@ -198,6 +190,7 @@ export function CheckoutPage() {
         delivery_coords: `${latitude},${longitude}`
       }));
       setTouched((prev) => ({ ...prev, delivery_address: true }));
+      window.requestAnimationFrame(() => window.scrollTo(0, scrollY));
     } catch (err) {
       const denied = err?.code === 1;
       setError(denied
@@ -205,6 +198,7 @@ export function CheckoutPage() {
         : 'Could not get your location. Please type your delivery address.');
     } finally {
       setLocating(false);
+      window.requestAnimationFrame(() => window.scrollTo(0, scrollY));
     }
   }
 
@@ -343,11 +337,21 @@ export function CheckoutPage() {
         ) : (
           <form className="checkout-form checkout-form--compact" onSubmit={submit} noValidate>
             <aside className="checkout-summary">
-              <strong>{count} item{count === 1 ? '' : 's'} in request</strong>
-              <ul>
-                {items.map((item) => (
-                  <li key={item.id}>{item.qty}× {item.title}</li>
-                ))}
+              <strong>{count} item{count === 1 ? '' : 's'} in cart</strong>
+              <ul className="checkout-summary-list">
+                {items.map((item) => {
+                  const src = mediaSrc(item);
+                  const img = src ? src.replace(/\.(jpe?g|png)$/i, '.webp') : '';
+                  return (
+                    <li key={item.id} className="checkout-summary-item">
+                      {img ? <img src={img} alt="" /> : <div className="checkout-summary-thumb" aria-hidden="true" />}
+                      <div>
+                        <strong>{item.title}</strong>
+                        <span>{item.qty}×{item.price != null ? ` · ${item.currency} ${Number(item.price).toLocaleString()}` : ''}</span>
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
               <button type="button" className="button ghost-dark" onClick={() => go('/Cart')}>Edit cart</button>
             </aside>

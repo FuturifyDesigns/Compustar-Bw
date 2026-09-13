@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 const CartContext = createContext(null);
 const STORAGE_KEY = 'compustar-cart-v1';
@@ -15,6 +15,8 @@ function readCart() {
 
 export function CartProvider({ children }) {
   const [items, setItems] = useState(() => (typeof window === 'undefined' ? [] : readCart()));
+  const [toast, setToast] = useState('');
+  const toastTimer = useRef(0);
 
   useEffect(() => {
     try {
@@ -24,12 +26,21 @@ export function CartProvider({ children }) {
     }
   }, [items]);
 
+  useEffect(() => () => window.clearTimeout(toastTimer.current), []);
+
   const value = useMemo(() => {
     const count = items.reduce((sum, item) => sum + item.qty, 0);
+
+    function notify(message) {
+      window.clearTimeout(toastTimer.current);
+      setToast(message);
+      toastTimer.current = window.setTimeout(() => setToast(''), 2400);
+    }
 
     function addItem(product, qty = 1) {
       const id = product.id || product.file || product.image_url;
       if (!id) return;
+      const title = product.title || product.name || 'Product';
       setItems((prev) => {
         const existing = prev.find((row) => row.id === id);
         if (existing) {
@@ -39,7 +50,7 @@ export function CartProvider({ children }) {
           ...prev,
           {
             id,
-            title: product.title || product.name || 'Product',
+            title,
             category: product.category || '',
             price: product.price ?? null,
             currency: product.currency || 'BWP',
@@ -48,6 +59,7 @@ export function CartProvider({ children }) {
           }
         ];
       });
+      notify(`Added “${title}” to cart`);
     }
 
     function updateQty(id, qty) {
@@ -56,17 +68,28 @@ export function CartProvider({ children }) {
     }
 
     function removeItem(id) {
+      const removed = items.find((row) => row.id === id);
       setItems((prev) => prev.filter((row) => row.id !== id));
+      if (removed) notify(`Removed “${removed.title}” from cart`);
     }
 
     function clearCart() {
       setItems([]);
     }
 
-    return { items, count, addItem, updateQty, removeItem, clearCart };
+    return { items, count, addItem, updateQty, removeItem, clearCart, notify };
   }, [items]);
 
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+  return (
+    <CartContext.Provider value={value}>
+      {children}
+      {toast ? (
+        <div className="app-toast" role="status" aria-live="polite">
+          {toast}
+        </div>
+      ) : null}
+    </CartContext.Provider>
+  );
 }
 
 export function useCart() {

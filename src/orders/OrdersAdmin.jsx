@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAdmin } from '../cms/AdminContext';
 import { orderStatusLabel } from './formatOrderWhatsApp';
+import { DeliveryDetails } from './DeliveryDetails';
 
 const STATUSES = ['new', 'confirmed', 'preparing', 'ready', 'completed', 'cancelled'];
 
@@ -247,7 +248,9 @@ export function OrdersAdminPanel() {
               <p>{order.customer_email} · {order.customer_phone}</p>
               <p>
                 <strong>{order.fulfillment === 'pickup' ? 'Pickup' : 'Delivery'}:</strong>{' '}
-                {order.fulfillment === 'pickup' ? order.pickup_when : order.delivery_address}
+                {order.fulfillment === 'pickup'
+                  ? (order.pickup_when || '—')
+                  : <DeliveryDetails address={order.delivery_address} />}
               </p>
               {order.notes ? <p><strong>Customer notes:</strong> {order.notes}</p> : null}
 

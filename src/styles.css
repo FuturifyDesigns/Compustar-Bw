@@ -1687,6 +1687,14 @@ a.reveal-panel.service-panel .button {
 .order-card ul { margin: 0; padding-left: 1.1rem; }
 .order-actions { align-items: center; display: flex; flex-wrap: wrap; gap: .75rem; }
 .order-delete-btn { color: var(--red-deep); }
+.order-map-link {
+  color: var(--red-deep);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-all;
+}
+.order-map-link:hover { color: var(--red); }
 .product-overlay { gap: .5rem; }
 .product-overlay .button { border: 0; cursor: pointer; }
 

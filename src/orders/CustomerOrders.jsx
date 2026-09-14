@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { orderStatusLabel } from './formatOrderWhatsApp';
+import { DeliveryDetails } from './DeliveryDetails';
 
 function go(path) {
   window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
@@ -111,7 +112,12 @@ export function CustomerOrders({ userId }) {
                 <strong>{order.fulfillment === 'pickup' ? 'Store pickup' : 'Delivery'}</strong>
                 {order.fulfillment === 'pickup'
                   ? (order.pickup_when ? ` · ${order.pickup_when}` : '')
-                  : (order.delivery_address ? ` · ${order.delivery_address}` : '')}
+                  : (
+                    <>
+                      {' · '}
+                      <DeliveryDetails address={order.delivery_address} />
+                    </>
+                  )}
               </p>
               <ul>
                 {(order.items || []).map((item, index) => (

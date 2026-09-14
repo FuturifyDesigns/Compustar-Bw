@@ -96,7 +96,7 @@ const displayMobilePhone = '+267 752 94155';
 const whatsappPhone = '26776004665';
 const whatsappUrl = `https://wa.me/${whatsappPhone}`;
 const instagramUrl = 'https://www.instagram.com/compustarbw';
-const facebookUrl = 'https://www.facebook.com/share/1FeVt4ccKB/';
+const facebookUrl = 'https://www.facebook.com/share/1DchFfcg4T/';
 const locations = [
   {
     title: 'Game City Mall',
@@ -515,15 +515,23 @@ function HomePage() {
       </section>
       <section className="quick-paths">
         {[
-          [MagnifyingGlass, 'Product Enquiries', 'Browse standalone product photos and ask about current availability.'],
-          [Wrench, 'Repairs & Upgrades', 'Support for slow computers, setup issues, upgrades, and diagnostics.'],
-          [WifiHigh, 'Security & Networking', 'Camera systems, GPS trackers, network cables, and office connectivity.']
-        ].map(([Icon, title, text], index) => (
-          <article key={title} data-reveal>
-            <Icon {...iconProps} size={26} />
+          [MagnifyingGlass, 'Product Enquiries', 'Browse standalone product photos and ask about current availability.', 'Products'],
+          [Wrench, 'Repairs & Upgrades', 'Support for slow computers, setup issues, upgrades, and diagnostics.', 'Repairs'],
+          [WifiHigh, 'Security & Networking', 'Camera systems, GPS trackers, network cables, and office connectivity.', 'Services']
+        ].map(([Icon, title, text, page], index) => (
+          <a
+            key={title}
+            className="quick-path-card"
+            href={route(page)}
+            onClick={(event) => goToPage(event, page)}
+            data-reveal
+          >
+            <span className="quick-path-icon" aria-hidden="true">
+              <Icon {...iconProps} size={24} />
+            </span>
             <h3><EditableText contentKey={`home.quick.${index}.title`} value={getContent(`home.quick.${index}.title`, title)} /></h3>
             <p><EditableText multiline contentKey={`home.quick.${index}.text`} value={getContent(`home.quick.${index}.text`, text)} /></p>
-          </article>
+          </a>
         ))}
       </section>
       <section className="section product-showcase-section">
@@ -1393,48 +1401,50 @@ function Footer() {
         <strong>
           <EditableText contentKey="footer.contact.label" value={getContent('footer.contact.label', 'Contact')} as="span" />
         </strong>
-        <a href={`mailto:${footerEmail}?subject=Compustar%20Website%20Enquiry`}>
-          <EnvelopeSimple weight="fill" size={18} />
-          <span>
-            <em><EditableText contentKey="footer.contact.email_label" value={getContent('footer.contact.email_label', 'Email')} as="span" /></em>
-            <EditableText contentKey="site.email" value={footerEmail} as="span" />
-          </span>
-        </a>
-        <a href={`tel:${footerTel.replace(/\D/g, '')}`}>
-          <Phone weight="fill" size={18} />
-          <span>
-            <em><EditableText contentKey="footer.contact.tel_label" value={getContent('footer.contact.tel_label', 'Tel')} as="span" /></em>
-            <EditableText contentKey="site.tel_display" value={footerTel} as="span" />
-          </span>
-        </a>
-        <a href={`tel:${footerPhone.replace(/\D/g, '')}`}>
-          <Phone weight="fill" size={18} />
-          <span>
-            <em><EditableText contentKey="footer.contact.gamecity_label" value={getContent('footer.contact.gamecity_label', 'Game City Mobile')} as="span" /></em>
-            <EditableText contentKey="site.phone_display" value={footerPhone} as="span" />
-          </span>
-        </a>
-        <a href={`tel:${footerMobile.replace(/\D/g, '')}`}>
-          <Phone weight="fill" size={18} />
-          <span>
-            <em><EditableText contentKey="footer.contact.gwest_label" value={getContent('footer.contact.gwest_label', 'G-West Mobile')} as="span" /></em>
-            <EditableText contentKey="site.mobile_display" value={footerMobile} as="span" />
-          </span>
-        </a>
-        <span>
-          <MapPin weight="fill" size={18} />
-          <span>
-            <em><EditableText contentKey="footer.location.gamecity.title" value={gameCityTitle} as="span" /></em>
-            <EditableText multiline contentKey="footer.location.gamecity.address" value={gameCityAddress} as="span" />
-          </span>
-        </span>
-        <span>
-          <MapPin weight="fill" size={18} />
-          <span>
-            <em><EditableText contentKey="footer.location.gwest.title" value={gwestTitle} as="span" /></em>
-            <EditableText multiline contentKey="footer.location.gwest.address" value={gwestAddress} as="span" />
-          </span>
-        </span>
+        <div className="footer-contact-list">
+          <a className="footer-contact-row" href={`mailto:${footerEmail}?subject=Compustar%20Website%20Enquiry`}>
+            <EnvelopeSimple weight="fill" size={18} />
+            <span>
+              <em><EditableText contentKey="footer.contact.email_label" value={getContent('footer.contact.email_label', 'Email')} as="span" /></em>
+              <EditableText contentKey="site.email" value={footerEmail} as="span" />
+            </span>
+          </a>
+          <a className="footer-contact-row" href={`tel:${footerTel.replace(/\D/g, '')}`}>
+            <Phone weight="fill" size={18} />
+            <span>
+              <em><EditableText contentKey="footer.contact.tel_label" value={getContent('footer.contact.tel_label', 'Tel')} as="span" /></em>
+              <EditableText contentKey="site.tel_display" value={footerTel} as="span" />
+            </span>
+          </a>
+          <a className="footer-contact-row" href={`tel:${footerPhone.replace(/\D/g, '')}`}>
+            <Phone weight="fill" size={18} />
+            <span>
+              <em><EditableText contentKey="footer.contact.gamecity_label" value={getContent('footer.contact.gamecity_label', 'Game City Mobile')} as="span" /></em>
+              <EditableText contentKey="site.phone_display" value={footerPhone} as="span" />
+            </span>
+          </a>
+          <a className="footer-contact-row" href={`tel:${footerMobile.replace(/\D/g, '')}`}>
+            <Phone weight="fill" size={18} />
+            <span>
+              <em><EditableText contentKey="footer.contact.gwest_label" value={getContent('footer.contact.gwest_label', 'G-West Mobile')} as="span" /></em>
+              <EditableText contentKey="site.mobile_display" value={footerMobile} as="span" />
+            </span>
+          </a>
+          <div className="footer-contact-row is-static">
+            <MapPin weight="fill" size={18} />
+            <span>
+              <em><EditableText contentKey="footer.location.gamecity.title" value={gameCityTitle} as="span" /></em>
+              <EditableText multiline contentKey="footer.location.gamecity.address" value={gameCityAddress} as="span" />
+            </span>
+          </div>
+          <div className="footer-contact-row is-static">
+            <MapPin weight="fill" size={18} />
+            <span>
+              <em><EditableText contentKey="footer.location.gwest.title" value={gwestTitle} as="span" /></em>
+              <EditableText multiline contentKey="footer.location.gwest.address" value={gwestAddress} as="span" />
+            </span>
+          </div>
+        </div>
       </section>
       <div className="footer-bottom">
         <span>

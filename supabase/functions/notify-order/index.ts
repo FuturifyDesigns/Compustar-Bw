@@ -13,6 +13,7 @@ import {
   readJsonBody
 } from '../_shared/security.ts';
 import { sendTransactionalEmail } from '../_shared/email.ts';
+import { sendWhatsAppStaffAlert } from '../_shared/whatsapp.ts';
 
 function formatWhatsApp(order: Record<string, unknown>, orderId: string) {
   const ref = String(orderId || '').slice(0, 8).toUpperCase() || 'PENDING';
@@ -273,10 +274,19 @@ serve(async (req) => {
       }
     }
 
+    const whatsappSend = await sendWhatsAppStaffAlert({
+      text: whatsappText,
+      customerPhone: order.customer_phone
+    });
+    if (!whatsappSend.ok && !whatsappSend.skipped) {
+      console.error('WhatsApp staff alert failed', whatsappSend.detail);
+    }
+
     return jsonResponse(req, {
       ok: true,
       whatsappShareUrl,
-      emailMode: staffSend.mode || 'api'
+      emailMode: staffSend.mode || 'api',
+      whatsappMode: whatsappSend.skipped ? 'link_only' : (whatsappSend.ok ? 'api' : 'failed')
     });
   } catch (error) {
     console.error(error);

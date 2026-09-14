@@ -1587,12 +1587,68 @@ a.reveal-panel.service-panel .button {
 }
 .order-card header { align-items: start; display: flex; justify-content: space-between; gap: 1rem; }
 .order-card header div { align-items: center; display: flex; flex-wrap: wrap; gap: .5rem; }
+.order-ref {
+  color: var(--muted);
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+}
 .order-status {
   background: #f3f5f7; border-radius: 999px; font-size: .72rem; font-weight: 800; padding: .2rem .55rem; text-transform: uppercase;
 }
 .status-new { background: rgba(239,23,23,.12); color: var(--red-deep); }
+.order-items {
+  display: grid;
+  gap: .55rem;
+  list-style: none;
+  margin: .15rem 0 0;
+  padding: 0;
+}
+.order-item-row {
+  align-items: center;
+  display: grid;
+  gap: .7rem;
+  grid-template-columns: 56px minmax(0, 1fr);
+}
+.order-item-row strong { display: block; font-size: .92rem; }
+.order-item-row span { color: var(--muted); font-size: .82rem; }
+.order-item-thumb {
+  aspect-ratio: 1;
+  background: #f3f5f7;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  display: block;
+  height: 56px;
+  object-fit: cover;
+  width: 56px;
+}
+.order-item-thumb--empty { background: linear-gradient(135deg, #f3f5f7, #e8ebf0); }
+.order-status-editor {
+  display: grid;
+  gap: .75rem;
+  margin-top: .25rem;
+}
+.order-status-editor label,
+.order-status-note {
+  display: grid;
+  gap: .35rem;
+  font-size: .84rem;
+  font-weight: 600;
+}
+.order-status-editor select,
+.order-status-note textarea {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font: inherit;
+  font-weight: 500;
+  padding: .55rem .7rem;
+  resize: vertical;
+  width: 100%;
+}
 .order-card ul { margin: 0; padding-left: 1.1rem; }
-.order-actions { align-items: end; display: flex; flex-wrap: wrap; gap: .75rem; }
+.order-actions { align-items: center; display: flex; flex-wrap: wrap; gap: .75rem; }
+.order-delete-btn { color: var(--red-deep); }
 .product-overlay { gap: .5rem; }
 .product-overlay .button { border: 0; cursor: pointer; }
 

@@ -21,7 +21,7 @@ export function CustomerOrders({ userId }) {
     setError('');
     const { data, error: err } = await supabase
       .from('orders')
-      .select('id, status, fulfillment, pickup_when, delivery_address, notes, items, created_at, updated_at')
+      .select('id, status, status_note, fulfillment, pickup_when, delivery_address, notes, items, created_at, updated_at')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(40);
@@ -123,7 +123,8 @@ export function CustomerOrders({ userId }) {
                   </li>
                 ))}
               </ul>
-              {order.notes ? <p className="customer-order-notes"><strong>Notes:</strong> {order.notes}</p> : null}
+              {order.notes ? <p className="customer-order-notes"><strong>Your notes:</strong> {order.notes}</p> : null}
+              {order.status_note ? <p className="customer-order-notes"><strong>Update from Compustar:</strong> {order.status_note}</p> : null}
               <p className="customer-order-meta">{itemCount} item{itemCount === 1 ? '' : 's'}</p>
             </article>
           );

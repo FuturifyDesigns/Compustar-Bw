@@ -1370,95 +1370,100 @@ function Footer() {
 
   return (
     <footer className="site-footer">
-      <div className="footer-brand">
-        <SmartImage src="/logo.webp" alt="Compustar logo" loading="lazy" />
-        <p>
-          <EditableText multiline contentKey="footer.blurb" value={blurb} as="span" />
-        </p>
-        <div className="footer-socials">
-          <strong>
-            <EditableText contentKey="footer.socials.label" value={getContent('footer.socials.label', 'Social media')} as="span" />
-          </strong>
+      <div className="footer-grid">
+        <div className="footer-brand">
+          <SmartImage src="/logo.webp" alt="Compustar logo" loading="lazy" />
+          <p className="footer-tagline">
+            <EditableText multiline contentKey="footer.blurb" value={blurb} as="span" />
+          </p>
           <div className="footer-social-row">
             <a className="footer-social" href={instagramUrl} target="_blank" rel="noreferrer" aria-label="Compustar on Instagram">
-              <InstagramIcon size={20} />
+              <InstagramIcon size={18} />
             </a>
             <a className="footer-social" href={facebookUrl} target="_blank" rel="noreferrer" aria-label="Compustar on Facebook">
-              <FacebookIcon size={20} />
+              <FacebookIcon size={18} />
             </a>
           </div>
         </div>
-      </div>
-      <nav className="footer-links" aria-label="Footer navigation">
-        <strong>
-          <EditableText contentKey="footer.explore.label" value={getContent('footer.explore.label', 'Explore')} as="span" />
-        </strong>
-        {pages.map((item) => (
-          <a href={route(item)} onClick={(event) => goToPage(event, item)} key={item}>{item}</a>
-        ))}
-      </nav>
-      <section className="footer-contact">
-        <strong>
-          <EditableText contentKey="footer.contact.label" value={getContent('footer.contact.label', 'Contact')} as="span" />
-        </strong>
-        <div className="footer-contact-list">
-          <a className="footer-contact-row" href={`mailto:${footerEmail}?subject=Compustar%20Website%20Enquiry`}>
-            <EnvelopeSimple weight="fill" size={18} />
+
+        <nav className="footer-col" aria-label="Explore">
+          <p className="footer-col-title">
+            <EditableText contentKey="footer.explore.label" value={getContent('footer.explore.label', 'Explore')} as="span" />
+          </p>
+          {['Products', 'Services', 'Repairs', 'Adverts', 'Location'].map((item) => (
+            <a href={route(item)} onClick={(event) => goToPage(event, item)} key={item}>{item}</a>
+          ))}
+        </nav>
+
+        <nav className="footer-col" aria-label="Company">
+          <p className="footer-col-title">
+            <EditableText contentKey="footer.company.label" value={getContent('footer.company.label', 'Company')} as="span" />
+          </p>
+          {['Home', 'About', 'Contact'].map((item) => (
+            <a href={route(item)} onClick={(event) => goToPage(event, item)} key={item}>{item}</a>
+          ))}
+          <a href={route('Privacy')} onClick={(event) => goToPage(event, 'Privacy')}>Privacy</a>
+          <a href={route('Terms')} onClick={(event) => goToPage(event, 'Terms')}>Terms</a>
+        </nav>
+
+        <section className="footer-col footer-reach" aria-label="Reach us">
+          <p className="footer-col-title">
+            <EditableText contentKey="footer.contact.label" value={getContent('footer.contact.label', 'Reach us')} as="span" />
+          </p>
+          <div className="footer-reach-item is-static">
+            <MapPin weight="fill" size={16} />
             <span>
-              <em><EditableText contentKey="footer.contact.email_label" value={getContent('footer.contact.email_label', 'Email')} as="span" /></em>
-              <EditableText contentKey="site.email" value={footerEmail} as="span" />
-            </span>
-          </a>
-          <a className="footer-contact-row" href={`tel:${footerTel.replace(/\D/g, '')}`}>
-            <Phone weight="fill" size={18} />
-            <span>
-              <em><EditableText contentKey="footer.contact.tel_label" value={getContent('footer.contact.tel_label', 'Tel')} as="span" /></em>
-              <EditableText contentKey="site.tel_display" value={footerTel} as="span" />
-            </span>
-          </a>
-          <a className="footer-contact-row" href={`tel:${footerPhone.replace(/\D/g, '')}`}>
-            <Phone weight="fill" size={18} />
-            <span>
-              <em><EditableText contentKey="footer.contact.gamecity_label" value={getContent('footer.contact.gamecity_label', 'Game City Mobile')} as="span" /></em>
-              <EditableText contentKey="site.phone_display" value={footerPhone} as="span" />
-            </span>
-          </a>
-          <a className="footer-contact-row" href={`tel:${footerMobile.replace(/\D/g, '')}`}>
-            <Phone weight="fill" size={18} />
-            <span>
-              <em><EditableText contentKey="footer.contact.gwest_label" value={getContent('footer.contact.gwest_label', 'G-West Mobile')} as="span" /></em>
-              <EditableText contentKey="site.mobile_display" value={footerMobile} as="span" />
-            </span>
-          </a>
-          <div className="footer-contact-row is-static">
-            <MapPin weight="fill" size={18} />
-            <span>
-              <em><EditableText contentKey="footer.location.gamecity.title" value={gameCityTitle} as="span" /></em>
               <EditableText multiline contentKey="footer.location.gamecity.address" value={gameCityAddress} as="span" />
+              <small><EditableText contentKey="footer.location.gamecity.title" value={gameCityTitle} as="span" /></small>
             </span>
           </div>
-          <div className="footer-contact-row is-static">
-            <MapPin weight="fill" size={18} />
+          <div className="footer-reach-item is-static">
+            <MapPin weight="fill" size={16} />
             <span>
-              <em><EditableText contentKey="footer.location.gwest.title" value={gwestTitle} as="span" /></em>
               <EditableText multiline contentKey="footer.location.gwest.address" value={gwestAddress} as="span" />
+              <small><EditableText contentKey="footer.location.gwest.title" value={gwestTitle} as="span" /></small>
             </span>
           </div>
-        </div>
-      </section>
+          <a className="footer-reach-item" href={`mailto:${footerEmail}?subject=Compustar%20Website%20Enquiry`}>
+            <EnvelopeSimple weight="fill" size={16} />
+            <span><EditableText contentKey="site.email" value={footerEmail} as="span" /></span>
+          </a>
+          <a className="footer-reach-item" href={`tel:${footerTel.replace(/\D/g, '')}`}>
+            <Phone weight="fill" size={16} />
+            <span>
+              <EditableText contentKey="site.tel_display" value={footerTel} as="span" />
+              <small>Tel</small>
+            </span>
+          </a>
+          <a className="footer-reach-item" href={`tel:${footerPhone.replace(/\D/g, '')}`}>
+            <Phone weight="fill" size={16} />
+            <span>
+              <EditableText contentKey="site.phone_display" value={footerPhone} as="span" />
+              <small>Game City</small>
+            </span>
+          </a>
+          <a className="footer-reach-item" href={`tel:${footerMobile.replace(/\D/g, '')}`}>
+            <Phone weight="fill" size={16} />
+            <span>
+              <EditableText contentKey="site.mobile_display" value={footerMobile} as="span" />
+              <small>G-West</small>
+            </span>
+          </a>
+        </section>
+      </div>
+
       <div className="footer-bottom">
-        <span>
+        <p>
           <EditableText
             contentKey="footer.copyright"
             value={getContent('footer.copyright', `© Compustar ${new Date().getFullYear()}. All rights reserved.`)}
             as="span"
           />
-        </span>
-        <nav className="footer-legal" aria-label="Legal">
-          <a href={route('Privacy')} onClick={(event) => goToPage(event, 'Privacy')}>Privacy</a>
-          <a href={route('Terms')} onClick={(event) => goToPage(event, 'Terms')}>Terms</a>
-          <a href="https://futurifydesigns.com" target="_blank" rel="noreferrer">Built by Futurify Designs</a>
-        </nav>
+          <span className="footer-bottom-note">Serving Gaborone, Botswana.</span>
+        </p>
+        <a className="footer-built" href="https://futurifydesigns.com" target="_blank" rel="noreferrer">
+          Built by Futurify Designs
+        </a>
       </div>
     </footer>
   );

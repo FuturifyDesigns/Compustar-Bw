@@ -1362,6 +1362,14 @@ function Footer() {
   const footerTel = getContent('site.tel_display', displayTelPhone);
   const footerPhone = getContent('site.phone_display', displayPhone);
   const footerMobile = getContent('site.mobile_display', displayMobilePhone);
+  const localPhone = (value) => String(value || '').replace(/^\s*\+?267[\s-]*/i, '').trim();
+  const footerTelLocal = localPhone(footerTel);
+  const footerPhoneLocal = localPhone(footerPhone);
+  const footerMobileLocal = localPhone(footerMobile);
+  const telHref = (value) => {
+    const digits = String(value || '').replace(/\D/g, '');
+    return `tel:${digits.startsWith('267') ? digits : `267${digits}`}`;
+  };
   const blurb = getContent('footer.blurb', 'Computer products, repairs, security, networking, and IT support across Gaborone.');
   const gameCityAddress = getContent('footer.location.gamecity.address', locations[0].address);
   const gwestAddress = getContent('footer.location.gwest.address', locations[1].address);
@@ -1436,24 +1444,24 @@ function Footer() {
           <EditableText contentKey="footer.phones.label" value={getContent('footer.phones.label', 'Call us')} as="span" />
         </p>
         <div className="footer-phones-row">
-          <a className="footer-phone" href={`tel:${footerTel.replace(/\D/g, '')}`}>
+          <a className="footer-phone" href={telHref(footerTel)}>
             <Phone weight="fill" size={15} />
             <span>
-              <EditableText contentKey="site.tel_display" value={footerTel} as="span" />
+              <EditableText contentKey="site.tel_display" value={footerTelLocal} as="span" />
               <small>Tel</small>
             </span>
           </a>
-          <a className="footer-phone" href={`tel:${footerPhone.replace(/\D/g, '')}`}>
+          <a className="footer-phone" href={telHref(footerPhone)}>
             <Phone weight="fill" size={15} />
             <span>
-              <EditableText contentKey="site.phone_display" value={footerPhone} as="span" />
+              <EditableText contentKey="site.phone_display" value={footerPhoneLocal} as="span" />
               <small>Game City</small>
             </span>
           </a>
-          <a className="footer-phone" href={`tel:${footerMobile.replace(/\D/g, '')}`}>
+          <a className="footer-phone" href={telHref(footerMobile)}>
             <Phone weight="fill" size={15} />
             <span>
-              <EditableText contentKey="site.mobile_display" value={footerMobile} as="span" />
+              <EditableText contentKey="site.mobile_display" value={footerMobileLocal} as="span" />
               <small>G-West</small>
             </span>
           </a>

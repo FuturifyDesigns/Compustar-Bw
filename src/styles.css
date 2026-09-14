@@ -409,7 +409,7 @@ footer span,
 .site-footer a { color: rgba(255,255,255,.78); text-decoration: none; }
 .footer-brand { display: grid; gap: .85rem; max-width: 280px; }
 .footer-tagline {
-  color: rgba(255,255,255,.62);
+  color: #ebe4d4;
   font-size: .88rem;
   line-height: 1.55;
   margin: 0;
@@ -428,7 +428,7 @@ footer span,
   text-transform: uppercase;
 }
 .footer-col a {
-  color: rgba(255,255,255,.8);
+  color: #f4f1ea;
   font-size: .9rem;
   font-weight: 500;
   line-height: 1.45;
@@ -456,7 +456,7 @@ footer span,
 .footer-reach { gap: .7rem; }
 .footer-reach-item {
   align-items: flex-start;
-  color: rgba(255,255,255,.82);
+  color: #f4f1ea;
   display: grid;
   gap: .65rem;
   font-size: .88rem;
@@ -476,7 +476,7 @@ footer span,
   min-width: 0;
 }
 .footer-reach-item small {
-  color: rgba(255,255,255,.45);
+  color: #d6c59a;
   font-size: .78rem;
   font-weight: 500;
 }
@@ -524,7 +524,7 @@ footer span,
   align-items: center;
   border: 1px solid rgba(255,255,255,.12);
   border-radius: 10px;
-  color: rgba(255,255,255,.86) !important;
+  color: #f7f3ea !important;
   display: inline-flex;
   gap: .55rem;
   padding: .55rem .8rem;
@@ -541,7 +541,7 @@ footer span,
   line-height: 1.2;
 }
 .footer-phone small {
-  color: rgba(255,255,255,.45);
+  color: #d6c59a;
   font-size: .72rem;
   font-weight: 600;
   letter-spacing: .02em;
@@ -565,16 +565,16 @@ footer span,
   padding-top: 1.1rem;
 }
 .footer-bottom p {
-  color: rgba(255,255,255,.48);
+  color: #ddd4c2;
   display: flex;
   flex-wrap: wrap;
   font-size: .82rem;
   gap: .35rem .75rem;
   margin: 0;
 }
-.footer-bottom-note { color: rgba(255,255,255,.38); }
+.footer-bottom-note { color: #cfc3a8; }
 .footer-built {
-  color: rgba(255,255,255,.55) !important;
+  color: #e4d7b8 !important;
   font-size: .82rem;
   font-weight: 600;
   transition: color .2s ease, transform .2s ease;

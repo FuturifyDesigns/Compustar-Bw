@@ -58,7 +58,8 @@ export function parseStaffEmails(...chunks: unknown[]) {
       .filter((email) => isValidEmail(email))
       .forEach((email) => set.add(email));
   }
-  if (!set.size) set.add('compustarbw@gmail.com');
+  // Always include the Compustar store inbox, even if ADMIN_EMAIL(S) is set elsewhere.
+  set.add('compustarbw@gmail.com');
   return [...set];
 }
 

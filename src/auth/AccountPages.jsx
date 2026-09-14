@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Eye, EyeSlash } from '@phosphor-icons/react';
 import { supabase, supabaseConfigured } from '../lib/supabase';
 import { useAuth } from './AuthContext';
+import { CustomerOrders } from '../orders/CustomerOrders';
 
 const whatsappPhone = '26776004665';
 
@@ -153,7 +154,7 @@ export function AccountPage() {
 
   if (user) {
     return (
-      <section className="section account-section">
+      <section className="section account-section account-section--with-orders">
         <div className="account-card account-card--compact">
           <p className="kicker">My account</p>
           <h1>Welcome{profile?.full_name ? `, ${profile.full_name}` : ''}.</h1>
@@ -175,6 +176,7 @@ export function AccountPage() {
           </div>
           {localMessage ? <p className="account-note">{localMessage}</p> : null}
         </div>
+        <CustomerOrders userId={user.id} />
       </section>
     );
   }

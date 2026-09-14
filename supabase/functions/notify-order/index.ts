@@ -17,39 +17,46 @@ function formatWhatsApp(order: Record<string, unknown>, orderId: string) {
   const ref = String(orderId || '').slice(0, 8).toUpperCase() || 'PENDING';
   const isPickup = String(order.fulfillment || '').toLowerCase() === 'pickup';
   const items = Array.isArray(order.items) ? order.items : [];
-  const itemLines = items.map((item: Record<string, unknown>, i: number) => {
+  const itemLines = items.map((item: Record<string, unknown>) => {
     const qty = item.qty || 1;
     const title = item.title || 'Item';
     const price = item.price != null && item.price !== ''
       ? ` — ${item.currency || 'BWP'} ${item.price}`
       : '';
-    return `${i + 1}. ${qty}× ${title}${price}`;
+    return `• ${qty}× ${title}${price}`;
   });
 
   const lines = [
-    '*Compustar Botswana — Order Request*',
-    `Reference: *${ref}*`,
+    'Hi Compustar,',
     '',
-    '*Customer*',
-    `Name: ${order.customer_name || '—'}`,
-    `Phone: ${order.customer_phone || '—'}`,
-    `Email: ${order.customer_email || '—'}`,
+    'I would like to place an order request.',
     '',
-    '*Fulfillment*',
-    isPickup ? 'Type: Store pickup' : 'Type: Delivery',
-    isPickup
-      ? `Collect when: ${order.pickup_when || '—'}`
-      : `Delivery address: ${order.delivery_address || '—'}`,
-    '',
-    '*Items*',
-    ...(itemLines.length ? itemLines : ['(No items listed)'])
+    'Items:',
+    ...(itemLines.length ? itemLines : ['• (No items listed)']),
+    ''
   ];
 
-  if (order.notes && String(order.notes).trim()) {
-    lines.push('', '*Notes*', String(order.notes).trim());
+  if (isPickup) {
+    lines.push(`I prefer store pickup${order.pickup_when ? ` (${order.pickup_when})` : ''}.`);
+  } else {
+    lines.push(`I need delivery to: ${order.delivery_address || '—'}`);
   }
 
-  lines.push('', '_Please confirm availability and quote._');
+  lines.push(
+    '',
+    `Reference: ${ref}`,
+    '',
+    'My details:',
+    String(order.customer_name || '—'),
+    String(order.customer_phone || '—'),
+    String(order.customer_email || '—')
+  );
+
+  if (order.notes && String(order.notes).trim()) {
+    lines.push('', `Note: ${String(order.notes).trim()}`);
+  }
+
+  lines.push('', 'Please confirm availability and pricing. Thank you.');
   return lines.join('\n');
 }
 
@@ -176,6 +183,7 @@ serve(async (req) => {
       Deno.env.get('ADMIN_EMAIL'),
       'compustarbw@gmail.com'
     );
+    console.log('notify-order staff recipients', staffEmails.join(','));
 
     const ref = String(orderId).slice(0, 8).toUpperCase() || '—';
     const isPickup = order.fulfillment === 'pickup';
@@ -243,13 +251,18 @@ serve(async (req) => {
       body: JSON.stringify({
         sender: { name: senderName, email: senderEmail },
         to: staffEmails.map((email) => ({ email })),
+        replyTo: {
+          email: order.customer_email,
+          name: order.customer_name || 'Customer'
+        },
         subject: `New order request · ${ref} · ${order.customer_name || 'Customer'}`.slice(0, 200),
         htmlContent: staffHtml
       })
     });
     if (!staffRes.ok) {
-      console.error('Brevo staff email error', await staffRes.text());
-      return jsonResponse(req, { ok: false, error: 'Could not send staff notification' }, 502);
+      const detail = await staffRes.text();
+      console.error('Brevo staff email error', detail);
+      return jsonResponse(req, { ok: false, error: 'Could not email Compustar', detail }, 502);
     }
 
     if (order.customer_email) {

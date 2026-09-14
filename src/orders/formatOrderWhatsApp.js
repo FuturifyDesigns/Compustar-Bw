@@ -1,4 +1,4 @@
-/** Professional WhatsApp prefill for Compustar order requests. */
+/** Natural WhatsApp prefill for Compustar order requests. */
 export function formatOrderWhatsApp({
   orderId = '',
   customer_name = '',
@@ -12,38 +12,58 @@ export function formatOrderWhatsApp({
 }) {
   const ref = String(orderId || '').slice(0, 8).toUpperCase() || 'PENDING';
   const isPickup = String(fulfillment).toLowerCase() === 'pickup';
-  const itemLines = (items || []).map((item, i) => {
+  const itemLines = (items || []).map((item) => {
     const qty = item.qty || 1;
     const title = item.title || 'Item';
     const price = item.price != null && item.price !== ''
       ? ` — ${item.currency || 'BWP'} ${item.price}`
       : '';
-    return `${i + 1}. ${qty}× ${title}${price}`;
+    return `• ${qty}× ${title}${price}`;
   });
 
   const lines = [
-    '*Compustar Botswana — Order Request*',
-    `Reference: *${ref}*`,
+    'Hi Compustar,',
     '',
-    '*Customer*',
-    `Name: ${customer_name || '—'}`,
-    `Phone: ${customer_phone || '—'}`,
-    `Email: ${customer_email || '—'}`,
+    'I would like to place an order request.',
     '',
-    '*Fulfillment*',
-    isPickup ? 'Type: Store pickup' : 'Type: Delivery',
-    isPickup
-      ? `Collect when: ${pickup_when || '—'}`
-      : `Delivery address: ${delivery_address || '—'}`,
-    '',
-    '*Items*',
-    ...(itemLines.length ? itemLines : ['(No items listed)'])
+    'Items:',
+    ...(itemLines.length ? itemLines : ['• (No items listed)']),
+    ''
   ];
 
-  if (notes && String(notes).trim()) {
-    lines.push('', '*Notes*', String(notes).trim());
+  if (isPickup) {
+    lines.push(`I prefer store pickup${pickup_when ? ` (${pickup_when})` : ''}.`);
+  } else {
+    lines.push(`I need delivery to: ${delivery_address || '—'}`);
   }
 
-  lines.push('', '_Please confirm availability and quote._');
+  lines.push(
+    '',
+    `Reference: ${ref}`,
+    '',
+    'My details:',
+    customer_name || '—',
+    customer_phone || '—',
+    customer_email || '—'
+  );
+
+  if (notes && String(notes).trim()) {
+    lines.push('', `Note: ${String(notes).trim()}`);
+  }
+
+  lines.push('', 'Please confirm availability and pricing. Thank you.');
   return lines.join('\n');
+}
+
+export const ORDER_STATUS_LABELS = {
+  new: 'Received',
+  confirmed: 'Confirmed',
+  preparing: 'Being prepared',
+  ready: 'Ready',
+  completed: 'Completed',
+  cancelled: 'Cancelled'
+};
+
+export function orderStatusLabel(status) {
+  return ORDER_STATUS_LABELS[status] || status || 'Received';
 }

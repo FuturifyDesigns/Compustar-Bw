@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAdmin } from '../cms/AdminContext';
+import { orderStatusLabel } from './formatOrderWhatsApp';
 
 const STATUSES = ['new', 'confirmed', 'preparing', 'ready', 'completed', 'cancelled'];
 
@@ -124,7 +125,7 @@ export function OrdersAdminPanel() {
             <header>
               <div>
                 <strong>{order.customer_name}</strong>
-                <span className={`order-status status-${order.status}`}>{order.status}</span>
+                <span className={`order-status status-${order.status}`}>{orderStatusLabel(order.status)}</span>
               </div>
               <time>{new Date(order.created_at).toLocaleString()}</time>
             </header>
@@ -143,7 +144,7 @@ export function OrdersAdminPanel() {
               <label>
                 Status
                 <select value={order.status} onChange={(e) => updateStatus(order.id, e.target.value)}>
-                  {STATUSES.map((status) => <option key={status} value={status}>{status}</option>)}
+                  {STATUSES.map((status) => <option key={status} value={status}>{orderStatusLabel(status)}</option>)}
                 </select>
               </label>
               {order.whatsapp_share_url ? (

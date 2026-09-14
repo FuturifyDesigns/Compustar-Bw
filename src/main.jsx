@@ -1428,29 +1428,37 @@ function Footer() {
             <EnvelopeSimple weight="fill" size={16} />
             <span><EditableText contentKey="site.email" value={footerEmail} as="span" /></span>
           </a>
-          <a className="footer-reach-item" href={`tel:${footerTel.replace(/\D/g, '')}`}>
-            <Phone weight="fill" size={16} />
+        </section>
+      </div>
+
+      <section className="footer-phones" aria-label="Call us">
+        <p className="footer-col-title">
+          <EditableText contentKey="footer.phones.label" value={getContent('footer.phones.label', 'Call us')} as="span" />
+        </p>
+        <div className="footer-phones-row">
+          <a className="footer-phone" href={`tel:${footerTel.replace(/\D/g, '')}`}>
+            <Phone weight="fill" size={15} />
             <span>
               <EditableText contentKey="site.tel_display" value={footerTel} as="span" />
               <small>Tel</small>
             </span>
           </a>
-          <a className="footer-reach-item" href={`tel:${footerPhone.replace(/\D/g, '')}`}>
-            <Phone weight="fill" size={16} />
+          <a className="footer-phone" href={`tel:${footerPhone.replace(/\D/g, '')}`}>
+            <Phone weight="fill" size={15} />
             <span>
               <EditableText contentKey="site.phone_display" value={footerPhone} as="span" />
               <small>Game City</small>
             </span>
           </a>
-          <a className="footer-reach-item" href={`tel:${footerMobile.replace(/\D/g, '')}`}>
-            <Phone weight="fill" size={16} />
+          <a className="footer-phone" href={`tel:${footerMobile.replace(/\D/g, '')}`}>
+            <Phone weight="fill" size={15} />
             <span>
               <EditableText contentKey="site.mobile_display" value={footerMobile} as="span" />
               <small>G-West</small>
             </span>
           </a>
-        </section>
-      </div>
+        </div>
+      </section>
 
       <div className="footer-bottom">
         <p>

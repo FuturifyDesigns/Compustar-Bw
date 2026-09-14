@@ -406,8 +406,7 @@ footer span,
   max-width: 1180px;
 }
 .site-footer img { height: 52px; object-fit: contain; width: auto; max-width: 148px; }
-.site-footer a { color: rgba(255,255,255,.78); text-decoration: none; transition: color .18s ease; }
-.site-footer a:hover { color: #fff; }
+.site-footer a { color: rgba(255,255,255,.78); text-decoration: none; }
 .footer-brand { display: grid; gap: .85rem; max-width: 280px; }
 .footer-tagline {
   color: rgba(255,255,255,.62);
@@ -433,9 +432,27 @@ footer span,
   font-size: .9rem;
   font-weight: 500;
   line-height: 1.45;
+  position: relative;
+  transition: color .2s ease, transform .2s ease;
   width: fit-content;
 }
-.footer-col a:hover { color: #fff; }
+.footer-col a::after {
+  background: var(--gold);
+  bottom: -2px;
+  content: '';
+  height: 1px;
+  left: 0;
+  position: absolute;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .22s ease;
+  width: 100%;
+}
+.footer-col a:hover {
+  color: #fff;
+  transform: translateX(3px);
+}
+.footer-col a:hover::after { transform: scaleX(1); }
 .footer-reach { gap: .7rem; }
 .footer-reach-item {
   align-items: flex-start;
@@ -445,8 +462,13 @@ footer span,
   font-size: .88rem;
   grid-template-columns: 16px minmax(0, 1fr);
   line-height: 1.45;
+  transition: color .2s ease, transform .2s ease;
 }
-.footer-reach-item svg { color: var(--gold); margin-top: .2rem; }
+.footer-reach-item svg {
+  color: var(--gold);
+  margin-top: .2rem;
+  transition: transform .2s ease;
+}
 .footer-reach-item span {
   color: inherit;
   display: grid;
@@ -458,7 +480,11 @@ footer span,
   font-size: .78rem;
   font-weight: 500;
 }
-.footer-reach-item:hover { color: #fff; }
+.footer-reach-item:hover {
+  color: #fff;
+  transform: translateX(3px);
+}
+.footer-reach-item:hover svg { transform: scale(1.08); }
 .footer-social-row { display: flex; gap: .5rem; margin-top: .2rem; }
 .footer-social {
   align-items: center;
@@ -468,22 +494,73 @@ footer span,
   display: grid;
   height: 36px;
   place-items: center;
-  transition: background .18s ease, border-color .18s ease;
+  transition: background .22s ease, border-color .22s ease, transform .22s ease, box-shadow .22s ease;
   width: 36px;
 }
 .footer-social:hover {
-  background: rgba(255,255,255,.08);
-  border-color: rgba(255,255,255,.28);
+  background: rgba(212, 175, 55, .14);
+  border-color: rgba(212, 175, 55, .55);
+  box-shadow: 0 6px 16px rgba(0,0,0,.28);
   color: #fff !important;
+  transform: translateY(-3px);
 }
-.footer-social svg { color: currentColor; }
+.footer-social svg { color: currentColor; transition: transform .22s ease; }
+.footer-social:hover svg { transform: scale(1.08); }
+.footer-phones {
+  border-top: 1px solid rgba(255,255,255,.08);
+  display: grid;
+  gap: .85rem;
+  margin: clamp(1.5rem, 3vw, 2rem) auto 0;
+  max-width: 1180px;
+  padding-top: 1.15rem;
+}
+.footer-phones .footer-col-title { margin: 0; }
+.footer-phones-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .65rem .85rem;
+}
+.footer-phone {
+  align-items: center;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px;
+  color: rgba(255,255,255,.86) !important;
+  display: inline-flex;
+  gap: .55rem;
+  padding: .55rem .8rem;
+  transition: background .22s ease, border-color .22s ease, color .22s ease, transform .22s ease, box-shadow .22s ease;
+}
+.footer-phone svg {
+  color: var(--gold);
+  flex-shrink: 0;
+  transition: transform .22s ease;
+}
+.footer-phone span {
+  display: grid;
+  gap: .05rem;
+  line-height: 1.2;
+}
+.footer-phone small {
+  color: rgba(255,255,255,.45);
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+.footer-phone:hover {
+  background: rgba(212, 175, 55, .1);
+  border-color: rgba(212, 175, 55, .45);
+  box-shadow: 0 8px 18px rgba(0,0,0,.22);
+  color: #fff !important;
+  transform: translateY(-2px);
+}
+.footer-phone:hover svg { transform: scale(1.08); }
 .footer-bottom {
   border-top: 1px solid rgba(255,255,255,.08);
   display: flex;
   flex-wrap: wrap;
   gap: .75rem 1.25rem;
   justify-content: space-between;
-  margin: clamp(1.6rem, 3vw, 2.2rem) auto 0;
+  margin: clamp(1.25rem, 2.5vw, 1.7rem) auto 0;
   max-width: 1180px;
   padding-top: 1.1rem;
 }
@@ -500,8 +577,12 @@ footer span,
   color: rgba(255,255,255,.55) !important;
   font-size: .82rem;
   font-weight: 600;
+  transition: color .2s ease, transform .2s ease;
 }
-.footer-built:hover { color: #fff !important; }
+.footer-built:hover {
+  color: #fff !important;
+  transform: translateY(-1px);
+}
 .legal-section { max-width: 760px; margin: 0 auto; }
 .legal-card {
   background: #fff; border: 1px solid var(--line); border-radius: var(--radius);

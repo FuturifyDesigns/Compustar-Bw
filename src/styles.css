@@ -536,7 +536,7 @@ footer span,
   background: rgba(255,255,255,.05);
   border: 1px solid rgba(255,255,255,.22);
   border-radius: 10px;
-  color: #ffffff !important;
+  color: #fff !important;
   display: inline-flex;
   gap: .55rem;
   padding: .55rem .8rem;
@@ -548,9 +548,15 @@ footer span,
   transition: transform .22s ease;
 }
 .footer-phone span {
+  color: #fff;
   display: grid;
   gap: .05rem;
   line-height: 1.2;
+}
+.footer-phone span,
+.footer-phone span > .editable-wrap,
+.footer-phone span > .editable-wrap * {
+  color: #fff;
 }
 .footer-phone small,
 .footer-phone small * {

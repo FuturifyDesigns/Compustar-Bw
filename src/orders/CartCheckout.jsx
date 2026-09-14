@@ -294,9 +294,12 @@ export function CheckoutPage() {
             id: data.id,
             whatsapp_share_url,
             emailOk: false,
-            emailNote: 'Your request was saved, but the email alert may not have reached Compustar. You can optionally share it on WhatsApp below.'
+            emailNote: 'Your request was saved, but the email alert may not have reached Compustar. Please send the WhatsApp message so the store receives it.'
           });
           clearCart();
+          window.setTimeout(() => {
+            window.open(whatsapp_share_url, '_blank', 'noopener,noreferrer');
+          }, 250);
           return;
         }
       } catch (notifyErr) {
@@ -305,14 +308,20 @@ export function CheckoutPage() {
           id: data.id,
           whatsapp_share_url,
           emailOk: false,
-          emailNote: 'Your request was saved, but the email alert may not have reached Compustar. You can optionally share it on WhatsApp below.'
+          emailNote: 'Your request was saved, but the email alert may not have reached Compustar. Please send the WhatsApp message so the store receives it.'
         });
         clearCart();
+        window.setTimeout(() => {
+          window.open(whatsapp_share_url, '_blank', 'noopener,noreferrer');
+        }, 250);
         return;
       }
 
       clearCart();
       setDone({ id: data.id, whatsapp_share_url, emailOk: true });
+      window.setTimeout(() => {
+        window.open(whatsapp_share_url, '_blank', 'noopener,noreferrer');
+      }, 250);
     } catch (err) {
       setError(err.message || 'Could not submit order request');
     } finally {
@@ -329,12 +338,13 @@ export function CheckoutPage() {
           <p className="account-lead">
             {done.emailOk === false
               ? done.emailNote
-              : 'Compustar has been notified by email at compustarbw@gmail.com. No WhatsApp confirmation step is required.'}
-            {' '}Reference: {done.id.slice(0, 8).toUpperCase()}
+              : 'Compustar was emailed at compustarbw@gmail.com.'}
+            {' '}WhatsApp also opened with your request — tap <strong>Send</strong> so it arrives on chat too.
+            Reference: {done.id.slice(0, 8).toUpperCase()}
           </p>
           <div className="cart-actions">
-            <button type="button" className="button dark" onClick={() => go('/Account')}>Track my requests</button>
-            <a className="button secondary-dark" href={done.whatsapp_share_url} target="_blank" rel="noreferrer">Optional: share on WhatsApp</a>
+            <a className="button dark" href={done.whatsapp_share_url} target="_blank" rel="noreferrer">Open WhatsApp again</a>
+            <button type="button" className="button secondary-dark" onClick={() => go('/Account')}>Track my requests</button>
             <button type="button" className="button ghost-dark" onClick={() => go('/Products')}>Back to products</button>
           </div>
         </div>

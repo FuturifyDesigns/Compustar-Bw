@@ -409,24 +409,30 @@ footer span,
 .site-footer a { color: rgba(255,255,255,.78); text-decoration: none; }
 .footer-brand { display: grid; gap: .85rem; max-width: 280px; }
 .footer-tagline {
-  color: #ebe4d4;
+  color: #f7f4ec;
   font-size: .88rem;
   line-height: 1.55;
   margin: 0;
+}
+.footer-tagline,
+.footer-tagline * {
+  color: #f7f4ec;
 }
 .footer-col {
   align-content: start;
   display: grid;
   gap: .55rem;
 }
-.footer-col-title {
-  color: var(--gold);
+.footer-col-title,
+.footer-col-title * {
+  color: #ffd978;
   font-size: .72rem;
   font-weight: 700;
   letter-spacing: .14em;
   margin: 0 0 .35rem;
   text-transform: uppercase;
 }
+.footer-col-title { margin: 0 0 .35rem; }
 .footer-col a {
   color: #f4f1ea;
   font-size: .9rem;
@@ -475,8 +481,9 @@ footer span,
   gap: .15rem;
   min-width: 0;
 }
-.footer-reach-item small {
-  color: #d6c59a;
+.footer-reach-item small,
+.footer-reach-item small * {
+  color: #f0e2b8;
   font-size: .78rem;
   font-weight: 500;
 }
@@ -514,7 +521,11 @@ footer span,
   max-width: 1180px;
   padding-top: 1.15rem;
 }
-.footer-phones .footer-col-title { margin: 0; }
+.footer-phones .footer-col-title,
+.footer-phones .footer-col-title * {
+  color: #ffd978;
+  margin: 0;
+}
 .footer-phones-row {
   display: flex;
   flex-wrap: wrap;
@@ -522,16 +533,17 @@ footer span,
 }
 .footer-phone {
   align-items: center;
-  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.22);
   border-radius: 10px;
-  color: #f7f3ea !important;
+  color: #ffffff !important;
   display: inline-flex;
   gap: .55rem;
   padding: .55rem .8rem;
   transition: background .22s ease, border-color .22s ease, color .22s ease, transform .22s ease, box-shadow .22s ease;
 }
 .footer-phone svg {
-  color: var(--gold);
+  color: #ffd978;
   flex-shrink: 0;
   transition: transform .22s ease;
 }
@@ -540,8 +552,9 @@ footer span,
   gap: .05rem;
   line-height: 1.2;
 }
-.footer-phone small {
-  color: #d6c59a;
+.footer-phone small,
+.footer-phone small * {
+  color: #f0e2b8;
   font-size: .72rem;
   font-weight: 600;
   letter-spacing: .02em;

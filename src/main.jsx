@@ -1363,9 +1363,13 @@ function Footer() {
   const footerPhone = getContent('site.phone_display', displayPhone);
   const footerMobile = getContent('site.mobile_display', displayMobilePhone);
   const localPhone = (value) => String(value || '').replace(/^\s*\+?267[\s-]*/i, '').trim();
+  const withCountryPhone = (value) => {
+    const local = localPhone(value);
+    return local ? `+267 ${local}` : local;
+  };
   const footerTelLocal = localPhone(footerTel);
-  const footerPhoneLocal = localPhone(footerPhone);
-  const footerMobileLocal = localPhone(footerMobile);
+  const footerPhoneIntl = withCountryPhone(footerPhone);
+  const footerMobileIntl = withCountryPhone(footerMobile);
   const telHref = (value) => {
     const digits = String(value || '').replace(/\D/g, '');
     return `tel:${digits.startsWith('267') ? digits : `267${digits}`}`;
@@ -1454,14 +1458,14 @@ function Footer() {
           <a className="footer-phone" href={telHref(footerPhone)}>
             <Phone weight="fill" size={15} />
             <span>
-              <EditableText contentKey="site.phone_display" value={footerPhoneLocal} as="span" />
+              <EditableText contentKey="site.phone_display" value={footerPhoneIntl} as="span" />
               <small>Game City</small>
             </span>
           </a>
           <a className="footer-phone" href={telHref(footerMobile)}>
             <Phone weight="fill" size={15} />
             <span>
-              <EditableText contentKey="site.mobile_display" value={footerMobileLocal} as="span" />
+              <EditableText contentKey="site.mobile_display" value={footerMobileIntl} as="span" />
               <small>G-West</small>
             </span>
           </a>

@@ -24,9 +24,16 @@ export function OrdersAdminPanel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [liveNote, setLiveNote] = useState('');
+  const [liveTone, setLiveTone] = useState('success');
   const [drafts, setDrafts] = useState({});
   const [busyId, setBusyId] = useState('');
   const knownIds = useRef(new Set());
+
+  function flashNote(message, tone = 'success', ms = 4000) {
+    setLiveTone(tone);
+    setLiveNote(message);
+    window.setTimeout(() => setLiveNote(''), ms);
+  }
 
   function draftFor(order) {
     return drafts[order.id] || {
@@ -64,8 +71,7 @@ export function OrdersAdminPanel() {
       if (!isFirst) {
         const fresh = rows.filter((row) => !knownIds.current.has(row.id));
         if (fresh.length) {
-          setLiveNote(`${fresh.length} new order request${fresh.length > 1 ? 's' : ''} received`);
-          window.setTimeout(() => setLiveNote(''), 4000);
+          flashNote(`${fresh.length} new order request${fresh.length > 1 ? 's' : ''} received`, 'success');
         }
       }
       knownIds.current = nextIds;
@@ -100,8 +106,7 @@ export function OrdersAdminPanel() {
             return [payload.new, ...prev];
           });
           knownIds.current.add(payload.new.id);
-          setLiveNote('New order request received');
-          window.setTimeout(() => setLiveNote(''), 4000);
+          flashNote('New order request received', 'success');
         } else if (payload.eventType === 'UPDATE' && payload.new) {
           setOrders((prev) => prev.map((row) => (row.id === payload.new.id ? payload.new : row)));
         } else if (payload.eventType === 'DELETE' && payload.old?.id) {
@@ -136,8 +141,7 @@ export function OrdersAdminPanel() {
     const statusChanged = status !== order.status;
     const noteChanged = statusNote !== String(order.status_note || '').trim();
     if (!statusChanged && !noteChanged) {
-      setLiveNote('No status changes to save');
-      window.setTimeout(() => setLiveNote(''), 2500);
+      flashNote('No status changes to save', 'warn', 2500);
       return;
     }
 
@@ -168,11 +172,10 @@ export function OrdersAdminPanel() {
         }
       });
       if (notifyError || notifyData?.ok === false) {
-        setLiveNote('Status saved, but the customer email may not have sent');
+        flashNote('Status saved, but the customer email may not have sent', 'warn');
       } else {
-        setLiveNote(`Status updated · customer emailed (${order.customer_email})`);
+        flashNote(`Status updated · customer emailed (${order.customer_email})`, 'success');
       }
-      window.setTimeout(() => setLiveNote(''), 4000);
     } catch (err) {
       setError(err.message || 'Could not update status');
     } finally {
@@ -198,8 +201,7 @@ export function OrdersAdminPanel() {
         return next;
       });
       knownIds.current.delete(order.id);
-      setLiveNote(`Deleted request ${ref}`);
-      window.setTimeout(() => setLiveNote(''), 3000);
+      flashNote(`Deleted request ${ref}`, 'success', 3000);
     } catch (err) {
       setError(err.message || 'Could not delete request');
     } finally {
@@ -219,7 +221,7 @@ export function OrdersAdminPanel() {
         </div>
         <button type="button" className="button dark" onClick={() => load()}>Refresh</button>
       </div>
-      {liveNote ? <p className="orders-live-note" role="status">{liveNote}</p> : null}
+      {liveNote ? <p className={`orders-live-note orders-live-note--${liveTone}`} role="status">{liveNote}</p> : null}
       {loading && <p className="orders-empty">Loading orders…</p>}
       {error && <p className="cms-error">{error}</p>}
       {!loading && !orders.length && (

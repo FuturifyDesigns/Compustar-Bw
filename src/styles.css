@@ -1572,14 +1572,21 @@ a.reveal-panel.service-panel .button {
 .orders-empty-card p,
 .orders-empty { color: var(--muted); font-size: .9rem; margin: 0; }
 .orders-live-note {
-  background: rgba(239, 23, 23, .1);
-  border: 1px solid rgba(239, 23, 23, .18);
   border-radius: 10px;
-  color: var(--red-deep);
   font-size: .9rem;
   font-weight: 700;
   margin: 0 0 1rem;
   padding: .7rem .9rem;
+}
+.orders-live-note--success {
+  background: rgba(34, 140, 84, .12);
+  border: 1px solid rgba(34, 140, 84, .22);
+  color: #176b3f;
+}
+.orders-live-note--warn {
+  background: rgba(239, 23, 23, .1);
+  border: 1px solid rgba(239, 23, 23, .18);
+  color: var(--red-deep);
 }
 .orders-list { display: grid; gap: .9rem; }
 .order-card {

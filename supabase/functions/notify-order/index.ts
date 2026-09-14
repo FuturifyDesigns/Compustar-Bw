@@ -1,4 +1,4 @@
-// Secrets: BREVO_API_KEY, BREVO_SENDER_EMAIL, BREVO_SENDER_NAME, ADMIN_EMAILS
+// Secrets: BREVO_API_KEY (API or SMTP), BREVO_SMTP_USER, BREVO_SENDER_EMAIL, BREVO_SENDER_NAME, ADMIN_EMAILS
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
 import {
@@ -12,6 +12,7 @@ import {
   parseStaffEmails,
   readJsonBody
 } from '../_shared/security.ts';
+import { sendTransactionalEmail } from '../_shared/email.ts';
 
 function formatWhatsApp(order: Record<string, unknown>, orderId: string) {
   const ref = String(orderId || '').slice(0, 8).toUpperCase() || 'PENDING';
@@ -174,8 +175,6 @@ serve(async (req) => {
     if (!limited.ok) return jsonResponse(req, { ok: false, error: limited.error }, 429);
 
     const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY');
-    const senderEmail = Deno.env.get('BREVO_SENDER_EMAIL') || 'futurifydesigns@gmail.com';
-    const senderName = Deno.env.get('BREVO_SENDER_NAME') || 'Compustar Botswana';
     if (!BREVO_API_KEY) return jsonResponse(req, { ok: false, error: 'Email service unavailable' }, 500);
 
     const staffEmails = parseStaffEmails(
@@ -241,51 +240,44 @@ serve(async (req) => {
       `
     });
 
-    const staffRes = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        accept: 'application/json',
-        'content-type': 'application/json',
-        'api-key': BREVO_API_KEY
+    const staffSend = await sendTransactionalEmail({
+      to: staffEmails.map((email) => ({ email })),
+      replyTo: {
+        email: order.customer_email,
+        name: order.customer_name || 'Customer'
       },
-      body: JSON.stringify({
-        sender: { name: senderName, email: senderEmail },
-        to: staffEmails.map((email) => ({ email })),
-        replyTo: {
-          email: order.customer_email,
-          name: order.customer_name || 'Customer'
-        },
-        subject: `New order request · ${ref} · ${order.customer_name || 'Customer'}`.slice(0, 200),
-        htmlContent: staffHtml
-      })
+      subject: `New order request · ${ref} · ${order.customer_name || 'Customer'}`.slice(0, 200),
+      html: staffHtml,
+      kind: 'order_staff',
+      meta: { orderId, ref }
     });
-    if (!staffRes.ok) {
-      const detail = await staffRes.text();
-      console.error('Brevo staff email error', detail);
-      return jsonResponse(req, { ok: false, error: 'Could not email Compustar', detail }, 502);
+    if (!staffSend.ok) {
+      console.error('Staff email error', staffSend.detail);
+      return jsonResponse(req, {
+        ok: false,
+        error: 'Could not email Compustar',
+        detail: staffSend.detail
+      }, 502);
     }
 
     if (order.customer_email) {
-      const customerRes = await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: {
-          accept: 'application/json',
-          'content-type': 'application/json',
-          'api-key': BREVO_API_KEY
-        },
-        body: JSON.stringify({
-          sender: { name: senderName, email: senderEmail },
-          to: [{ email: order.customer_email, name: order.customer_name || 'Customer' }],
-          subject: `Order request received · ${ref}`,
-          htmlContent: customerHtml
-        })
+      const customerSend = await sendTransactionalEmail({
+        to: [{ email: order.customer_email, name: order.customer_name || 'Customer' }],
+        subject: `Order request received · ${ref}`,
+        html: customerHtml,
+        kind: 'order_customer',
+        meta: { orderId, ref }
       });
-      if (!customerRes.ok) {
-        console.error('Brevo customer email error', await customerRes.text());
+      if (!customerSend.ok) {
+        console.error('Customer email error', customerSend.detail);
       }
     }
 
-    return jsonResponse(req, { ok: true, whatsappShareUrl });
+    return jsonResponse(req, {
+      ok: true,
+      whatsappShareUrl,
+      emailMode: staffSend.mode || 'api'
+    });
   } catch (error) {
     console.error(error);
     return jsonResponse(req, { ok: false, error: 'Unexpected error' }, 500);

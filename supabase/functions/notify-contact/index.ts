@@ -11,6 +11,7 @@ import {
   parseStaffEmails,
   readJsonBody
 } from '../_shared/security.ts';
+import { sendTransactionalEmail } from '../_shared/email.ts';
 
 function emailShell({ title, preheader = '', bodyHtml }: { title: string; preheader?: string; bodyHtml: string }) {
   return `<!DOCTYPE html>
@@ -71,8 +72,6 @@ serve(async (req) => {
     if (!limited.ok) return jsonResponse(req, { ok: false, error: limited.error }, 429);
 
     const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY');
-    const senderEmail = Deno.env.get('BREVO_SENDER_EMAIL') || 'futurifydesigns@gmail.com';
-    const senderName = Deno.env.get('BREVO_SENDER_NAME') || 'Compustar Botswana';
     if (!BREVO_API_KEY) {
       return jsonResponse(req, { ok: false, error: 'Email service unavailable' }, 500);
     }
@@ -100,23 +99,15 @@ serve(async (req) => {
       `
     });
 
-    const staffRes = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        accept: 'application/json',
-        'content-type': 'application/json',
-        'api-key': BREVO_API_KEY
-      },
-      body: JSON.stringify({
-        sender: { name: senderName, email: senderEmail },
-        to: staffEmails.map((addr) => ({ email: addr })),
-        replyTo: { email, name },
-        subject: `Contact · ${subject} · ${name}`.slice(0, 200),
-        htmlContent: staffHtml
-      })
+    const staffSend = await sendTransactionalEmail({
+      to: staffEmails.map((addr) => ({ email: addr })),
+      replyTo: { email, name },
+      subject: `Contact · ${subject} · ${name}`.slice(0, 200),
+      html: staffHtml,
+      kind: 'contact_staff'
     });
-    if (!staffRes.ok) {
-      console.error('Brevo staff email error', await staffRes.text());
+    if (!staffSend.ok) {
+      console.error('Brevo staff email error', staffSend.detail);
       return jsonResponse(req, { ok: false, error: 'Could not send message right now.' }, 502);
     }
 
@@ -131,22 +122,14 @@ serve(async (req) => {
       `
     });
 
-    await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        accept: 'application/json',
-        'content-type': 'application/json',
-        'api-key': BREVO_API_KEY
-      },
-      body: JSON.stringify({
-        sender: { name: senderName, email: senderEmail },
-        to: [{ email, name }],
-        subject: 'We received your Compustar enquiry',
-        htmlContent: customerHtml
-      })
+    await sendTransactionalEmail({
+      to: [{ email, name }],
+      subject: 'We received your Compustar enquiry',
+      html: customerHtml,
+      kind: 'contact_customer'
     });
 
-    return jsonResponse(req, { ok: true });
+    return jsonResponse(req, { ok: true, emailMode: staffSend.mode || 'api' });
   } catch (error) {
     console.error(error);
     return jsonResponse(req, { ok: false, error: 'Unexpected error' }, 500);

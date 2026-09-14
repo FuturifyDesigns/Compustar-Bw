@@ -303,8 +303,14 @@ export function AdminBar() {
     return () => document.body.classList.remove('cms-editing');
   }, [isAdmin, editMode]);
 
+  const toastNode = toast?.message ? (
+    <div className={`cms-toast cms-toast--${toast.tone || 'success'}`} role="status" aria-live="polite">
+      {toast.message}
+    </div>
+  ) : null;
+
   if (!isAdmin) {
-    return toast ? <div className="cms-toast">{toast}</div> : null;
+    return toastNode;
   }
 
   return (
@@ -314,7 +320,7 @@ export function AdminBar() {
         <button type="button" className={editMode ? 'active' : ''} onClick={() => setEditMode((v) => !v)}>{editMode ? 'Editing on' : 'Editing off'}</button>
         <button type="button" onClick={logout}><SignOut size={16} /> Sign out</button>
       </div>
-      {toast && <div className="cms-toast">{toast}</div>}
+      {toastNode}
     </>
   );
 }

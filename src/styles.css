@@ -1145,9 +1145,40 @@ p.editable-wrap > .edit-chip {
 }
 .cms-error { color: #b00020; font-size: .9rem; margin: 0; }
 .cms-toast {
-  background: #111; border-radius: 999px; bottom: 1.2rem; color: #fff; left: 50%; padding: .65rem 1rem;
-  position: fixed; transform: translateX(-50%); z-index: 2100;
+  border-radius: 999px;
+  bottom: 1.2rem;
+  box-shadow: 0 12px 32px rgba(12, 13, 16, .22);
+  font-size: .9rem;
+  font-weight: 700;
+  left: 50%;
+  max-width: min(92vw, 440px);
+  padding: .75rem 1.15rem;
+  position: fixed;
+  text-align: center;
+  transform: translateX(-50%);
+  z-index: 2100;
 }
+.cms-toast--success {
+  background: #176b3f;
+  color: #fff;
+}
+.cms-toast--warn {
+  background: #98080f;
+  color: #fff;
+}
+.button.danger {
+  background: #98080f;
+  border: 1px solid #98080f;
+  color: #fff;
+}
+.button.danger:hover { filter: brightness(1.05); }
+.site-confirm-message {
+  color: var(--muted);
+  font-size: .95rem;
+  line-height: 1.5;
+  margin: 0;
+}
+.site-confirm-dialog { max-width: 440px; }
 .cms-empty { color: var(--muted, #667); text-align: center; }
 .cms-image-field { display: grid; gap: .55rem; }
 .cms-image-label { font-size: .86rem; font-weight: 700; }

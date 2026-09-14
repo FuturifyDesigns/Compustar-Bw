@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { broadcastCmsChange, supabase, supabaseConfigured, uploadMedia } from '../lib/supabase';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
 
 const AdminContext = createContext(null);
 
@@ -52,9 +53,11 @@ export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts
   const [content, setContent] = useState({});
   const [ready, setReady] = useState(!supabaseConfigured);
   const [busy, setBusy] = useState(false);
-  const [toast, setToast] = useState('');
+  const [toast, setToast] = useState({ message: '', tone: 'success' });
+  const [confirmState, setConfirmState] = useState(null);
   const refreshTimer = useRef(0);
   const refreshRef = useRef(() => Promise.resolve());
+  const toastTimer = useRef(0);
 
   const isAdmin = profile?.role === 'admin';
 
@@ -234,9 +237,36 @@ export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts
     };
   }, [profile?.role]);
 
-  function notify(message) {
-    setToast(message);
-    window.setTimeout(() => setToast(''), 2400);
+  function notify(message, tone = 'success') {
+    window.clearTimeout(toastTimer.current);
+    setToast({ message, tone });
+    toastTimer.current = window.setTimeout(() => setToast({ message: '', tone: 'success' }), 2800);
+  }
+
+  function confirmAction({
+    title = 'Please confirm',
+    message = '',
+    confirmLabel = 'Confirm',
+    cancelLabel = 'Cancel',
+    danger = false
+  } = {}) {
+    return new Promise((resolve) => {
+      setConfirmState({
+        title,
+        message,
+        confirmLabel,
+        cancelLabel,
+        danger,
+        resolve
+      });
+    });
+  }
+
+  function closeConfirm(result) {
+    setConfirmState((current) => {
+      current?.resolve?.(result);
+      return null;
+    });
   }
 
   async function login(email, password) {
@@ -310,12 +340,18 @@ export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts
   }
 
   async function deleteProduct(id) {
-    if (!window.confirm('Delete this product?')) return;
+    const ok = await confirmAction({
+      title: 'Delete product?',
+      message: 'This removes the product from the site. This cannot be undone.',
+      confirmLabel: 'Delete product',
+      danger: true
+    });
+    if (!ok) return;
     const { error } = await supabase.from('products').delete().eq('id', id);
     if (error) throw error;
     await refresh();
     await broadcastCmsChange('products');
-    notify('Product deleted');
+    notify('Product deleted', 'success');
   }
 
   async function saveAdvert(payload, id) {
@@ -347,12 +383,18 @@ export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts
   }
 
   async function deleteAdvert(id) {
-    if (!window.confirm('Delete this advert?')) return;
+    const ok = await confirmAction({
+      title: 'Delete advert?',
+      message: 'This removes the advert from the site. This cannot be undone.',
+      confirmLabel: 'Delete advert',
+      danger: true
+    });
+    if (!ok) return;
     const { error } = await supabase.from('adverts').delete().eq('id', id);
     if (error) throw error;
     await refresh();
     await broadcastCmsChange('adverts');
-    notify('Advert deleted');
+    notify('Advert deleted', 'success');
   }
 
   useEffect(() => {
@@ -367,10 +409,26 @@ export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts
       const value = content[key];
       return value == null || value === '' ? fallback : value;
     },
+    notify,
+    confirm: confirmAction,
     login, logout, saveContent, saveProduct, deleteProduct, saveAdvert, deleteAdvert, refresh
   }), [ready, busy, toast, isAdmin, editMode, products, adverts, content, profile]);
 
-  return <AdminContext.Provider value={value}>{children}</AdminContext.Provider>;
+  return (
+    <AdminContext.Provider value={value}>
+      {children}
+      <ConfirmDialog
+        open={Boolean(confirmState)}
+        title={confirmState?.title}
+        message={confirmState?.message}
+        confirmLabel={confirmState?.confirmLabel}
+        cancelLabel={confirmState?.cancelLabel}
+        danger={confirmState?.danger}
+        onCancel={() => closeConfirm(false)}
+        onConfirm={() => closeConfirm(true)}
+      />
+    </AdminContext.Provider>
+  );
 }
 
 export function useAdmin() {

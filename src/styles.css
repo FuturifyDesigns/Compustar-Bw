@@ -1331,7 +1331,7 @@ p.editable-wrap > .edit-chip {
 .cms-dialog header { align-items: center; display: flex; justify-content: space-between; position: sticky; top: -1.2rem; background: #fff; padding-top: .2rem; z-index: 1; }
 .cms-dialog header button, .cms-dialog .button { cursor: pointer; }
 .cms-dialog label { display: grid; font-size: .86rem; font-weight: 700; gap: .4rem; }
-.cms-dialog input, .cms-dialog textarea {
+.cms-dialog input, .cms-dialog textarea, .cms-dialog select {
   border: 1px solid var(--line);
   border-radius: 12px;
   font: inherit;
@@ -1452,6 +1452,15 @@ a.reveal-panel.service-panel .button {
 .service-detail-title { align-items: center; display: flex; gap: .65rem; }
 .service-detail-title svg { color: var(--red); }
 .service-gallery, .service-related { display: grid; gap: 1rem; margin-top: 1.5rem; }
+.service-related-head {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem 1rem;
+  justify-content: space-between;
+}
+.service-related-head .cms-toolbar { margin: 0; }
+.service-related-empty { color: var(--muted); margin: 0; }
 .service-gallery-grid { display: grid; gap: .85rem; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .service-gallery-grid figure { background: #fff; border: 1px solid var(--line); border-radius: 12px; margin: 0; overflow: hidden; }
 .service-gallery-grid img { aspect-ratio: 4 / 3; display: block; object-fit: cover; width: 100%; }

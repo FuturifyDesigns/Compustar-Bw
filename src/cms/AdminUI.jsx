@@ -16,6 +16,7 @@ import {
   X
 } from '@phosphor-icons/react';
 import { useAdmin } from './AdminContext';
+import { PRODUCT_CATEGORIES, canonicalCategoryTitle } from '../data/productCategories';
 
 let scrollLockCount = 0;
 
@@ -509,10 +510,18 @@ export function CMSText({ contentKey, fallback = '', as = 'span', className = ''
   );
 }
 
-export function ProductEditorButton({ product, onAdd }) {
+export function ProductEditorButton({ product, onAdd, defaultCategory = '' }) {
   const { isAdmin, editMode, saveProduct, deleteProduct, busy } = useAdmin();
   const [open, setOpen] = useState(false);
-  const blank = { title: '', category: '', price: '', currency: 'BWP', description: '', image_url: '', active: true };
+  const blank = {
+    title: '',
+    category: defaultCategory || '',
+    price: '',
+    currency: 'BWP',
+    description: '',
+    image_url: '',
+    active: true
+  };
   const [draft, setDraft] = useState(blank);
   const [imageFile, setImageFile] = useState(null);
 
@@ -521,13 +530,16 @@ export function ProductEditorButton({ product, onAdd }) {
   function openEditor() {
     setDraft(product ? {
       title: product.title || '',
-      category: product.category || '',
+      category: canonicalCategoryTitle(product.category) || '',
       price: product.price ?? '',
       currency: product.currency || 'BWP',
       description: product.description || '',
       image_url: product.image_url || product.file || '',
       active: product.active !== false
-    } : blank);
+    } : {
+      ...blank,
+      category: defaultCategory || ''
+    });
     setImageFile(null);
     setOpen(true);
   }
@@ -545,7 +557,18 @@ export function ProductEditorButton({ product, onAdd }) {
       {open && (
         <CmsModal title={product ? 'Edit product' : 'Add product'} onClose={() => setOpen(false)} wide>
           <label>Title<input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} placeholder="Add product name" /></label>
-          <label>Category<input value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} placeholder="Add category" /></label>
+          <label>
+            Category
+            <select
+              value={draft.category}
+              onChange={(e) => setDraft({ ...draft, category: e.target.value })}
+            >
+              <option value="">Select a category</option>
+              {PRODUCT_CATEGORIES.map((item) => (
+                <option key={item.slug} value={item.title}>{item.title}</option>
+              ))}
+            </select>
+          </label>
           <label>Price (BWP)<input type="number" step="0.01" value={draft.price} onChange={(e) => setDraft({ ...draft, price: e.target.value })} /></label>
           <label>Description<textarea rows={4} value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} /></label>
           <ImageField
@@ -563,7 +586,7 @@ export function ProductEditorButton({ product, onAdd }) {
             <button
               className="button dark"
               type="button"
-              disabled={busy}
+              disabled={busy || !draft.category}
               onClick={async () => {
                 await saveProduct({ ...draft, fileObj: imageFile }, product?.id);
                 setOpen(false);

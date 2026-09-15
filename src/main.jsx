@@ -56,6 +56,7 @@ import { PrivacyPage, TermsPage } from './legal/LegalPages';
 import { OrdersAdminPanel } from './orders/OrdersAdmin';
 import { ContactForm } from './contact/ContactForm';
 import { services as serviceCatalog, getServiceBySlug } from './data/services';
+import { productMatchesService } from './data/productCategories';
 import { supabase } from './lib/supabase';
 import './styles.css';
 
@@ -1030,13 +1031,7 @@ function ServiceDetailPage({ slug }) {
   }
 
   const Icon = serviceIcons[service.icon] || Cpu;
-  const related = products.filter((item) => {
-    const category = (item.category || '').toLowerCase();
-    return category && (
-      category.includes(service.title.toLowerCase().split(' ')[0])
-      || service.title.toLowerCase().includes(category)
-    );
-  }).slice(0, 8);
+  const related = products.filter((item) => productMatchesService(item, service));
 
   return (
     <>
@@ -1069,18 +1064,25 @@ function ServiceDetailPage({ slug }) {
           ) : (
             <div className="service-gallery-empty">
               <SmartImage src={service.image} alt={service.title} loading="eager" width={900} />
-              <p>More photos for this category are coming soon. Browse related products below, or contact us for current stock.</p>
+              <p>More photos for this category are coming soon. Browse products below, or contact us for current stock.</p>
             </div>
           )}
         </div>
-        {related.length > 0 && (
-          <div className="service-related" data-reveal>
-            <h3>Related products</h3>
+        <div className="service-related" data-reveal>
+          <div className="service-related-head">
+            <h3>Products in this category</h3>
+            <div className="cms-toolbar">
+              <ProductEditorButton onAdd defaultCategory={service.title} />
+            </div>
+          </div>
+          {related.length > 0 ? (
             <div className="product-grid">
               {related.map((product, index) => <ProductCard key={product.id || index} product={product} priority={index < 2} />)}
             </div>
-          </div>
-        )}
+          ) : (
+            <p className="service-related-empty">No products in this category yet. Turn on editing to add one — it will also show on the Products page.</p>
+          )}
+        </div>
       </section>
     </>
   );

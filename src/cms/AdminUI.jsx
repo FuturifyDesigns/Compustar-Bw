@@ -546,12 +546,12 @@ export function ProductEditorButton({ product, onAdd, defaultCategory = '' }) {
 
   return (
     <>
-      <div className="card-admin-actions">
+      <div className={onAdd ? 'cms-toolbar-actions' : 'card-admin-actions'}>
         {onAdd
-          ? <button type="button" className="edit-chip solid" onClick={openEditor}><Plus size={18} weight="bold" /> Add</button>
+          ? <button type="button" className="edit-chip solid" onClick={openEditor}><Plus size={18} weight="bold" /> Add product</button>
           : <>
-              <button type="button" className="edit-chip" aria-label="Edit product" onClick={openEditor}><PencilSimple size={18} weight="fill" /></button>
-              <button type="button" className="edit-chip danger" aria-label="Delete product" onClick={() => deleteProduct(product.id)}><Trash size={18} weight="fill" /></button>
+              <button type="button" className="edit-chip" aria-label="Edit product" onClick={(event) => { event.preventDefault(); event.stopPropagation(); openEditor(); }}><PencilSimple size={18} weight="fill" /></button>
+              <button type="button" className="edit-chip danger" aria-label="Delete product" onClick={(event) => { event.preventDefault(); event.stopPropagation(); deleteProduct(product.id); }}><Trash size={18} weight="fill" /></button>
             </>}
       </div>
       {open && (
@@ -625,7 +625,7 @@ export function AdvertEditorButton({ advert, onAdd }) {
 
   return (
     <>
-      <div className="card-admin-actions">
+      <div className={onAdd ? 'cms-toolbar-actions' : 'card-admin-actions'}>
         {onAdd
           ? <button type="button" className="edit-chip solid" onClick={openEditor}><Plus size={18} weight="bold" /> Add advert</button>
           : <>

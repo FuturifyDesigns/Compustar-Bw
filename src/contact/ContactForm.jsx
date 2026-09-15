@@ -1,19 +1,84 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { supabase, supabaseConfigured } from '../lib/supabase';
 import { assertClientCooldown } from '../lib/clientSecurity';
 
+const ENQUIRE_KEY = 'compustar-enquire';
+
+export function buildEnquireDraft(product = {}) {
+  const title = String(product.title || product.name || '').trim() || 'Selected product';
+  const category = String(product.category || '').trim() || 'Not specified';
+  const description = String(product.description || '').trim();
+  const hasPrice = product.price != null && product.price !== '';
+  const priceLine = hasPrice
+    ? `${product.currency || 'BWP'} ${Number(product.price).toLocaleString()}`
+    : 'Price on request';
+
+  return {
+    subject: `Product enquiry: ${title}`,
+    message: [
+      'Hi Compustar,',
+      '',
+      'I would like to enquire about this product:',
+      `• Name: ${title}`,
+      `• Category: ${category}`,
+      `• Price: ${priceLine}`,
+      description ? `• Details: ${description}` : '• Details: Please confirm full product details and availability.',
+      '',
+      'Please let me know the next steps. Thank you.'
+    ].join('\n')
+  };
+}
+
+export function stashEnquireProduct(product) {
+  try {
+    sessionStorage.setItem(ENQUIRE_KEY, JSON.stringify({
+      title: product?.title || product?.name || '',
+      category: product?.category || '',
+      description: product?.description || '',
+      price: product?.price ?? '',
+      currency: product?.currency || 'BWP',
+      id: product?.id || '',
+      image_url: product?.image_url || product?.file || ''
+    }));
+  } catch {
+    /* ignore storage failures */
+  }
+}
+
+function readEnquireDraft() {
+  try {
+    const raw = sessionStorage.getItem(ENQUIRE_KEY);
+    if (!raw) return null;
+    sessionStorage.removeItem(ENQUIRE_KEY);
+    return buildEnquireDraft(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+}
+
 export function ContactForm() {
+  const [enquireMeta] = useState(() => {
+    const draft = readEnquireDraft();
+    return draft ? { draft, active: true } : { draft: null, active: false };
+  });
   const [form, setForm] = useState({
     name: '',
     email: '',
     phone: '',
-    subject: '',
-    message: '',
+    subject: enquireMeta.draft?.subject || '',
+    message: enquireMeta.draft?.message || '',
     website: ''
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
+  const [hasEnquiry, setHasEnquiry] = useState(enquireMeta.active);
+
+  useEffect(() => {
+    if (!enquireMeta.active) return;
+    const formEl = document.querySelector('.contact-form');
+    formEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [enquireMeta.active]);
 
   function update(field) {
     return (event) => setForm((prev) => ({ ...prev, [field]: event.target.value }));
@@ -59,6 +124,7 @@ export function ContactForm() {
       if (invokeError) throw invokeError;
       if (data?.ok === false) throw new Error(data.error || 'Could not send message');
       setDone(true);
+      setHasEnquiry(false);
       setForm({ name: '', email: '', phone: '', subject: '', message: '', website: '' });
     } catch (err) {
       setError(err.message || 'Could not send your message. Please try WhatsApp or email.');
@@ -82,7 +148,14 @@ export function ContactForm() {
     <form className="contact-form" onSubmit={onSubmit} noValidate>
       <p className="kicker">Send a message</p>
       <h3>Contact Compustar</h3>
-      <p className="contact-form-lead">Tell us what you need. Your message goes straight to our team email.</p>
+      <p className="contact-form-lead">
+        {hasEnquiry
+          ? 'Product details were added below. Complete your contact info and send.'
+          : 'Tell us what you need. Your message goes straight to our team email.'}
+      </p>
+      {hasEnquiry ? (
+        <p className="contact-enquire-note">This enquiry was started from a product page.</p>
+      ) : null}
       <div className="hp-field" aria-hidden="true">
         <label>
           Website
@@ -114,7 +187,7 @@ export function ContactForm() {
       </label>
       <label>
         Message <span className="req">*</span>
-        <textarea value={form.message} onChange={update('message')} required rows={5} maxLength={4000} placeholder="Include product names, quantities, or device details if relevant." />
+        <textarea value={form.message} onChange={update('message')} required rows={hasEnquiry ? 8 : 5} maxLength={4000} placeholder="Include product names, quantities, or device details if relevant." />
       </label>
       {error ? <p className="cms-error">{error}</p> : null}
       <button className="button dark" type="submit" disabled={busy}>

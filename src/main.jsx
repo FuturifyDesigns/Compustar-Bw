@@ -54,7 +54,7 @@ import { CartPage, CheckoutPage } from './orders/CartCheckout';
 import { requireAuthForCart } from './auth/requireAuthForCart';
 import { PrivacyPage, TermsPage } from './legal/LegalPages';
 import { OrdersAdminPanel } from './orders/OrdersAdmin';
-import { ContactForm } from './contact/ContactForm';
+import { ContactForm, stashEnquireProduct } from './contact/ContactForm';
 import { services as serviceCatalog, getServiceBySlug } from './data/services';
 import { productMatchesService } from './data/productCategories';
 import { supabase } from './lib/supabase';
@@ -248,7 +248,7 @@ function App() {
 
 function AppShell() {
   const routeState = useRouteState();
-  const { page, serviceSlug } = routeState;
+  const { page, serviceSlug, productId } = routeState;
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -265,7 +265,7 @@ function AppShell() {
 
   useEffect(() => {
     setMenuOpen(false);
-  }, [page, serviceSlug]);
+  }, [page, serviceSlug, productId]);
 
   useEffect(() => {
     resetPageScroll('auto');
@@ -275,10 +275,10 @@ function AppShell() {
       window.cancelAnimationFrame(frame);
       window.clearTimeout(timer);
     };
-  }, [page, serviceSlug]);
+  }, [page, serviceSlug, productId]);
 
-  useRevealAnimations(`${page}:${serviceSlug || ''}`);
-  usePageSeo(page, serviceSlug);
+  useRevealAnimations(`${page}:${serviceSlug || ''}:${productId || ''}`);
+  usePageSeo(page, serviceSlug, productId);
 
   if (page === 'Admin') {
     return (
@@ -298,7 +298,8 @@ function AppShell() {
       <main>
         {page === 'Home' && <HomePage />}
         {page === 'About' && <AboutPage />}
-        {page === 'Products' && <ProductsPage />}
+        {page === 'Products' && !productId && <ProductsPage />}
+        {page === 'Products' && productId && <ProductDetailPage productId={productId} />}
         {page === 'Adverts' && <AdvertsPage />}
         {page === 'Services' && !serviceSlug && <ServicesPage />}
         {page === 'Services' && serviceSlug && <ServiceDetailPage slug={serviceSlug} />}
@@ -339,13 +340,24 @@ function OfflineNotice() {
   return <div className="offline-banner" role="status">You are offline. Browsing saved Compustar pages and images.</div>;
 }
 
-function usePageSeo(page, serviceSlug) {
+function usePageSeo(page, serviceSlug, productId) {
+  const { products } = useAdmin();
   useEffect(() => {
     const service = serviceSlug ? getServiceBySlug(serviceSlug) : null;
-    const [title, description] = service
-      ? [`${service.title} | Compustar Services`, service.description]
-      : (seo[page] || seo.Home);
-    const pageUrl = `https://compustar.co.bw${service ? `/Services/${service.slug}` : route(page)}`;
+    const product = productId ? findProductByKey(products, productId) : null;
+    const [title, description] = product
+      ? [
+          `${(product.title || product.name || 'Product').trim() || 'Product'} | Compustar`,
+          (product.description || '').trim() || 'View this Compustar product and enquire about availability.'
+        ]
+      : service
+        ? [`${service.title} | Compustar Services`, service.description]
+        : (seo[page] || seo.Home);
+    const pageUrl = `https://compustar.co.bw${
+      product ? route('Products', productKey(product))
+        : service ? `/Services/${service.slug}`
+          : route(page)
+    }`;
     document.title = title;
     document.querySelector('meta[name="description"]')?.setAttribute('content', description);
     document.querySelector('link[rel="canonical"]')?.setAttribute('href', pageUrl);
@@ -365,26 +377,29 @@ function usePageSeo(page, serviceSlug) {
     } else if (robots) {
       robots.setAttribute('content', 'index, follow');
     }
-  }, [page, serviceSlug]);
+  }, [page, serviceSlug, productId, products]);
 }
 
 function parsePath() {
   const raw = window.location.pathname.replace(/^\/+/, '').replace(/\/+$/, '');
   const parts = raw ? raw.split('/') : [];
   const head = parts[0] || '';
-  if (!head) return { page: 'Home', serviceSlug: null };
-  if (head.toLowerCase() === 'admin') return { page: 'Admin', serviceSlug: null };
-  if (head === 'Cart') return { page: 'Cart', serviceSlug: null };
-  if (head === 'Checkout') return { page: 'Checkout', serviceSlug: null };
-  if (head === 'Account') return { page: 'Account', serviceSlug: null };
-  if (head === 'Verified') return { page: 'Verified', serviceSlug: null };
-  if (head === 'Privacy') return { page: 'Privacy', serviceSlug: null };
-  if (head === 'Terms') return { page: 'Terms', serviceSlug: null };
-  if (head === 'Services' && parts[1]) {
-    return { page: 'Services', serviceSlug: parts[1] };
+  if (!head) return { page: 'Home', serviceSlug: null, productId: null };
+  if (head.toLowerCase() === 'admin') return { page: 'Admin', serviceSlug: null, productId: null };
+  if (head === 'Cart') return { page: 'Cart', serviceSlug: null, productId: null };
+  if (head === 'Checkout') return { page: 'Checkout', serviceSlug: null, productId: null };
+  if (head === 'Account') return { page: 'Account', serviceSlug: null, productId: null };
+  if (head === 'Verified') return { page: 'Verified', serviceSlug: null, productId: null };
+  if (head === 'Privacy') return { page: 'Privacy', serviceSlug: null, productId: null };
+  if (head === 'Terms') return { page: 'Terms', serviceSlug: null, productId: null };
+  if (head === 'Products' && parts[1]) {
+    return { page: 'Products', serviceSlug: null, productId: decodeURIComponent(parts[1]) };
   }
-  if (pages.includes(head)) return { page: head, serviceSlug: null };
-  return { page: 'Home', serviceSlug: null };
+  if (head === 'Services' && parts[1]) {
+    return { page: 'Services', serviceSlug: parts[1], productId: null };
+  }
+  if (pages.includes(head)) return { page: head, serviceSlug: null, productId: null };
+  return { page: 'Home', serviceSlug: null, productId: null };
 }
 
 function useRouteState() {
@@ -405,7 +420,30 @@ function route(page, slug) {
   if (page === 'Home') return '/';
   if (page === 'Admin') return '/admin';
   if (page === 'Services' && slug) return `/Services/${slug}`;
+  if (page === 'Products' && slug) return `/Products/${encodeURIComponent(slug)}`;
   return `/${page}`;
+}
+
+function productKey(product) {
+  return product?.id || product?.file || product?.image_url || '';
+}
+
+function findProductByKey(products, key) {
+  if (!key) return null;
+  const decoded = decodeURIComponent(key);
+  return products.find((item) => (
+    item.id === key
+    || item.id === decoded
+    || item.file === decoded
+    || item.image_url === decoded
+  )) || null;
+}
+
+function goToEnquire(event, product) {
+  event.preventDefault();
+  event.stopPropagation();
+  stashEnquireProduct(product);
+  goToPage(event, 'Contact');
 }
 
 function resetPageScroll(behavior = 'smooth') {
@@ -802,13 +840,100 @@ function ProductsPage() {
     <>
       <PageHero contentPrefix="products.hero" image="/generated/hero-products.webp" eyebrow="Products" title="A clean product gallery for quick enquiries." text="Browse the product photos and contact Compustar to confirm availability, pricing, or suitable alternatives." />
       <section className="section catalogue-section">
-        <div className="cms-toolbar"><ProductEditorButton onAdd /></div>
+        <div className="catalogue-toolbar">
+          <div>
+            <p className="kicker">Catalogue</p>
+            <h2>All products</h2>
+          </div>
+          <div className="cms-toolbar"><ProductEditorButton onAdd /></div>
+        </div>
         <ProductGrid products={products.slice(0, visible)} />
         {visible < products.length && (
           <div className="center-row">
             <button className="button dark" onClick={() => setVisible((count) => count + 24)}>Show more products</button>
           </div>
         )}
+      </section>
+    </>
+  );
+}
+
+function ProductDetailPage({ productId }) {
+  const { products } = useAdmin();
+  const { addItem } = useCart();
+  const { user } = useAuth();
+  const product = findProductByKey(products, productId);
+
+  if (!product) {
+    return (
+      <section className="section product-detail-section">
+        <div className="product-detail-missing">
+          <p>Product not found.</p>
+          <a className="button dark" href={route('Products')} onClick={(event) => goToPage(event, 'Products')}>Back to products</a>
+        </div>
+      </section>
+    );
+  }
+
+  const src = mediaSrc(product);
+  const title = (product.title || product.name || '').trim();
+  const category = (product.category || '').trim();
+  const description = (product.description || '').trim();
+  const hasPrice = product.price != null && product.price !== '';
+  const displayTitle = title || 'Product details';
+  const missingBits = [];
+  if (!title) missingBits.push('name');
+  if (!hasPrice) missingBits.push('price');
+  if (!description) missingBits.push('description');
+
+  function onAddToCart() {
+    if (!requireAuthForCart(user, { nextPath: route('Products', productKey(product)) })) return;
+    addItem(product);
+  }
+
+  return (
+    <>
+      <PageHero
+        image={src || '/generated/hero-products.webp'}
+        eyebrow={category || 'Products'}
+        title={displayTitle}
+        text={description || 'View this item and enquire with Compustar about availability.'}
+      />
+      <section className="section product-detail-section">
+        <div className="product-detail" data-reveal>
+          <div className="product-detail-media">
+            <SmartImage src={src} alt={displayTitle} loading="eager" fetchPriority="high" width={900} />
+            <ProductEditorButton product={product} />
+          </div>
+          <div className="product-detail-copy">
+            <a href={route('Products')} onClick={(event) => goToPage(event, 'Products')}>← All products</a>
+            {category ? <p className="product-category">{category}</p> : null}
+            <h2>{displayTitle}</h2>
+            {hasPrice ? (
+              <p className="product-detail-price">{product.currency || 'BWP'} {Number(product.price).toLocaleString()}</p>
+            ) : (
+              <p className="product-detail-price is-soft">Price on request</p>
+            )}
+            {description ? (
+              <p className="product-detail-description">{description}</p>
+            ) : (
+              <p className="product-detail-description is-soft">
+                A full description for this product is being updated. Contact Compustar to confirm the exact model, price, and stock.
+              </p>
+            )}
+            {missingBits.length > 0 ? (
+              <p className="product-detail-note">
+                Some details ({missingBits.join(', ')}) are not listed yet. Send an enquiry and the team will confirm everything for you.
+              </p>
+            ) : null}
+            <div className="product-detail-actions">
+              <button type="button" className="button primary" onClick={onAddToCart}>Add to cart</button>
+              <a className="button secondary" href={route('Contact')} onClick={(event) => goToEnquire(event, product)}>
+                Enquire <ArrowRight size={16} weight="bold" />
+              </a>
+            </div>
+          </div>
+        </div>
       </section>
     </>
   );
@@ -898,7 +1023,13 @@ function AdvertsPage() {
         text="Browse Compustar promotional adverts in an auto-playing showcase — POS, laptops, gaming, accessories, surveillance, and new location announcements."
       />
       <section className="section adverts-section">
-        <div className="cms-toolbar"><AdvertEditorButton onAdd /></div>
+        <div className="catalogue-toolbar">
+          <div>
+            <p className="kicker">Showcase</p>
+            <h2>Current adverts</h2>
+          </div>
+          <div className="cms-toolbar"><AdvertEditorButton onAdd /></div>
+        </div>
         {!current ? (
           <p className="cms-empty">No adverts yet. Sign in as admin to add one.</p>
         ) : (
@@ -1050,24 +1181,26 @@ function ServiceDetailPage({ slug }) {
           </div>
           <p>{service.summary}</p>
         </div>
-        <div className="service-gallery" data-reveal>
-          <h3>Category images</h3>
-          {gallery.length ? (
-            <div className="service-gallery-grid">
-              {gallery.map((item) => (
-                <figure key={item.id}>
-                  <SmartImage src={item.image_url} alt={item.caption || service.title} loading="lazy" width={720} />
-                  {item.caption ? <figcaption>{item.caption}</figcaption> : null}
-                </figure>
-              ))}
-            </div>
-          ) : (
-            <div className="service-gallery-empty">
-              <SmartImage src={service.image} alt={service.title} loading="eager" width={900} />
-              <p>More photos for this category are coming soon. Browse products below, or contact us for current stock.</p>
-            </div>
-          )}
-        </div>
+        {(gallery.length > 0 || related.length === 0) && (
+          <div className="service-gallery" data-reveal>
+            <h3>Category images</h3>
+            {gallery.length ? (
+              <div className="service-gallery-grid">
+                {gallery.map((item) => (
+                  <figure key={item.id}>
+                    <SmartImage src={item.image_url} alt={item.caption || service.title} loading="lazy" width={720} />
+                    {item.caption ? <figcaption>{item.caption}</figcaption> : null}
+                  </figure>
+                ))}
+              </div>
+            ) : (
+              <div className="service-gallery-empty">
+                <SmartImage src={service.image} alt={service.title} loading="eager" width={900} />
+                <p>More photos for this category are coming soon. Browse products below, or contact us for current stock.</p>
+              </div>
+            )}
+          </div>
+        )}
         <div className="service-related" data-reveal>
           <div className="service-related-head">
             <h3>Products in this category</h3>
@@ -1319,39 +1452,55 @@ function ProductCard({ product, priority = false }) {
   const { addItem } = useCart();
   const { user } = useAuth();
   const src = mediaSrc(product);
+  const key = productKey(product);
   const title = (product.title || product.name || '').trim();
   const category = (product.category || '').trim();
   const description = (product.description || '').trim();
   const hasPrice = product.price != null && product.price !== '';
   const hasMeta = title || category || description || hasPrice;
+  const detailHref = key ? route('Products', key) : route('Products');
 
-  function onAddToCart() {
-    if (!requireAuthForCart(user, { nextPath: '/Products' })) return;
+  function onAddToCart(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!requireAuthForCart(user, { nextPath: detailHref })) return;
     addItem(product);
+  }
+
+  function openProduct(event) {
+    if (!key) return;
+    goToPage(event, 'Products', key);
   }
 
   return (
     <article className="product-card gallery-card" data-reveal>
-      <div className="product-image">
-        <SmartImage src={src} alt={title || 'Compustar product'} loading={priority ? 'eager' : 'lazy'} fetchPriority={priority ? 'high' : 'low'} width={520} />
-        <ProductEditorButton product={product} />
-      </div>
-      {hasMeta && (
-        <div className="product-meta">
-          {category ? <span className="product-category">{category}</span> : null}
-          {title ? <strong>{title}</strong> : null}
-          {hasPrice && (
-            <span className="product-price">{product.currency || 'BWP'} {Number(product.price).toLocaleString()}</span>
-          )}
-          {description ? <p className="product-description">{description}</p> : null}
+      <a className="product-card-hit" href={detailHref} onClick={openProduct} aria-label={`View ${title || 'product'}`}>
+        <div className="product-image">
+          <SmartImage src={src} alt={title || 'Compustar product'} loading={priority ? 'eager' : 'lazy'} fetchPriority={priority ? 'high' : 'low'} width={520} />
         </div>
-      )}
+        {hasMeta ? (
+          <div className="product-meta">
+            {category ? <span className="product-category">{category}</span> : null}
+            {title ? <strong>{title}</strong> : <strong>View product details</strong>}
+            {hasPrice ? (
+              <span className="product-price">{product.currency || 'BWP'} {Number(product.price).toLocaleString()}</span>
+            ) : null}
+            {description ? <p className="product-description">{description}</p> : null}
+          </div>
+        ) : (
+          <div className="product-meta">
+            <strong>View product details</strong>
+            <p className="product-description">Details available on the product page.</p>
+          </div>
+        )}
+      </a>
+      <ProductEditorButton product={product} />
       <div className="product-overlay">
-        <button type="button" className="button primary" onClick={onAddToCart}>
+        <button type="button" className="button primary product-action" onClick={onAddToCart}>
           Add to cart
         </button>
-        <a href={route('Contact')} onClick={(event) => goToPage(event, 'Contact')}>
-          Enquire <ArrowRight size={16} weight="bold" />
+        <a className="button secondary product-action" href={route('Contact')} onClick={(event) => goToEnquire(event, product)}>
+          Enquire
         </a>
       </div>
     </article>

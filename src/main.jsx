@@ -1481,18 +1481,13 @@ function ProductCard({ product, priority = false }) {
         {hasMeta ? (
           <div className="product-meta">
             {category ? <span className="product-category">{category}</span> : null}
-            {title ? <strong>{title}</strong> : <strong>View product details</strong>}
+            {title ? <strong>{title}</strong> : null}
             {hasPrice ? (
               <span className="product-price">{product.currency || 'BWP'} {Number(product.price).toLocaleString()}</span>
             ) : null}
             {description ? <p className="product-description">{description}</p> : null}
           </div>
-        ) : (
-          <div className="product-meta">
-            <strong>View product details</strong>
-            <p className="product-description">Details available on the product page.</p>
-          </div>
-        )}
+        ) : null}
       </a>
       <ProductEditorButton product={product} />
       <div className="product-overlay">

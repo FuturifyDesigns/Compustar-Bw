@@ -844,6 +844,7 @@ function ProductsPage() {
           <div>
             <p className="kicker">Catalogue</p>
             <h2>All products</h2>
+            <p className="catalogue-hint">Click a product to view full details</p>
           </div>
           <div className="cms-toolbar"><ProductEditorButton onAdd /></div>
         </div>
@@ -1203,7 +1204,10 @@ function ServiceDetailPage({ slug }) {
         )}
         <div className="service-related" data-reveal>
           <div className="service-related-head">
-            <h3>Products in this category</h3>
+            <div>
+              <h3>Products in this category</h3>
+              <p className="catalogue-hint">Click a product to view full details</p>
+            </div>
             <div className="cms-toolbar">
               <ProductEditorButton onAdd defaultCategory={service.title} />
             </div>

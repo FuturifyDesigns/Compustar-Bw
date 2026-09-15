@@ -1336,6 +1336,26 @@ p.editable-wrap > .edit-chip {
   max-width: 1240px;
 }
 .catalogue-toolbar h2 { margin: .15rem 0 0; }
+.catalogue-hint {
+  color: #6b7280;
+  font-size: .84rem;
+  font-weight: 500;
+  letter-spacing: .01em;
+  margin: .45rem 0 0;
+  position: relative;
+  width: fit-content;
+}
+.catalogue-hint::before {
+  background: var(--gold);
+  border-radius: 999px;
+  content: '';
+  display: inline-block;
+  height: 4px;
+  margin-right: .45rem;
+  position: relative;
+  top: -2px;
+  width: 4px;
+}
 .product-card-hit {
   color: inherit;
   display: grid;

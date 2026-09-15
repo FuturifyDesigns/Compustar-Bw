@@ -12,6 +12,7 @@ export function buildEnquireDraft(product = {}) {
   const priceLine = hasPrice
     ? `${product.currency || 'BWP'} ${Number(product.price).toLocaleString()}`
     : 'Price on request';
+  const image = String(product.image_url || product.file || '').trim();
 
   return {
     subject: `Product enquiry: ${title}`,
@@ -25,7 +26,13 @@ export function buildEnquireDraft(product = {}) {
       description ? `• Details: ${description}` : '• Details: Please confirm full product details and availability.',
       '',
       'Please let me know the next steps. Thank you.'
-    ].join('\n')
+    ].join('\n'),
+    product: {
+      title,
+      category,
+      priceLine,
+      image
+    }
   };
 }
 
@@ -59,7 +66,9 @@ function readEnquireDraft() {
 export function ContactForm() {
   const [enquireMeta] = useState(() => {
     const draft = readEnquireDraft();
-    return draft ? { draft, active: true } : { draft: null, active: false };
+    return draft
+      ? { draft, product: draft.product || null, active: true }
+      : { draft: null, product: null, active: false };
   });
   const [form, setForm] = useState({
     name: '',
@@ -154,7 +163,20 @@ export function ContactForm() {
           : 'Tell us what you need. Your message goes straight to our team email.'}
       </p>
       {hasEnquiry ? (
-        <p className="contact-enquire-note">This enquiry was started from a product page.</p>
+        <div className="contact-enquire-card">
+          {enquireMeta.product?.image ? (
+            <img src={enquireMeta.product.image} alt={enquireMeta.product.title || 'Selected product'} />
+          ) : (
+            <div className="contact-enquire-fallback" aria-hidden="true" />
+          )}
+          <div>
+            <p className="contact-enquire-note">Product enquiry ready</p>
+            <strong>{enquireMeta.product?.title || 'Selected product'}</strong>
+            <span>
+              {[enquireMeta.product?.category, enquireMeta.product?.priceLine].filter(Boolean).join(' · ')}
+            </span>
+          </div>
+        </div>
       ) : null}
       <div className="hp-field" aria-hidden="true">
         <label>

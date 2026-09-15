@@ -956,7 +956,7 @@ function ProductDetailPage({ productId }) {
             ) : null}
             <div className="product-detail-actions">
               <button type="button" className="button primary" onClick={onAddToCart}>Add to cart</button>
-              <a className="button secondary" href={route('Contact')} onClick={(event) => goToEnquire(event, product)}>
+              <a className="button enquire" href={route('Contact')} onClick={(event) => goToEnquire(event, product)}>
                 Enquire <ArrowRight size={16} weight="bold" />
               </a>
             </div>
@@ -1525,7 +1525,7 @@ function ProductCard({ product, priority = false }) {
         <button type="button" className="button primary product-action" onClick={onAddToCart}>
           Add to cart
         </button>
-        <a className="button secondary product-action" href={route('Contact')} onClick={(event) => goToEnquire(event, product)}>
+        <a className="button enquire product-action" href={route('Contact')} onClick={(event) => goToEnquire(event, product)}>
           Enquire
         </a>
       </div>

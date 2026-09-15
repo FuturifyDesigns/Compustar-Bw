@@ -209,9 +209,17 @@ footer span,
   white-space: nowrap;
 }
 .product-overlay a.product-action {
-  background: #fff;
-  color: var(--red-deep);
+  background: #fff !important;
+  border: 0;
+  color: var(--red-deep) !important;
   text-decoration: none;
+}
+.product-overlay .button.primary.product-action {
+  background: #fff !important;
+  color: var(--red-deep) !important;
+}
+.product-detail-actions .button.primary {
+  border: 1px solid rgba(152, 8, 15, .28);
 }
 @keyframes gallery-slide { from { transform: translateX(0); } to { transform: translateX(calc(-50% - .5rem)); } }
 @keyframes showcase-slide { from { transform: translateX(0); } to { transform: translateX(calc(-50% - .5rem)); } }

@@ -120,6 +120,12 @@ export function ContactForm() {
 
     setBusy(true);
     try {
+      const rawImage = enquireMeta.product?.image || '';
+      const productImage = /^https?:\/\//i.test(rawImage)
+        ? rawImage
+        : rawImage.startsWith('/')
+          ? `https://compustar.co.bw${rawImage}`
+          : '';
       const { data, error: invokeError } = await supabase.functions.invoke('notify-contact', {
         body: {
           name: form.name.trim(),
@@ -127,7 +133,11 @@ export function ContactForm() {
           phone: form.phone.trim(),
           subject: form.subject.trim() || 'Website enquiry',
           message: form.message.trim(),
-          website: form.website
+          website: form.website,
+          productImage,
+          productTitle: enquireMeta.product?.title || '',
+          productCategory: enquireMeta.product?.category || '',
+          productPrice: enquireMeta.product?.priceLine || ''
         }
       });
       if (invokeError) throw invokeError;

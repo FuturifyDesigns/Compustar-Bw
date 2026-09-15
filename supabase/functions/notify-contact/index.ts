@@ -60,6 +60,11 @@ serve(async (req) => {
     const phone = clampText(body.phone, 40);
     const subject = clampText(body.subject, 140) || 'Website enquiry';
     const message = clampText(body.message, 4000);
+    const productTitle = clampText(body.productTitle, 160);
+    const productCategory = clampText(body.productCategory, 120);
+    const productPrice = clampText(body.productPrice, 80);
+    const rawImage = clampText(body.productImage, 800);
+    const productImage = /^https?:\/\//i.test(rawImage) ? rawImage : '';
 
     if (!name || !email || !message) {
       return jsonResponse(req, { ok: false, error: 'Name, email, and message are required.' }, 400);
@@ -83,6 +88,25 @@ serve(async (req) => {
       'compustarbw@gmail.com'
     );
 
+    const productBlock = productImage || productTitle
+      ? `
+        <p style="margin:18px 0 6px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#69727f;">Product enquiry</p>
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 18px;background:#f8f9fb;border:1px solid #e6e9ef;border-radius:12px;overflow:hidden;">
+          <tr>
+            ${productImage ? `<td style="width:120px;padding:12px;vertical-align:middle;">
+              <img src="${escapeHtml(productImage)}" alt="${escapeHtml(productTitle || 'Product')}" width="96" style="display:block;width:96px;height:96px;object-fit:contain;border-radius:8px;background:#fff;border:1px solid #e6e9ef;" />
+            </td>` : ''}
+            <td style="padding:14px 16px;vertical-align:middle;">
+              <p style="margin:0 0 4px;font-size:15px;font-weight:700;color:#111318;">${escapeHtml(productTitle || 'Selected product')}</p>
+              <p style="margin:0;font-size:13px;color:#69727f;line-height:1.45;">
+                ${escapeHtml([productCategory, productPrice].filter(Boolean).join(' · ') || 'Details in message below')}
+              </p>
+            </td>
+          </tr>
+        </table>
+      `
+      : '';
+
     const staffHtml = emailShell({
       title: 'New website enquiry',
       preheader: `${name}: ${subject}`,
@@ -94,6 +118,7 @@ serve(async (req) => {
           <tr><td style="padding:8px 0;color:#69727f;font-size:13px;">Phone</td><td style="padding:8px 0;font-size:14px;font-weight:600;">${escapeHtml(phone || '—')}</td></tr>
           <tr><td style="padding:8px 0;color:#69727f;font-size:13px;">Subject</td><td style="padding:8px 0;font-size:14px;font-weight:600;">${escapeHtml(subject)}</td></tr>
         </table>
+        ${productBlock}
         <p style="margin:0 0 6px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#69727f;">Message</p>
         <div style="background:#f8f9fb;border:1px solid #e6e9ef;border-radius:10px;padding:14px 16px;font-size:14px;line-height:1.6;white-space:pre-wrap;">${escapeHtml(message)}</div>
       `
@@ -117,6 +142,7 @@ serve(async (req) => {
       bodyHtml: `
         <p style="margin:0 0 12px;font-size:15px;line-height:1.55;">Hi ${escapeHtml(name)},</p>
         <p style="margin:0 0 16px;font-size:15px;line-height:1.55;">Thanks for contacting Compustar Botswana. We received your enquiry and will respond as soon as we can.</p>
+        ${productBlock}
         <p style="margin:0 0 6px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#69727f;">Your message</p>
         <div style="background:#f8f9fb;border:1px solid #e6e9ef;border-radius:10px;padding:14px 16px;font-size:14px;line-height:1.6;white-space:pre-wrap;">${escapeHtml(message)}</div>
       `

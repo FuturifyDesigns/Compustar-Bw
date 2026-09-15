@@ -356,8 +356,6 @@ export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts
         updated_at: new Date().toISOString()
       };
 
-      if (!row.title) throw new Error('Please add a product title');
-      if (!row.category) throw new Error('Please choose a category');
       if (!row.image_url) throw new Error('Please add at least one product photo');
       if (row.price != null && (!Number.isFinite(row.price) || row.price < 0)) {
         throw new Error('Price must be a valid number');

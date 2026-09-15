@@ -558,10 +558,6 @@ export function ProductEditorButton({ product, onAdd, defaultCategory = '' }) {
 
   function validate() {
     const next = {};
-    const title = draft.title.trim();
-    if (!title) next.title = 'Add a product title';
-    else if (title.length < 2) next.title = 'Title is too short';
-    if (!draft.category) next.category = 'Choose a category';
     if (draft.price !== '' && draft.price != null) {
       const price = Number(draft.price);
       if (!Number.isFinite(price) || price < 0) next.price = 'Enter a valid price (0 or more)';
@@ -602,29 +598,29 @@ export function ProductEditorButton({ product, onAdd, defaultCategory = '' }) {
         <CmsModal title={product ? 'Edit product' : 'Add product'} onClose={() => !busy && setOpen(false)} wide>
           <div className="cms-product-form">
             <p className="cms-form-lead">
-              Fill in the product details clearly. The first photo becomes the cover image shown in the catalogue.
+              Add a photo to publish the product. Title, category, price, and description are optional — you can fill them in later.
             </p>
 
             <div className="cms-form-section">
               <p className="cms-form-section-title">Basic details</p>
               <div className="cms-form-grid">
                 <label className={errors.title ? 'is-invalid' : ''}>
-                  Title <span className="req">*</span>
+                  Title
                   <input
                     value={draft.title}
                     onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-                    placeholder="e.g. Logitech wireless mouse"
+                    placeholder="Optional — e.g. Logitech wireless mouse"
                     maxLength={160}
                   />
                   {errors.title ? <span className="cms-field-error">{errors.title}</span> : null}
                 </label>
                 <label className={errors.category ? 'is-invalid' : ''}>
-                  Category <span className="req">*</span>
+                  Category
                   <select
                     value={draft.category}
                     onChange={(e) => setDraft({ ...draft, category: e.target.value })}
                   >
-                    <option value="">Select a category</option>
+                    <option value="">Optional — select later</option>
                     {PRODUCT_CATEGORIES.map((item) => (
                       <option key={item.slug} value={item.title}>{item.title}</option>
                     ))}

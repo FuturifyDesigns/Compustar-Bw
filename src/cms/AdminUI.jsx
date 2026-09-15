@@ -513,35 +513,79 @@ export function CMSText({ contentKey, fallback = '', as = 'span', className = ''
 export function ProductEditorButton({ product, onAdd, defaultCategory = '' }) {
   const { isAdmin, editMode, saveProduct, deleteProduct, busy } = useAdmin();
   const [open, setOpen] = useState(false);
-  const blank = {
+  const [draft, setDraft] = useState({
     title: '',
     category: defaultCategory || '',
     price: '',
     currency: 'BWP',
     description: '',
-    image_url: '',
     active: true
-  };
-  const [draft, setDraft] = useState(blank);
-  const [imageFile, setImageFile] = useState(null);
+  });
+  const [galleryItems, setGalleryItems] = useState([]);
+  const [uploaderKey, setUploaderKey] = useState(0);
+  const [errors, setErrors] = useState({});
+  const [formError, setFormError] = useState('');
 
   if (!(isAdmin && editMode)) return null;
 
   function openEditor() {
+    const existing = product
+      ? (Array.isArray(product.gallery_urls) && product.gallery_urls.length
+        ? product.gallery_urls
+        : [product.image_url || product.file].filter(Boolean))
+      : [];
     setDraft(product ? {
       title: product.title || '',
       category: canonicalCategoryTitle(product.category) || '',
       price: product.price ?? '',
       currency: product.currency || 'BWP',
       description: product.description || '',
-      image_url: product.image_url || product.file || '',
       active: product.active !== false
     } : {
-      ...blank,
-      category: defaultCategory || ''
+      title: '',
+      category: defaultCategory || '',
+      price: '',
+      currency: 'BWP',
+      description: '',
+      active: true
     });
-    setImageFile(null);
+    setGalleryItems(existing.map((url, index) => ({ id: `${index}-${url}`, url })));
+    setUploaderKey((value) => value + 1);
+    setErrors({});
+    setFormError('');
     setOpen(true);
+  }
+
+  function validate() {
+    const next = {};
+    const title = draft.title.trim();
+    if (!title) next.title = 'Add a product title';
+    else if (title.length < 2) next.title = 'Title is too short';
+    if (!draft.category) next.category = 'Choose a category';
+    if (draft.price !== '' && draft.price != null) {
+      const price = Number(draft.price);
+      if (!Number.isFinite(price) || price < 0) next.price = 'Enter a valid price (0 or more)';
+    }
+    if (draft.description && draft.description.length > 4000) {
+      next.description = 'Description is too long';
+    }
+    if (!galleryItems.length) next.gallery = 'Add at least one product photo';
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  }
+
+  async function onSave() {
+    setFormError('');
+    if (!validate()) {
+      setFormError('Please fix the highlighted fields before saving.');
+      return;
+    }
+    try {
+      await saveProduct({ ...draft, galleryItems }, product?.id);
+      setOpen(false);
+    } catch (err) {
+      setFormError(err.message || 'Could not save product');
+    }
   }
 
   return (
@@ -555,44 +599,130 @@ export function ProductEditorButton({ product, onAdd, defaultCategory = '' }) {
             </>}
       </div>
       {open && (
-        <CmsModal title={product ? 'Edit product' : 'Add product'} onClose={() => setOpen(false)} wide>
-          <label>Title<input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} placeholder="Add product name" /></label>
-          <label>
-            Category
-            <select
-              value={draft.category}
-              onChange={(e) => setDraft({ ...draft, category: e.target.value })}
-            >
-              <option value="">Select a category</option>
-              {PRODUCT_CATEGORIES.map((item) => (
-                <option key={item.slug} value={item.title}>{item.title}</option>
-              ))}
-            </select>
-          </label>
-          <label>Price (BWP)<input type="number" step="0.01" value={draft.price} onChange={(e) => setDraft({ ...draft, price: e.target.value })} /></label>
-          <label>Description<textarea rows={4} value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} /></label>
-          <ImageField
-            value={imageFile || draft.image_url}
-            onChange={(next) => {
-              if (next instanceof File) setImageFile(next);
-              else {
-                setImageFile(null);
-                setDraft((prev) => ({ ...prev, image_url: '' }));
-              }
-            }}
-          />
+        <CmsModal title={product ? 'Edit product' : 'Add product'} onClose={() => !busy && setOpen(false)} wide>
+          <div className="cms-product-form">
+            <p className="cms-form-lead">
+              Fill in the product details clearly. The first photo becomes the cover image shown in the catalogue.
+            </p>
+
+            <div className="cms-form-section">
+              <p className="cms-form-section-title">Basic details</p>
+              <div className="cms-form-grid">
+                <label className={errors.title ? 'is-invalid' : ''}>
+                  Title <span className="req">*</span>
+                  <input
+                    value={draft.title}
+                    onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+                    placeholder="e.g. Logitech wireless mouse"
+                    maxLength={160}
+                  />
+                  {errors.title ? <span className="cms-field-error">{errors.title}</span> : null}
+                </label>
+                <label className={errors.category ? 'is-invalid' : ''}>
+                  Category <span className="req">*</span>
+                  <select
+                    value={draft.category}
+                    onChange={(e) => setDraft({ ...draft, category: e.target.value })}
+                  >
+                    <option value="">Select a category</option>
+                    {PRODUCT_CATEGORIES.map((item) => (
+                      <option key={item.slug} value={item.title}>{item.title}</option>
+                    ))}
+                  </select>
+                  {errors.category ? <span className="cms-field-error">{errors.category}</span> : null}
+                </label>
+                <label className={errors.price ? 'is-invalid' : ''}>
+                  Price (BWP)
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={draft.price}
+                    onChange={(e) => setDraft({ ...draft, price: e.target.value })}
+                    placeholder="Optional"
+                  />
+                  {errors.price ? <span className="cms-field-error">{errors.price}</span> : null}
+                </label>
+              </div>
+              <label className={errors.description ? 'is-invalid' : ''}>
+                Description
+                <textarea
+                  rows={4}
+                  value={draft.description}
+                  onChange={(e) => setDraft({ ...draft, description: e.target.value })}
+                  placeholder="Key features, compatibility, or what’s included"
+                  maxLength={4000}
+                />
+                {errors.description ? <span className="cms-field-error">{errors.description}</span> : null}
+              </label>
+            </div>
+
+            <div className={`cms-form-section ${errors.gallery ? 'is-invalid' : ''}`}>
+              <p className="cms-form-section-title">Photos <span className="req">*</span></p>
+              <p className="cms-form-hint">Add one or more photos. Drag order by using Set cover — cover shows first in the shop.</p>
+              {galleryItems.length > 0 && (
+                <div className="cms-gallery-grid">
+                  {galleryItems.map((item, index) => {
+                    const preview = item.preview || item.url;
+                    return (
+                      <div className={`cms-gallery-item${index === 0 ? ' is-cover' : ''}`} key={item.id}>
+                        <img src={preview} alt="" />
+                        {index === 0 ? <span className="cms-gallery-badge">Cover</span> : null}
+                        <div className="cms-gallery-item-actions">
+                          {index > 0 ? (
+                            <button
+                              type="button"
+                              className="edit-chip solid"
+                              onClick={() => setGalleryItems((prev) => {
+                                const next = [...prev];
+                                const [picked] = next.splice(index, 1);
+                                next.unshift(picked);
+                                return next;
+                              })}
+                            >
+                              Set cover
+                            </button>
+                          ) : null}
+                          <button
+                            type="button"
+                            className="edit-chip danger"
+                            aria-label="Remove photo"
+                            onClick={() => setGalleryItems((prev) => {
+                              const target = prev.find((entry) => entry.id === item.id);
+                              if (target?.preview?.startsWith('blob:')) URL.revokeObjectURL(target.preview);
+                              return prev.filter((entry) => entry.id !== item.id);
+                            })}
+                          >
+                            <Trash size={14} weight="fill" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              <ImageField
+                key={uploaderKey}
+                label={galleryItems.length ? 'Add another photo' : 'Upload photo'}
+                aspectHint="Upload a clear product photo, then crop and adjust if needed."
+                value=""
+                onChange={(next) => {
+                  if (!(next instanceof File)) return;
+                  const preview = URL.createObjectURL(next);
+                  setGalleryItems((prev) => [...prev, { id: `${Date.now()}-${prev.length}`, file: next, preview }]);
+                  setUploaderKey((value) => value + 1);
+                  setErrors((prev) => ({ ...prev, gallery: undefined }));
+                }}
+              />
+              {errors.gallery ? <span className="cms-field-error">{errors.gallery}</span> : null}
+            </div>
+
+            {formError ? <p className="cms-error">{formError}</p> : null}
+          </div>
           <div className="cms-dialog-actions">
-            <button type="button" className="button secondary" onClick={() => setOpen(false)}>Cancel</button>
-            <button
-              className="button dark"
-              type="button"
-              disabled={busy || !draft.category}
-              onClick={async () => {
-                await saveProduct({ ...draft, fileObj: imageFile }, product?.id);
-                setOpen(false);
-              }}
-            >
-              {busy ? 'Saving…' : 'Save product'}
+            <button type="button" className="button secondary" disabled={busy} onClick={() => setOpen(false)}>Cancel</button>
+            <button className="button dark" type="button" disabled={busy} onClick={onSave}>
+              {busy ? 'Saving…' : (product ? 'Save changes' : 'Save product')}
             </button>
           </div>
         </CmsModal>

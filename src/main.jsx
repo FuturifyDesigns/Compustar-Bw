@@ -864,6 +864,18 @@ function ProductDetailPage({ productId }) {
   const { addItem } = useCart();
   const { user } = useAuth();
   const product = findProductByKey(products, productId);
+  const images = product
+    ? [...new Set([
+        ...(Array.isArray(product.gallery_urls) ? product.gallery_urls : []),
+        product.image_url,
+        product.file
+      ].filter(Boolean))]
+    : [];
+  const [activeImage, setActiveImage] = useState(0);
+
+  useEffect(() => {
+    setActiveImage(0);
+  }, [productId, images.join('|')]);
 
   if (!product) {
     return (
@@ -876,7 +888,7 @@ function ProductDetailPage({ productId }) {
     );
   }
 
-  const src = mediaSrc(product);
+  const src = images[activeImage] || mediaSrc(product);
   const title = (product.title || product.name || '').trim();
   const category = (product.category || '').trim();
   const description = (product.description || '').trim();
@@ -905,6 +917,21 @@ function ProductDetailPage({ productId }) {
           <div className="product-detail-media">
             <SmartImage src={src} alt={displayTitle} loading="eager" fetchPriority="high" width={900} />
             <ProductEditorButton product={product} />
+            {images.length > 1 ? (
+              <div className="product-detail-thumbs" role="list">
+                {images.map((image, index) => (
+                  <button
+                    type="button"
+                    key={`${image}-${index}`}
+                    className={index === activeImage ? 'active' : ''}
+                    onClick={() => setActiveImage(index)}
+                    aria-label={`Show photo ${index + 1}`}
+                  >
+                    <SmartImage src={image} alt="" loading="lazy" width={160} />
+                  </button>
+                ))}
+              </div>
+            ) : null}
           </div>
           <div className="product-detail-copy">
             <a href={route('Products')} onClick={(event) => goToPage(event, 'Products')}>← All products</a>

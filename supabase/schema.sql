@@ -7,13 +7,14 @@ create table if not exists public.site_content (
   updated_at timestamptz not null default now()
 );
 
-create table if not exists public.products (
+    create table if not exists public.products (
   id uuid primary key default gen_random_uuid(),
   title text not null,
   category text not null default 'General',
   price numeric(12,2),
   currency text not null default 'BWP',
   image_url text,
+  gallery_urls jsonb not null default '[]'::jsonb,
   description text default '',
   sort_order int not null default 0,
   active boolean not null default true,

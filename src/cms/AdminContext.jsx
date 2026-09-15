@@ -5,17 +5,33 @@ import { ConfirmDialog } from '../ui/ConfirmDialog';
 const AdminContext = createContext(null);
 
 function mapProduct(row) {
+  const gallery = normalizeGallery(row.gallery_urls);
+  const cover = row.image_url || gallery[0] || '';
   return {
     id: row.id,
-    file: row.image_url,
+    file: cover,
     title: row.title,
     category: row.category,
     price: row.price,
     currency: row.currency,
     description: row.description || '',
-    image_url: row.image_url,
+    image_url: cover,
+    gallery_urls: gallery.length ? gallery : (cover ? [cover] : []),
     active: row.active
   };
+}
+
+function normalizeGallery(value) {
+  if (Array.isArray(value)) return value.map(String).filter(Boolean);
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed.map(String).filter(Boolean) : [];
+    } catch {
+      return value ? [value] : [];
+    }
+  }
+  return [];
 }
 
 function mapAdvert(row) {
@@ -312,28 +328,72 @@ export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts
   async function saveProduct(payload, id) {
     setBusy(true);
     try {
-      let image_url = payload.image_url;
-      if (payload.fileObj) image_url = await uploadMedia(payload.fileObj, 'products');
+      const uploaded = [];
+      for (const item of payload.galleryItems || []) {
+        if (item?.file instanceof File) {
+          uploaded.push(await uploadMedia(item.file, 'products'));
+        } else if (item?.url) {
+          uploaded.push(item.url);
+        }
+      }
+      const unique = [...new Set(uploaded.filter(Boolean))];
+      let image_url = unique[0] || payload.image_url || null;
+      if (payload.fileObj instanceof File) {
+        image_url = await uploadMedia(payload.fileObj, 'products');
+        if (!unique.includes(image_url)) unique.unshift(image_url);
+      }
+      if (!unique.length && image_url) unique.push(image_url);
+
       const row = {
-        title: payload.title || '',
-        category: payload.category || '',
+        title: (payload.title || '').trim(),
+        category: (payload.category || '').trim(),
         price: payload.price === '' || payload.price == null ? null : Number(payload.price),
         currency: payload.currency || 'BWP',
-        description: payload.description || '',
-        image_url,
+        description: (payload.description || '').trim(),
+        image_url: unique[0] || image_url,
+        gallery_urls: unique,
         active: payload.active !== false,
         updated_at: new Date().toISOString()
       };
-      if (id) {
-        const { error } = await supabase.from('products').update(row).eq('id', id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from('products').insert({ ...row, sort_order: products.length });
-        if (error) throw error;
+
+      if (!row.title) throw new Error('Please add a product title');
+      if (!row.category) throw new Error('Please choose a category');
+      if (!row.image_url) throw new Error('Please add at least one product photo');
+      if (row.price != null && (!Number.isFinite(row.price) || row.price < 0)) {
+        throw new Error('Price must be a valid number');
       }
+
+      const write = async (body) => {
+        if (id) {
+          const { error } = await supabase.from('products').update(body).eq('id', id);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from('products').insert({ ...body, sort_order: products.length });
+          if (error) throw error;
+        }
+      };
+
+      try {
+        await write(row);
+      } catch (err) {
+        const message = String(err?.message || err || '');
+        if (/gallery_urls/i.test(message)) {
+          const { gallery_urls, ...fallback } = row;
+          await write(fallback);
+          await refresh();
+          await broadcastCmsChange('products');
+          notify(id ? 'Product updated (cover photo only — run gallery SQL for extra photos)' : 'Product added (cover photo only — run gallery SQL for extra photos)', 'warn');
+          return;
+        }
+        throw err;
+      }
+
       await refresh();
       await broadcastCmsChange('products');
-      notify(id ? 'Product updated' : 'Product added');
+      notify(id ? 'Product updated successfully' : 'Product added successfully');
+    } catch (err) {
+      notify(err.message || 'Could not save product', 'warn');
+      throw err;
     } finally {
       setBusy(false);
     }
@@ -347,11 +407,16 @@ export function AdminProvider({ children, fallbackProducts = [], fallbackAdverts
       danger: true
     });
     if (!ok) return;
-    const { error } = await supabase.from('products').delete().eq('id', id);
-    if (error) throw error;
-    await refresh();
-    await broadcastCmsChange('products');
-    notify('Product deleted', 'success');
+    try {
+      const { error } = await supabase.from('products').delete().eq('id', id);
+      if (error) throw error;
+      await refresh();
+      await broadcastCmsChange('products');
+      notify('Product deleted successfully');
+    } catch (err) {
+      notify(err.message || 'Could not delete product', 'warn');
+      throw err;
+    }
   }
 
   async function saveAdvert(payload, id) {

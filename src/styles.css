@@ -192,7 +192,7 @@ footer span,
 .product-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 8px 24px rgba(12,13,16,.04); contain-intrinsic-size: 260px; content-visibility: auto; overflow: hidden; position: relative; transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
 .product-card:hover { border-color: rgba(239,23,23,.35); box-shadow: var(--shadow); transform: translateY(-3px); }
 .product-card:hover img { transform: scale(1.03); }
-.product-image { background: linear-gradient(135deg, rgba(239,23,23,.04), transparent), #fafbfc; display: grid; min-height: 220px; place-items: center; }
+.product-image { background: #fff; display: grid; min-height: 220px; place-items: center; }
 .product-image picture { display: block; width: 100%; }
 .product-image img { aspect-ratio: 4 / 3; display: block; object-fit: contain; padding: .85rem; transition: transform .25s ease; width: 100%; }
 .product-overlay { align-items: center; background: linear-gradient(180deg, transparent, rgba(12,13,16,.55)); bottom: 0; display: flex; gap: .4rem; inset: auto 0 0; justify-content: flex-start; opacity: 0; padding: .55rem .6rem; pointer-events: none; position: absolute; transform: translateY(6px); transition: opacity .2s ease, transform .2s ease; }
